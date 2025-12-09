@@ -14,6 +14,60 @@ Flutter mobile app for personal trainers and clients. Cross-platform (iOS/Androi
 
 Feature structure: `lib/features/<feature>/data|domain|presentation/`
 
+## 🔄 Agent Session Workflow (MANDATORY)
+
+**This project follows the long-running agent harness pattern from Anthropic Research.**
+
+### Every Session MUST Start With:
+1. **Verify working directory**: `pwd` - confirm you're in project root
+2. **Read progress files**:
+   - `claude-progress.txt` - what was completed in previous sessions
+   - `git log --oneline -10` - recent commits
+   - `features.json` - current feature status
+3. **Run initialization**: `./init.sh` - sets up environment
+4. **Startup validation**:
+   ```bash
+   flutter analyze           # Check for code issues
+   flutter test             # Run existing tests
+   ```
+5. **Review next feature**: Check `features.json` for next feature with `"passes": false`
+
+### One Feature Per Session Rule
+- **NEVER work on multiple features in one session**
+- **ALWAYS complete verification steps** before marking feature as passing
+- **COMMIT immediately** after completing a feature
+- **UPDATE claude-progress.txt** with session summary
+
+### Session End Checklist:
+1. ✓ Feature verification steps completed and passing
+2. ✓ Tests written/updated for the feature
+3. ✓ Git commit with descriptive message
+4. ✓ Update features.json: set `"passes": true`
+5. ✓ Update claude-progress.txt with session summary
+6. ✓ Push to remote (if appropriate)
+
+### Example Session Flow:
+```bash
+# Session start
+pwd
+cat claude-progress.txt
+git log --oneline -10
+./init.sh
+
+# Check features.json for next feature (e.g., F001)
+# Implement F001 following Clean Architecture
+# Run verification steps from features.json
+
+flutter test test/path/to/feature_test.dart
+
+# If all verification passes:
+git add .
+git commit -m "feat: implement feature F001 description"
+
+# Update features.json: F001 "passes": true
+# Update claude-progress.txt with summary
+```
+
 ## ⚠️ Project-Specific Warnings (CRITICAL)
 
 ### Security & Sensitive Data
@@ -47,6 +101,8 @@ Feature structure: `lib/features/<feature>/data|domain|presentation/`
 
 ### Documentation Requirements
 - **All documentation goes in `doc/` directory** - Architecture decisions, API docs, deployment guides
+- **Update `claude-progress.txt` after EVERY session** - Session log for agent continuity
+- **Update `features.json` after completing features** - Mark `"passes": true` with verification
 - **Update `doc/progress.md` after major milestones** - Track implementation progress
 - **Log bugs in `doc/bug.md`** - Include reproduction steps and stack traces
 - **Architectural decisions in `doc/decision.md`** - ADR format: Context, Decision, Consequences
@@ -131,7 +187,20 @@ For mutations: save locally first, mark for sync, then attempt remote sync.
 - Mark unsynced records with `isSynced: false` flag
 
 ## Key Files
+
+### Project Management (READ THESE FIRST)
+- **`features.json`** - Granular feature list with verification steps (SOURCE OF TRUTH for what to implement)
+- **`claude-progress.txt`** - Session-by-session work log (UPDATE after every session)
+- **`init.sh`** - Environment setup script (RUN at start of each session)
+
+### Documentation
 - `plan.md` - Complete implementation plan with all architectural decisions
+- `CLAUDE.md` - This file - development guidelines
+- `doc/progress.md` - High-level milestone tracking
+- `doc/decision.md` - Architectural decision records (ADRs)
+- `doc/bug.md` - Bug tracking with reproduction steps
+
+### Code (will be created during implementation)
 - `lib/core/router/app_router.dart` - go_router navigation configuration
 - `lib/database/app_database.dart` - Drift database schema
 - `lib/core/constants/api_endpoints.dart` - Backend API routes

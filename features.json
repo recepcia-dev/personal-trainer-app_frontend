@@ -1,0 +1,609 @@
+{
+  "project": "Personal Trainer App",
+  "description": "Flutter mobile app with offline-first architecture, dual authentication, and Stripe payments",
+  "features": [
+    {
+      "id": "F001",
+      "category": "Project Setup",
+      "description": "Initialize Flutter project with correct SDK version and folder structure",
+      "verification": [
+        "Run 'flutter --version' and verify version >= 3.19.0",
+        "Check lib/ folder structure matches plan.md architecture",
+        "Verify pubspec.yaml exists with correct app name"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F002",
+      "category": "Project Setup",
+      "description": "Install and configure all dependencies from plan.md",
+      "verification": [
+        "Run 'flutter pub get' successfully",
+        "Verify all packages from plan.md are in pubspec.yaml",
+        "No dependency conflicts in output"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F003",
+      "category": "Project Setup",
+      "description": "Create environment configuration files (.env.development, .env.production)",
+      "verification": [
+        "Both .env files exist with correct structure",
+        "AppConstants.load() successfully reads environment variables",
+        ".env files are in .gitignore"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F004",
+      "category": "Core Infrastructure",
+      "description": "Implement core error handling (Failure classes and Exceptions)",
+      "verification": [
+        "lib/core/error/failures.dart exists with ServerFailure, CacheFailure, NetworkFailure",
+        "lib/core/error/exceptions.dart exists with corresponding exceptions",
+        "All Failure classes extend base Failure class"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F005",
+      "category": "Core Infrastructure",
+      "description": "Set up Dio HTTP client with interceptors",
+      "verification": [
+        "lib/core/network/dio_client.dart exists",
+        "Dio configured with base URL from environment",
+        "AuthInterceptor adds Bearer token to requests",
+        "PrettyDioLogger configured for debug mode only"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F006",
+      "category": "Core Infrastructure",
+      "description": "Implement network connectivity checker",
+      "verification": [
+        "lib/core/network/network_info.dart exists",
+        "Uses connectivity_plus package",
+        "isConnected returns correct boolean",
+        "Unit test verifies connectivity check works"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F007",
+      "category": "Theme",
+      "description": "Create Material Design 3 light theme",
+      "verification": [
+        "lib/core/theme/app_theme.dart exports light() method",
+        "Uses Material 3 (useMaterial3: true)",
+        "Accepts optional ColorScheme for dynamic color",
+        "App displays correctly in light mode"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F008",
+      "category": "Theme",
+      "description": "Create Material Design 3 dark theme",
+      "verification": [
+        "lib/core/theme/app_theme.dart exports dark() method",
+        "Uses Material 3 with dark ColorScheme",
+        "App displays correctly in dark mode",
+        "Switching theme updates UI without restart"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F009",
+      "category": "Theme",
+      "description": "Implement dynamic color support (Android 12+)",
+      "verification": [
+        "DynamicColorBuilder wraps MaterialApp",
+        "Dynamic colors apply on Android 12+ devices",
+        "Fallback to seed color on older devices/iOS",
+        "Theme persists across app restarts"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F010",
+      "category": "Theme",
+      "description": "Add theme mode provider (light/dark/system)",
+      "verification": [
+        "lib/core/theme/theme_provider.dart exists with Riverpod provider",
+        "User can switch between light/dark/system modes",
+        "Selection persists in shared_preferences",
+        "UI updates immediately on theme change"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F011",
+      "category": "Database",
+      "description": "Set up Drift database with AppDatabase class",
+      "verification": [
+        "lib/database/app_database.dart exists",
+        "Extends _$AppDatabase with @DriftDatabase annotation",
+        "schemaVersion is set to 1",
+        "_openConnection() returns LazyDatabase with SQLite file",
+        "Run build_runner successfully generates .g.dart file"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F012",
+      "category": "Database",
+      "description": "Create Trainers table definition",
+      "verification": [
+        "lib/database/tables/trainers_table.dart exists",
+        "Contains: id, remoteId, email, name, photoUrl, lastSyncedAt, isSynced",
+        "remoteId has unique constraint",
+        "Table generated successfully by build_runner"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F013",
+      "category": "Database",
+      "description": "Create Clients table definition",
+      "verification": [
+        "lib/database/tables/clients_table.dart exists",
+        "Contains: id, remoteId, email, name, trainerId (foreign key)",
+        "Foreign key references Trainers table",
+        "Table generated successfully"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F014",
+      "category": "Database",
+      "description": "Create Workouts table definition",
+      "verification": [
+        "lib/database/tables/workouts_table.dart exists",
+        "Contains: id, remoteId, name, description, trainerId, isSynced",
+        "Appropriate column types for all fields",
+        "Table generated successfully"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F015",
+      "category": "Database",
+      "description": "Implement TrainerDao for database operations",
+      "verification": [
+        "lib/database/daos/trainer_dao.dart exists",
+        "Extends DatabaseAccessor with @DriftAccessor",
+        "Has methods: getTrainerById, upsertTrainer, getClientsForTrainer",
+        "Unit tests verify CRUD operations work"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F016",
+      "category": "Navigation",
+      "description": "Set up go_router with basic routes",
+      "verification": [
+        "lib/core/router/app_router.dart exists",
+        "Routes defined for: /splash, /login, /dashboard",
+        "routerProvider configured with Riverpod",
+        "Navigation between routes works in app"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F017",
+      "category": "Navigation",
+      "description": "Implement authentication-based route guards",
+      "verification": [
+        "Router has redirect logic based on auth state",
+        "Unauthenticated users redirect to /login",
+        "Authenticated users redirect to /dashboard from /login",
+        "Auth state changes trigger route updates"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F018",
+      "category": "Authentication - Domain",
+      "description": "Create Trainer and Client entity classes",
+      "verification": [
+        "lib/features/auth/domain/entities/trainer.dart exists",
+        "lib/features/auth/domain/entities/client.dart exists",
+        "Entities are pure Dart (no Flutter dependencies)",
+        "Use Freezed or Equatable for value equality"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F019",
+      "category": "Authentication - Domain",
+      "description": "Define AuthRepository interface",
+      "verification": [
+        "lib/features/auth/domain/repositories/auth_repository.dart exists",
+        "Methods return Either<Failure, T>",
+        "Methods: loginTrainer, sendMagicLink, verifyOtp, getCurrentUser, logout",
+        "Interface is abstract class (no implementation)"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F020",
+      "category": "Authentication - Domain",
+      "description": "Create LoginTrainer use case",
+      "verification": [
+        "lib/features/auth/domain/usecases/login_trainer.dart exists",
+        "Accepts email and password parameters",
+        "Returns Either<Failure, Trainer>",
+        "Calls authRepository.loginTrainer()",
+        "Unit test verifies use case calls repository"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F021",
+      "category": "Authentication - Domain",
+      "description": "Create SendMagicLink use case",
+      "verification": [
+        "lib/features/auth/domain/usecases/send_magic_link.dart exists",
+        "Accepts email parameter",
+        "Returns Either<Failure, void>",
+        "Calls authRepository.sendMagicLink()",
+        "Unit test verifies behavior"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F022",
+      "category": "Authentication - Domain",
+      "description": "Create VerifyOtp use case",
+      "verification": [
+        "lib/features/auth/domain/usecases/verify_otp.dart exists",
+        "Accepts email and otp parameters",
+        "Returns Either<Failure, Client>",
+        "Unit test verifies behavior"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F023",
+      "category": "Authentication - Data",
+      "description": "Create TrainerModel and ClientModel with Freezed",
+      "verification": [
+        "lib/features/auth/data/models/trainer_model.dart exists",
+        "Uses @freezed annotation",
+        "Has fromJson and toJson methods",
+        "Extends/implements Trainer entity",
+        "build_runner generates .freezed.dart and .g.dart files"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F024",
+      "category": "Authentication - Data",
+      "description": "Implement AuthRemoteDataSource with trainer login",
+      "verification": [
+        "lib/features/auth/data/datasources/auth_remote_datasource.dart exists",
+        "loginTrainer() method posts to /api/v1/auth/trainer/login",
+        "Stores tokens in flutter_secure_storage",
+        "Returns TrainerModel from response",
+        "Throws ServerException on error"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F025",
+      "category": "Authentication - Data",
+      "description": "Implement AuthRemoteDataSource with magic link",
+      "verification": [
+        "sendMagicLink() method posts to /api/v1/auth/client/magic-link",
+        "Accepts email parameter",
+        "Returns void on success",
+        "Throws ServerException on error"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F026",
+      "category": "Authentication - Data",
+      "description": "Implement AuthRemoteDataSource with OTP verification",
+      "verification": [
+        "verifyOtp() method posts to /api/v1/auth/client/verify-otp",
+        "Accepts email and otp",
+        "Stores tokens in flutter_secure_storage",
+        "Returns ClientModel"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F027",
+      "category": "Authentication - Data",
+      "description": "Implement AuthLocalDataSource for token storage",
+      "verification": [
+        "lib/features/auth/data/datasources/auth_local_datasource.dart exists",
+        "Uses flutter_secure_storage (NOT shared_preferences)",
+        "Methods: saveTokens, getAccessToken, getRefreshToken, clearTokens",
+        "Tokens persist across app restarts"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F028",
+      "category": "Authentication - Data",
+      "description": "Implement AuthRepositoryImpl with offline-first pattern",
+      "verification": [
+        "lib/features/auth/data/repositories/auth_repository_impl.dart exists",
+        "Implements AuthRepository interface",
+        "Uses remoteDataSource and localDataSource",
+        "Follows offline-first pattern from CLAUDE.md",
+        "Returns Either<Failure, T> for all methods"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F029",
+      "category": "Authentication - Presentation",
+      "description": "Create AuthStateProvider with Riverpod",
+      "verification": [
+        "lib/features/auth/presentation/providers/auth_state_provider.dart exists",
+        "Uses @riverpod class annotation",
+        "Exposes: login, sendMagicLink, verifyOtp, logout methods",
+        "State is AsyncValue<User?>",
+        "build_runner generates provider code"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F030",
+      "category": "Authentication - Presentation",
+      "description": "Create TrainerLoginScreen UI",
+      "verification": [
+        "lib/features/auth/presentation/screens/trainer_login_screen.dart exists",
+        "Contains email and password TextFields",
+        "Has login button",
+        "Shows loading indicator during login",
+        "Displays error messages from auth failures",
+        "Navigates to dashboard on success"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F031",
+      "category": "Authentication - Presentation",
+      "description": "Create ClientLoginScreen UI with magic link",
+      "verification": [
+        "lib/features/auth/presentation/screens/client_login_screen.dart exists",
+        "Contains email TextField",
+        "Has 'Send Magic Link' button",
+        "Shows success message after sending",
+        "Navigates to OTP screen"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F032",
+      "category": "Authentication - Presentation",
+      "description": "Create OtpVerificationScreen UI",
+      "verification": [
+        "lib/features/auth/presentation/screens/otp_verification_screen.dart exists",
+        "Has OTP input fields (6 digits)",
+        "Auto-focuses next field on input",
+        "Has verify button",
+        "Shows error for invalid OTP",
+        "Navigates to dashboard on success"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F033",
+      "category": "Authentication - Testing",
+      "description": "Write unit tests for LoginTrainer use case",
+      "verification": [
+        "test/features/auth/domain/usecases/login_trainer_test.dart exists",
+        "Tests successful login returns Trainer",
+        "Tests failure returns Failure",
+        "Uses mocktail for mocking repository",
+        "All tests pass with 'flutter test'"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F034",
+      "category": "Authentication - Testing",
+      "description": "Write widget tests for TrainerLoginScreen",
+      "verification": [
+        "test/features/auth/presentation/screens/trainer_login_screen_test.dart exists",
+        "Tests email/password input",
+        "Tests login button tap triggers provider",
+        "Tests error message display",
+        "All tests pass"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F035",
+      "category": "Biometric Authentication",
+      "description": "Implement biometric authentication service",
+      "verification": [
+        "lib/core/auth/biometric_auth_service.dart exists",
+        "Uses local_auth package",
+        "Has authenticate() method",
+        "Checks for biometric availability",
+        "Falls back to password if biometric fails"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F036",
+      "category": "Biometric Authentication",
+      "description": "Add biometric option to login screens",
+      "verification": [
+        "Login screens show fingerprint/Face ID icon when available",
+        "Tapping icon triggers biometric auth",
+        "Success logs user in automatically",
+        "Failure shows error and keeps login form"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F037",
+      "category": "Offline Sync",
+      "description": "Create SyncService for background synchronization",
+      "verification": [
+        "lib/core/network/sync_service.dart exists",
+        "Runs periodic sync every 5 minutes when online",
+        "Uses Riverpod provider",
+        "Implements exponential backoff for rate limiting",
+        "Logs sync errors to Crashlytics"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F038",
+      "category": "Payments",
+      "description": "Initialize Stripe SDK",
+      "verification": [
+        "lib/core/payments/stripe_service.dart exists",
+        "Stripe.instance.applySettings() called on init",
+        "Uses publishable key from environment",
+        "Different keys for development/production"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F039",
+      "category": "Payments",
+      "description": "Implement payment intent creation",
+      "verification": [
+        "StripeService.createPaymentIntent() exists",
+        "Calls backend API to create payment intent",
+        "Initializes payment sheet with client secret",
+        "Returns Either<Failure, PaymentIntent>",
+        "Unit test verifies flow"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F040",
+      "category": "Payments",
+      "description": "Implement payment sheet presentation",
+      "verification": [
+        "StripeService.presentPaymentSheet() exists",
+        "Shows Stripe payment UI",
+        "Handles successful payment",
+        "Handles user cancellation",
+        "Handles payment errors gracefully"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F041",
+      "category": "Push Notifications",
+      "description": "Set up Firebase Cloud Messaging",
+      "verification": [
+        "lib/core/notifications/notification_service.dart exists",
+        "FCM initialized with permissions request",
+        "FCM token retrieved and sent to backend",
+        "Foreground messages show local notifications",
+        "Background messages handled"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F042",
+      "category": "Analytics",
+      "description": "Integrate Firebase Analytics",
+      "verification": [
+        "lib/core/analytics/analytics_service.dart exists",
+        "FirebaseAnalytics initialized",
+        "logScreenView() method works",
+        "Custom events logged (workout_created, etc.)",
+        "Events visible in Firebase Console"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F043",
+      "category": "Crashlytics",
+      "description": "Set up Firebase Crashlytics",
+      "verification": [
+        "lib/core/crashlytics/crashlytics_service.dart exists",
+        "Crashlytics initialized in main()",
+        "recordError() method works",
+        "User identifiers set on login",
+        "Test crash recorded successfully"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F044",
+      "category": "Deep Linking",
+      "description": "Implement deep link handling",
+      "verification": [
+        "lib/core/router/deep_link_service.dart exists",
+        "Handles initial app links",
+        "Handles incoming links while running",
+        "Magic link verification route works",
+        "Workout sharing links work"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F045",
+      "category": "Testing",
+      "description": "Achieve 80%+ test coverage for domain layer",
+      "verification": [
+        "Run 'flutter test --coverage'",
+        "Domain layer coverage >= 80%",
+        "All use cases have unit tests",
+        "All entities have tests"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F046",
+      "category": "CI/CD",
+      "description": "Set up GitHub Actions workflow",
+      "verification": [
+        ".github/workflows/flutter_ci.yml exists",
+        "Runs on push to main and develop",
+        "Executes: flutter analyze, flutter test",
+        "Uploads coverage to Codecov",
+        "Workflow completes successfully"
+      ],
+      "passes": false
+    }
+  ],
+  "summary": {
+    "total": 46,
+    "passing": 0,
+    "failing": 46,
+    "categories": [
+      "Project Setup",
+      "Core Infrastructure",
+      "Theme",
+      "Database",
+      "Navigation",
+      "Authentication - Domain",
+      "Authentication - Data",
+      "Authentication - Presentation",
+      "Authentication - Testing",
+      "Biometric Authentication",
+      "Offline Sync",
+      "Payments",
+      "Push Notifications",
+      "Analytics",
+      "Crashlytics",
+      "Deep Linking",
+      "Testing",
+      "CI/CD"
+    ]
+  },
+  "notes": [
+    "Each feature must have explicit verification steps",
+    "Features should be granular and completable in one session",
+    "Never mark a feature as passing without running verification steps",
+    "Git commit after each completed feature",
+    "Update claude-progress.txt after each session"
+  ]
+}
