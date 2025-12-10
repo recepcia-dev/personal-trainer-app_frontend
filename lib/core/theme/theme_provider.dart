@@ -4,9 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Provider for managing the app's theme mode.
 ///
-/// Supports switching between light and dark themes with persistence.
+/// Supports switching between light, dark, and system themes with persistence.
 /// Theme selection is saved to shared_preferences and restored on app restart.
-/// Later enhanced in F010 to support system mode.
+/// System mode follows device settings automatically.
 final themeModeProvider =
     StateNotifierProvider<ThemeModeNotifier, ThemeMode>(
         (ref) => ThemeModeNotifier());
@@ -23,20 +23,32 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
     final savedTheme = prefs.getString(_themeKey);
 
     if (savedTheme != null) {
-      state = savedTheme == 'dark' ? ThemeMode.dark : ThemeMode.light;
+      state = switch (savedTheme) {
+        'dark' => ThemeMode.dark,
+        'system' => ThemeMode.system,
+        _ => ThemeMode.light,
+      };
     }
   }
 
   /// Save theme mode to shared preferences.
   Future<void> _saveTheme(ThemeMode mode) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_themeKey, mode == ThemeMode.dark ? 'dark' : 'light');
+    final themeString = switch (mode) {
+      ThemeMode.dark => 'dark',
+      ThemeMode.system => 'system',
+      ThemeMode.light => 'light',
+    };
+    await prefs.setString(_themeKey, themeString);
   }
 
-  /// Toggle between light and dark theme.
+  /// Toggle between light, dark, and system themes (cycles in that order).
   Future<void> toggleTheme() async {
-    final newMode =
-        state == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    final newMode = switch (state) {
+      ThemeMode.light => ThemeMode.dark,
+      ThemeMode.dark => ThemeMode.system,
+      ThemeMode.system => ThemeMode.light,
+    };
     state = newMode;
     await _saveTheme(newMode);
   }
@@ -51,5 +63,11 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   Future<void> setDarkMode() async {
     state = ThemeMode.dark;
     await _saveTheme(ThemeMode.dark);
+  }
+
+  /// Set theme to system mode (follows device settings).
+  Future<void> setSystemMode() async {
+    state = ThemeMode.system;
+    await _saveTheme(ThemeMode.system);
   }
 }
