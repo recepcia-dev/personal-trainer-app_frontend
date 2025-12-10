@@ -68,7 +68,7 @@
         "isConnected returns correct boolean",
         "Unit test verifies connectivity check works"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F007",

@@ -24,6 +24,7 @@ Feature structure: `lib/features/<feature>/data|domain|presentation/`
    - `claude-progress.txt` - what was completed in previous sessions
    - `git log --oneline -10` - recent commits
    - `features.json` - current feature status
+   - Use context7 MCP (if available) or web search for external documentation (Example: Before implementing payment features, fetch Stripe Flutter documentation)
 3. **Run initialization**: `./init.sh` - sets up environment
 4. **Startup validation**:
    ```bash
@@ -73,7 +74,13 @@ Each feature in `features.json` has a `"verification"` array with explicit, test
 4. ✓ Git commit with descriptive message
 5. ✓ Update features.json: set `"passes": true` (ONLY if step 2 complete)
 6. ✓ Update claude-progress.txt with session summary
-7. ✓ Push to remote (if appropriate)
+7. ✓ **Handle any persistent bugs**:
+   - If encountered persistent bugs/errors that required workarounds:
+     * Ask user: "Would you like me to add this bug to `doc/bug.md`?"
+     * If yes: Document in bug.md with full details (status, environment, steps, resolution)
+     * If no: Note in claude-progress.txt for future reference
+   - If bug already exists in bug.md: Reference it and verify resolution matches documented approach
+8. ✓ Push to remote (if appropriate)
 
 ### Example Session Flow:
 ```bash

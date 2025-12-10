@@ -5,11 +5,11 @@ import 'package:equatable/equatable.dart';
 /// Following Clean Architecture principles, all repository methods return
 /// Either<Failure, T> to handle errors in a type-safe manner.
 abstract class Failure extends Equatable {
-  final String message;
-
   const Failure({
     this.message = 'An unexpected error occurred',
   });
+
+  final String message;
 
   @override
   List<Object?> get props => [message];
@@ -19,13 +19,13 @@ abstract class Failure extends Equatable {
 ///
 /// This includes HTTP errors (4xx, 5xx) and server-side business logic errors.
 class ServerFailure extends Failure {
+  const ServerFailure({
+    super.message = 'Server error occurred',
+    this.statusCode,
+  });
+
   /// Optional HTTP status code (e.g., 401, 403, 500)
   final int? statusCode;
-
-  const ServerFailure({
-    String message = 'Server error occurred',
-    this.statusCode,
-  }) : super(message: message);
 
   @override
   List<Object?> get props => [message, statusCode];
@@ -36,8 +36,8 @@ class ServerFailure extends Failure {
 /// This includes errors reading from or writing to SQLite database (Drift).
 class CacheFailure extends Failure {
   const CacheFailure({
-    String message = 'Cache error occurred',
-  }) : super(message: message);
+    super.message = 'Cache error occurred',
+  });
 }
 
 /// Failure returned when network connectivity is unavailable or network operations fail.
@@ -46,8 +46,8 @@ class CacheFailure extends Failure {
 /// not that the server returned an error.
 class NetworkFailure extends Failure {
   const NetworkFailure({
-    String message = 'Network error occurred',
-  }) : super(message: message);
+    super.message = 'Network error occurred',
+  });
 }
 
 /// Failure returned when authentication/authorization fails.
@@ -55,8 +55,8 @@ class NetworkFailure extends Failure {
 /// This includes invalid credentials, expired tokens, and insufficient permissions.
 class AuthFailure extends Failure {
   const AuthFailure({
-    String message = 'Authentication failed',
-  }) : super(message: message);
+    super.message = 'Authentication failed',
+  });
 }
 
 /// Failure returned when input validation fails.
@@ -64,6 +64,6 @@ class AuthFailure extends Failure {
 /// This includes invalid email formats, missing required fields, etc.
 class ValidationFailure extends Failure {
   const ValidationFailure({
-    String message = 'Validation error',
-  }) : super(message: message);
+    super.message = 'Validation error',
+  });
 }

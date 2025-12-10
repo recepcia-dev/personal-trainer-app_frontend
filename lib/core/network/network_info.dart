@@ -1,0 +1,22 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+
+abstract class NetworkInfo {
+  Future<bool> get isConnected;
+}
+
+class NetworkInfoImpl implements NetworkInfo {
+  NetworkInfoImpl(this._connectivity);
+
+  final Connectivity _connectivity;
+
+  @override
+  Future<bool> get isConnected async {
+    try {
+      final result = await _connectivity.checkConnectivity();
+      return result != ConnectivityResult.none;
+    } catch (e) {
+      // If there's an error checking connectivity, assume offline
+      return false;
+    }
+  }
+}

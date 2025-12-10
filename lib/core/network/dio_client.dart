@@ -27,10 +27,8 @@ abstract class TokenProvider {
 /// - Request/response logging in debug mode
 /// - Error handling for network operations
 class DioClient {
-  static final DioClient _instance = DioClient._internal();
-
-  late final Dio _dio;
-  static TokenProvider? _tokenProvider;
+  /// Get the singleton instance of DioClient
+  factory DioClient() => _instance;
 
   DioClient._internal() {
     _dio = Dio(
@@ -63,18 +61,16 @@ class DioClient {
     }
   }
 
-  /// Get the singleton instance of DioClient
-  factory DioClient() {
-    return _instance;
-  }
+  static final DioClient _instance = DioClient._internal();
+
+  late final Dio _dio;
+  static TokenProvider? _tokenProvider;
 
   /// Set the token provider for authentication
   ///
   /// This should be called once the auth layer is initialized
   /// (typically in main() after AppConstants.load())
-  static void setTokenProvider(TokenProvider provider) {
-    _tokenProvider = provider;
-  }
+  static set tokenProvider(TokenProvider provider) => _tokenProvider = provider;
 
   /// Get the underlying Dio instance
   Dio get dio => _dio;

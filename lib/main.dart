@@ -14,11 +14,11 @@ void main() async {
 }
 
 class PersonalTrainerApp extends StatelessWidget {
-  const PersonalTrainerApp({Key? key}) : super(key: key);
+  const PersonalTrainerApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context) =>
+    MaterialApp(
       title: 'Personal Trainer App',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
@@ -30,5 +30,4 @@ class PersonalTrainerApp extends StatelessWidget {
         ),
       ),
     );
-  }
 }
