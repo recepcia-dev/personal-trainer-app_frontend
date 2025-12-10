@@ -44,7 +44,7 @@
         "lib/core/error/exceptions.dart exists with corresponding exceptions",
         "All Failure classes extend base Failure class"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F005",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 3,
-    "failing": 43,
+    "passing": 4,
+    "failing": 42,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
