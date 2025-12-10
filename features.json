@@ -11,7 +11,7 @@
         "Check lib/ folder structure matches plan.md architecture",
         "Verify pubspec.yaml exists with correct app name"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": "F002",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 1,
-    "failing": 45,
+    "passing": 0,
+    "failing": 46,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
