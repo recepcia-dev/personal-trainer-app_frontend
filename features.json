@@ -129,7 +129,7 @@
         "_openConnection() returns LazyDatabase with SQLite file",
         "Run build_runner successfully generates .g.dart file"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F012",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 9,
-    "failing": 37,
+    "passing": 10,
+    "failing": 36,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
