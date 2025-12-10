@@ -22,7 +22,7 @@
         "Verify all packages from plan.md are in pubspec.yaml",
         "No dependency conflicts in output"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F003",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 0,
-    "failing": 46,
+    "passing": 2,
+    "failing": 44,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
