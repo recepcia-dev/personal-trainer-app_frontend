@@ -28,8 +28,8 @@ Feature structure: `lib/features/<feature>/data|domain|presentation/`
 3. **Run initialization**: `./init.sh` - sets up environment
 4. **Startup validation**:
    ```bash
-   flutter analyze           # Check for code issues
-   flutter test             # Run existing tests
+  PATH="$HOME/flutter/bin:$PATH" && flutter analyze          # Check for code issues
+   PATH="$HOME/flutter/bin:$PATH" && flutter test             # Run existing tests
    ```
 5. **Review next feature**: Check `features.json` for next feature with `"passes": false`
 
@@ -171,7 +171,7 @@ flutter test test/features/auth/          # Specific feature tests
 flutter test --plain-name "LoginTrainer"  # Single test by name
 
 # Analysis
-flutter analyze
+export PATH="$HOME/flutter/bin:$PATH" && flutter analyze
 
 # Clean build (when facing caching issues)
 flutter clean && flutter pub get
