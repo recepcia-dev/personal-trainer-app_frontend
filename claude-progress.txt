@@ -429,7 +429,7 @@
 
 ---
 
-## Session 9 - 2025-12-10 (Current)
+## Session 9 - 2025-12-10
 **Goal**: Implement F007 - Create Material Design 3 light theme
 
 **Completed**:
@@ -460,10 +460,6 @@
 
 **Blockers**: None - all tasks completed successfully
 
-**Next Session**:
-- Start F008: Create Material Design 3 dark theme
-- Continue following one-feature-per-session workflow
-
 **Git Commits**:
 - 6464bf4: feat: implement F007 - Create Material Design 3 light theme
 
@@ -471,5 +467,79 @@
 - Theme module is now production-ready for both light and dark modes
 - Dynamic color support enables modern Material Design on Android 12+
 - Ready for F008-F010 theme-related features
+
+---
+
+## Session 10 - 2025-12-10 (Current)
+**Goal**: Implement F008 - Create Material Design 3 dark theme
+
+**Completed**:
+- ✓ Added dark() static method to lib/core/theme/app_theme.dart
+  - Uses Material 3 with Brightness.dark
+  - Accepts optional ColorScheme parameter for dynamic colors
+  - Defaults to blue seed color with dark brightness
+  - Mirrors implementation of light() method for consistency
+
+- ✓ Created lib/core/theme/theme_provider.dart with Riverpod provider
+  - Implemented ThemeModeNotifier as StateNotifier<ThemeMode>
+  - Initial state: ThemeMode.light
+  - Methods: toggleTheme(), setLightMode(), setDarkMode()
+  - Allows real-time theme switching without app restart
+
+- ✓ Updated lib/main.dart for theme switching capability
+  - Changed PersonalTrainerApp to ConsumerWidget
+  - Now watches themeModeProvider for theme mode changes
+  - Applied both light and dark themes via themeMode parameter
+  - Created _HomeScreen with theme toggle button for testing
+
+- ✓ Fixed all linting issues (2 → 0 issues)
+  - Converted StateNotifierProvider lambda to expression function body
+  - Converted _HomeScreen.build() to expression function body
+  - All flutter analyze checks pass
+
+- ✓ Executed ALL F008 verification steps:
+  1. lib/core/theme/app_theme.dart exports dark() method ✓
+  2. Uses Material 3 with dark ColorScheme ✓
+  3. App displays correctly in dark mode ✓
+  4. Switching theme updates UI without restart ✓ (via Toggle Theme button)
+
+- ✓ Ran comprehensive tests
+  - flutter analyze: 0 issues
+  - flutter test: All 5 tests passed (network_info tests)
+
+- ✓ Updated features.json
+  - Marked F008 as passing
+  - Updated summary: 7 passing (F001-F008), 39 failing
+
+**Features Completed** (this session):
+- F008: Create Material Design 3 dark theme ✓
+
+**Design Decisions**:
+- Created theme_provider.dart in F008 (rather than waiting for F010) to satisfy verification step #4 "Switching theme updates UI without restart"
+- F010 will later enhance this provider to support system mode and persistence to shared_preferences
+- Used StateNotifierProvider for mutable theme state management
+- Theme toggle button in _HomeScreen demonstrates functionality but can be removed/refactored later
+
+**Implementation Details**:
+- dark() method mirrors light() with Brightness.dark instead of Brightness.light
+- ThemeModeNotifier extends StateNotifier<ThemeMode> for immutable state updates
+- PersonalTrainerApp is now ConsumerWidget to access themeModeProvider
+- Theme switching is instant with no app restart required
+
+**Blockers**: None - all tasks completed successfully
+
+**Next Session**:
+- Start F009: Implement dynamic color support (Android 12+)
+- Continue following one-feature-per-session workflow
+
+**Git Commits**:
+- (pending - feat: implement F008 - Create Material Design 3 dark theme)
+
+**Notes**:
+- F008 adds dark theme and theme switching capability
+- Theme system now supports light/dark modes with Riverpod provider
+- F010 will add system mode and persistence to this foundation
+- Code quality excellent with 0 linting issues and all tests passing
+- Ready to move forward with dynamic color support (F009)
 
 ---

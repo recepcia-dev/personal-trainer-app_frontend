@@ -92,7 +92,7 @@
         "App displays correctly in dark mode",
         "Switching theme updates UI without restart"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F009",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 6,
-    "failing": 40,
+    "passing": 7,
+    "failing": 39,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
