@@ -38,13 +38,42 @@ Feature structure: `lib/features/<feature>/data|domain|presentation/`
 - **COMMIT immediately** after completing a feature
 - **UPDATE claude-progress.txt** with session summary
 
+### ⚠️ VERIFICATION IS NON-NEGOTIABLE
+**DO NOT mark `"passes": true` in features.json unless you have personally executed EVERY verification step listed for that feature.**
+
+Each feature in `features.json` has a `"verification"` array with explicit, testable steps. These are NOT suggestions—they are REQUIREMENTS:
+
+```json
+{
+  "id": "F001",
+  "verification": [
+    "Step 1: explicit command to run",
+    "Step 2: explicit file to check",
+    "Step 3: explicit assertion to verify"
+  ]
+}
+```
+
+**Before marking a feature as passing:**
+1. Execute each verification step in order
+2. Confirm the expected result for each step
+3. Document the results in claude-progress.txt
+4. ONLY THEN set `"passes": true` and commit
+
+**If ANY verification step cannot be completed:**
+- Leave `"passes": false`
+- Document the blocker in claude-progress.txt
+- Do NOT commit the feature as passing
+- Example: "Cannot run `flutter --version` because Flutter SDK is not installed"
+
 ### Session End Checklist:
-1. ✓ Feature verification steps completed and passing
-2. ✓ Tests written/updated for the feature
-3. ✓ Git commit with descriptive message
-4. ✓ Update features.json: set `"passes": true`
-5. ✓ Update claude-progress.txt with session summary
-6. ✓ Push to remote (if appropriate)
+1. ✓ Feature implementation code written
+2. ✓ **Feature verification steps EXECUTED and PASSED (100% required)**
+3. ✓ Tests written/updated for the feature
+4. ✓ Git commit with descriptive message
+5. ✓ Update features.json: set `"passes": true` (ONLY if step 2 complete)
+6. ✓ Update claude-progress.txt with session summary
+7. ✓ Push to remote (if appropriate)
 
 ### Example Session Flow:
 ```bash
@@ -55,17 +84,29 @@ git log --oneline -10
 ./init.sh
 
 # Check features.json for next feature (e.g., F001)
+cat features.json | grep -A 10 '"id": "F001"'
+
 # Implement F001 following Clean Architecture
-# Run verification steps from features.json
+# Write tests, create code, follow patterns from CLAUDE.md
 
-flutter test test/path/to/feature_test.dart
+# CRITICAL: Run EACH verification step from features.json
+echo "=== F001 Verification Steps ==="
+# Step 1: Run 'flutter --version' and verify version >= 3.19.0
+flutter --version
 
-# If all verification passes:
+# Step 2: Check lib/ folder structure matches plan.md architecture
+ls -la lib/
+
+# Step 3: Verify pubspec.yaml exists with correct app name
+grep '^name:' pubspec.yaml
+
+# If ALL verification steps pass:
 git add .
 git commit -m "feat: implement feature F001 description"
 
+# ONLY AFTER verification is complete:
 # Update features.json: F001 "passes": true
-# Update claude-progress.txt with summary
+# Update claude-progress.txt with verification results and summary
 ```
 
 ## ⚠️ Project-Specific Warnings (CRITICAL)
