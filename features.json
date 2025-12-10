@@ -56,7 +56,7 @@
         "AuthInterceptor adds Bearer token to requests",
         "PrettyDioLogger configured for debug mode only"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F006",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 4,
-    "failing": 42,
+    "passing": 5,
+    "failing": 41,
     "categories": [
       "Project Setup",
       "Core Infrastructure",

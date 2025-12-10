@@ -242,3 +242,125 @@
 - Project is ready for core infrastructure implementation (error handling, networking, etc.)
 
 ---
+
+## Session 6 - 2025-12-10
+**Goal**: Implement F004 - Implement core error handling (Failure classes and Exceptions)
+
+**Completed**:
+- ✓ Created lib/core/error/failures.dart with base Failure class:
+  - Base Failure class extends Equatable for value equality
+  - ServerFailure: Handles HTTP errors and server-side business logic failures
+  - CacheFailure: Handles database/cache operation errors
+  - NetworkFailure: Handles network connectivity and request transmission errors
+  - AuthFailure: Handles authentication and authorization errors
+  - ValidationFailure: Handles input validation errors
+  - All include optional message parameter for error details
+
+- ✓ Created lib/core/error/exceptions.dart with corresponding exceptions:
+  - Base AppException class for all custom exceptions
+  - ServerException: Includes optional statusCode and responseBody for debugging
+  - CacheException, NetworkException, AuthException, ValidationException
+  - Pattern: Exceptions thrown in data sources, converted to Failures by repositories
+
+- ✓ Executed ALL F004 verification steps:
+  1. lib/core/error/failures.dart exists with ServerFailure, CacheFailure, NetworkFailure → ✓ Verified
+  2. lib/core/error/exceptions.dart exists with corresponding exceptions → ✓ Verified
+  3. All Failure classes extend base Failure class → ✓ Verified (5 failure types + base)
+
+- ✓ Updated features.json:
+  - Marked F004 as passing
+  - Updated summary: 4 passing, 42 failing
+
+- ✓ Committed F004 implementation (commit: d12cf10)
+
+**Features Completed**:
+- F001: ✓ PASSING - Flutter project initialization
+- F002: ✓ PASSING - All dependencies installed and configured
+- F003: ✓ PASSING - Environment configuration files created
+- F004: ✓ PASSING - Core error handling with Failure and Exception classes
+
+**Blockers**: None
+
+**Next Session**:
+- Start F005: Set up Dio HTTP client with interceptors
+- Continue following one-feature-per-session workflow
+
+**Git Commits**:
+- d12cf10: feat: implement F004 - Core error handling with Failure classes and Exceptions
+
+**Notes**:
+- Error handling follows Clean Architecture pattern with Either<Failure, T> return types
+- Failure classes are used at repository/domain layer for type-safe error handling
+- Exception classes are used at data layer and converted to Failures by repositories
+- All Failure classes are immutable and support value equality via Equatable
+- Project now has comprehensive error handling infrastructure ready for networking and data operations
+
+---
+
+## Session 7 - 2025-12-10
+**Goal**: Implement F005 - Set up Dio HTTP client with interceptors
+
+**Completed**:
+- ✓ Created lib/core/network/dio_client.dart with complete HTTP client setup:
+  - DioClient singleton class with proper initialization
+  - Dio configured with base URL from AppConstants.baseUrl
+  - Configurable connection/receive/send timeouts (30 seconds each)
+  - Proper BaseOptions with JSON content type and response type
+
+- ✓ Implemented TokenProvider interface:
+  - Abstract class for flexible token management
+  - Methods: getAccessToken(), getRefreshToken(), saveTokens()
+  - Allows later integration with AuthLocalDataSource (F027)
+
+- ✓ Implemented _AuthInterceptor with Bearer token support:
+  - Adds Authorization header with Bearer token to all requests
+  - Reads tokens from TokenProvider when available
+  - Handles 401 (Unauthorized) errors with TODO for token refresh logic
+  - Gracefully skips auth if no token provider is set
+
+- ✓ Configured PrettyDioLogger for debug mode only:
+  - Enabled only when kDebugMode is true (development builds)
+  - Shows request headers, request body, response body, and errors
+  - Compact mode for better readability (maxWidth: 90)
+  - Never logs in production builds
+
+- ✓ Executed ALL F005 verification steps:
+  1. lib/core/network/dio_client.dart exists ✓
+  2. Dio configured with base URL from environment (AppConstants.baseUrl) ✓
+  3. AuthInterceptor adds Bearer token to requests (Authorization header) ✓
+  4. PrettyDioLogger configured for debug mode only (kDebugMode check) ✓
+
+- ✓ Updated features.json:
+  - Marked F005 as passing
+  - Updated summary: 5 passing, 41 failing
+
+**Features Completed**:
+- F001: ✓ PASSING - Flutter project initialization
+- F002: ✓ PASSING - All dependencies installed and configured
+- F003: ✓ PASSING - Environment configuration files created
+- F004: ✓ PASSING - Core error handling with Failure and Exception classes
+- F005: ✓ PASSING - Dio HTTP client with interceptors and Bearer token support
+
+**Design Decisions**:
+- Used singleton pattern for DioClient to ensure only one instance throughout the app
+- Created abstract TokenProvider interface for loose coupling with auth layer
+- PrettyDioLogger only in debug mode to avoid logging sensitive data in production
+- Connection timeouts set to 30 seconds for balance between reliability and UX
+
+**Blockers**: None
+
+**Next Session**:
+- Start F006: Implement network connectivity checker
+- Continue following one-feature-per-session workflow
+
+**Git Commits**:
+- (pending - feat: implement F005 - Set up Dio HTTP client with interceptors)
+
+**Notes**:
+- DioClient is ready for use in all data sources and services
+- TokenProvider can be set via DioClient.setTokenProvider() after auth layer initialization
+- AuthInterceptor will automatically add Bearer tokens to all HTTP requests once token provider is configured
+- Debug logging is non-intrusive and only appears in development builds
+- Foundation laid for implementing token refresh logic in future features
+
+---
