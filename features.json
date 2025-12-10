@@ -141,7 +141,7 @@
         "remoteId has unique constraint",
         "Table generated successfully by build_runner"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F013",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 10,
-    "failing": 36,
+    "passing": 11,
+    "failing": 35,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
