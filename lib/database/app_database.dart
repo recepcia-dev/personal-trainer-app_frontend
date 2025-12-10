@@ -4,11 +4,12 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
+import 'tables/clients_table.dart';
 import 'tables/trainers_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [TrainersTable])
+@DriftDatabase(tables: [TrainersTable, ClientsTable])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 

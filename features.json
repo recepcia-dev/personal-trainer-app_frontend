@@ -153,7 +153,7 @@
         "Foreign key references Trainers table",
         "Table generated successfully"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F014",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 11,
-    "failing": 35,
+    "passing": 12,
+    "failing": 34,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
