@@ -157,24 +157,38 @@ git commit -m "feat: implement feature F001 description"
 
 ## Commands
 
+### ⚠️ CRITICAL: Flutter PATH Setup
+**ALL Flutter commands MUST be prefixed with PATH export.** Flutter is not in default PATH:
+```bash
+export PATH="$HOME/flutter/bin:$PATH" && flutter <command>
+```
+
 ### Flutter
 ```bash
+# ALWAYS use this pattern for every Flutter command (PATH export required)
+
 # Code generation (run after modifying @riverpod, Drift tables, Freezed classes)
-flutter pub run build_runner build --delete-conflicting-outputs
+export PATH="$HOME/flutter/bin:$PATH" && flutter pub run build_runner build --delete-conflicting-outputs
 
 # Watch mode (auto-regenerate during development)
-flutter pub run build_runner watch --delete-conflicting-outputs
+export PATH="$HOME/flutter/bin:$PATH" && flutter pub run build_runner watch --delete-conflicting-outputs
 
 # Testing
-flutter test --coverage                    # All tests with coverage
-flutter test test/features/auth/          # Specific feature tests
-flutter test --plain-name "LoginTrainer"  # Single test by name
+export PATH="$HOME/flutter/bin:$PATH" && flutter test --coverage                    # All tests with coverage
+export PATH="$HOME/flutter/bin:$PATH" && flutter test test/features/auth/          # Specific feature tests
+export PATH="$HOME/flutter/bin:$PATH" && flutter test --plain-name "LoginTrainer"  # Single test by name
 
 # Analysis
 export PATH="$HOME/flutter/bin:$PATH" && flutter analyze
 
 # Clean build (when facing caching issues)
-flutter clean && flutter pub get
+export PATH="$HOME/flutter/bin:$PATH" && flutter clean && flutter pub get
+
+# Chaining multiple commands (set PATH once):
+export PATH="$HOME/flutter/bin:$PATH" && \
+  flutter analyze && \
+  flutter test && \
+  flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 ### Backend (FastAPI)
