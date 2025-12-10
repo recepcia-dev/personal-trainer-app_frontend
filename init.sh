@@ -5,6 +5,11 @@
 
 set -e  # Exit on error
 
+# Ensure Flutter is in PATH (support both installed and manually downloaded versions)
+if [ -d "$HOME/flutter/bin" ]; then
+    export PATH="$HOME/flutter/bin:$PATH"
+fi
+
 echo "=========================================="
 echo "Personal Trainer App - Environment Setup"
 echo "=========================================="
