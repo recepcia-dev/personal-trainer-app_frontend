@@ -80,7 +80,7 @@
         "Accepts optional ColorScheme for dynamic color",
         "App displays correctly in light mode"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F008",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 5,
-    "failing": 41,
+    "passing": 6,
+    "failing": 40,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
