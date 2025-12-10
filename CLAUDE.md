@@ -270,3 +270,5 @@ xcode-select --install
 - GitHub Actions: CI/CD
 - TestFlight: iOS beta distribution
 - Firebase App Distribution: Android beta
+- Before starting a new task, recommend which model to use and confirm choice.
+- Before starting a new task, recommend which model to use and confirm choice.
