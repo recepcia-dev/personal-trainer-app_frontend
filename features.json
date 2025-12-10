@@ -33,7 +33,7 @@
         "AppConstants.load() successfully reads environment variables",
         ".env files are in .gitignore"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F004",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 2,
-    "failing": 44,
+    "passing": 3,
+    "failing": 43,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
