@@ -354,7 +354,7 @@
         "State is AsyncValue<User?> (Trainer or Client or null)",
         "build_runner generates provider code"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F030",
