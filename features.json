@@ -189,7 +189,7 @@
         "routerProvider configured with Riverpod",
         "Navigation between routes works in app"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F017",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 14,
-    "failing": 32,
+    "passing": 15,
+    "failing": 31,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
