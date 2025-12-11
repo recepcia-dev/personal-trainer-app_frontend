@@ -6,39 +6,42 @@ import '../entities/trainer.dart';
 
 /// Abstract repository interface for authentication operations
 ///
-/// Defines the contract for all authentication-related operations.
-/// Implementations should follow the offline-first pattern and return Either<Failure, T>
+/// Implements passwordless, credential-free authentication using magic links
+/// combined with device-bound biometric/PIN verification.
+///
+/// Authentication Flow (Option A - Sequential):
+/// 1. User enters email → [sendMagicLink] sends magic link
+/// 2. User enters code from email → [verifyMagicLink] validates code
+/// 3. Device biometric/PIN → handled in presentation layer (local_auth)
+/// 4. On success → User is authenticated
+///
+/// All methods follow the offline-first pattern and return Either<Failure, T>
 /// for proper error handling in the domain layer.
 abstract class AuthRepository {
-  /// Authenticates a trainer with email and password
+  /// Sends a magic link to the user's email for passwordless authentication
   ///
-  /// Returns a [Trainer] entity on success
-  /// Throws [ServerFailure] if credentials are invalid or server error occurs
-  /// Throws [NetworkFailure] if network is unavailable
-  Future<Either<Failure, Trainer>> loginTrainer({
-    required String email,
-    required String password,
-  });
-
-  /// Sends a magic link to a client's email for passwordless login
+  /// Works for both trainers and clients. Initiates the authentication flow
+  /// by sending a time-limited magic link via email.
   ///
-  /// Used for client authentication flow
   /// Returns void on success (link sent to email)
-  /// Throws [ServerFailure] if email not found or server error occurs
+  /// Throws [ServerFailure] if email is invalid or server error occurs
   /// Throws [NetworkFailure] if network is unavailable
   Future<Either<Failure, void>> sendMagicLink({
     required String email,
   });
 
-  /// Verifies OTP and authenticates a client
+  /// Verifies the magic link code entered by the user
   ///
-  /// Called after client receives magic link and enters OTP
-  /// Returns a [Client] entity on success
-  /// Throws [ServerFailure] if OTP is invalid or expired
+  /// Called after user receives magic link and enters the verification code.
+  /// This is step 2 of the sequential flow. After success, the presentation
+  /// layer will prompt for device-bound authentication (biometric/PIN).
+  ///
+  /// Returns authenticated user ([Trainer] or [Client]) on success
+  /// Throws [ServerFailure] if code is invalid, expired, or server error
   /// Throws [NetworkFailure] if network is unavailable
-  Future<Either<Failure, Client>> verifyOtp({
+  Future<Either<Failure, dynamic>> verifyMagicLink({
     required String email,
-    required String otp,
+    required String code,
   });
 
   /// Retrieves the currently authenticated user

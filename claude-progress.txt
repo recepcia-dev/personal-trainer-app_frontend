@@ -1218,3 +1218,195 @@
 - Total progress: 34.8% of project complete (16/46 features)
 
 ---
+
+## Session 19 - 2025-12-11
+**Goal**: Implement F018 - Create Trainer and Client entity classes
+
+**Completed**:
+- ✓ Fetched documentation via context7 MCP for Equatable v2.0+ best practices
+  - Confirmed modern pattern: const constructor → fields → props getter
+  - Nullable properties use `List<Object?>` type annotation
+  - No @immutable needed (Equatable enforces immutability)
+  - No code generation required (unlike Freezed)
+
+- ✓ Created lib/features/auth/domain/entities/trainer.dart
+  - Extends Equatable for value equality
+  - Fields: email (String), name (String), photoUrl (String?)
+  - Const constructor with all fields as final properties
+  - Props getter includes [email, name, photoUrl]
+
+- ✓ Created lib/features/auth/domain/entities/client.dart
+  - Extends Equatable for value equality
+  - Fields: email (String), name (String), trainerId (int)
+  - Const constructor with all fields as final properties
+  - Props getter includes [email, name, trainerId]
+
+- ✓ Executed ALL F018 verification steps:
+  1. ✅ lib/features/auth/domain/entities/trainer.dart exists
+  2. ✅ lib/features/auth/domain/entities/client.dart exists
+  3. ✅ Both are pure Dart (no Flutter imports) - verified file contents
+  4. ✅ Both use Equatable for value equality - verified extends Equatable + props getter
+
+- ✓ Ran comprehensive code quality checks:
+  - flutter analyze: 0 issues (no linting errors) ✓
+  - flutter test: All 8 tests passed (5 network_info + 3 trainer_dao) ✓
+  - No regressions from previous features
+
+- ✓ Updated features.json:
+  - Marked F018 as passing: "passes": true
+  - Updated summary: 17 passing (F001-F018), 29 failing
+  - Progress: 36.9% complete (17/46 features)
+
+- ✓ Git commit: f2f371f
+  - Message: "feat: implement F018 - Create Trainer and Client entity classes"
+  - Files: lib/features/auth/domain/entities/trainer.dart, client.dart, features.json
+
+**Features Completed** (this session):
+- F018: Create Trainer and Client entity classes ✓
+
+**Architecture Decisions**:
+- Used Equatable (not Freezed) for domain entities
+  - Consistent with Failure classes (F004) - establishes pattern
+  - No code generation overhead
+  - Perfect for simple value objects
+- Entity fields represent domain concepts only (email, name, trainerId)
+  - NOT including data-layer fields: id, remoteId, isSynced, lastSyncedAt
+  - Those belong in data models (TrainerModel, ClientModel in F023)
+- Modern Equatable v2.0+ pattern (const constructor first, then fields, then props)
+  - Based on official documentation from /felangel/equatable
+
+**Implementation Details**:
+- Trainer entity: Represents a trainer user with email, name, optional photoUrl
+- Client entity: Represents a client user with email, name, and assigned trainerId
+- Both use const constructors for compile-time safety and immutability
+- Props getter includes all fields for value-based equality
+- No stringify() override needed (F018 scope is domain layer only)
+
+**Code Quality**:
+- Lint Status: No issues found! (0/0)
+- Test Status: All 8 tests passing (no regressions)
+- Code Style: Used modern Equatable pattern per documentation
+- Architecture: Clean separation - domain layer has no Flutter dependencies
+
+**Blockers**: None - all tasks completed successfully
+
+**Next Session**:
+- Implement F019: Define AuthRepository interface
+- Will define repository contract for authentication operations
+- Methods: loginTrainer, sendMagicLink, verifyOtp, getCurrentUser, logout
+- Return Either<Failure, T> for error handling
+
+**Git Commits**:
+- f2f371f: feat: implement F018 - Create Trainer and Client entity classes
+
+**Notes**:
+- Domain layer now has entity classes representing core user concepts
+- Entities follow Clean Architecture: pure Dart, no framework dependencies
+- Foundation laid for F019 (AuthRepository), F020-F022 (use cases), F023 (models)
+- Equatable pattern consistent with existing error handling infrastructure
+- Documentation research ensured implementation follows latest best practices
+- Total progress: 36.9% of project complete (17/46 features)
+
+---
+
+## Session 20 - 2025-12-11
+**Goal**: Implement F019 - Define AuthRepository interface
+
+**Completed**:
+- ✓ Created lib/features/auth/domain/repositories/auth_repository.dart
+  - Defined abstract AuthRepository interface
+  - All methods return Either<Failure, T> for type-safe error handling
+  - Includes comprehensive JSDoc documentation for each method
+
+- ✓ Implemented all 5 required methods:
+  1. loginTrainer(email, password) → Either<Failure, Trainer>
+     - For trainer email/password authentication
+     - Returns Trainer entity on success
+     - Throws ServerFailure or NetworkFailure on error
+
+  2. sendMagicLink(email) → Either<Failure, void>
+     - For client passwordless login initiation
+     - Sends magic link to email
+     - Throws ServerFailure or NetworkFailure on error
+
+  3. verifyOtp(email, otp) → Either<Failure, Client>
+     - For client OTP verification
+     - Called after magic link
+     - Returns Client entity on success
+
+  4. getCurrentUser() → Either<Failure, dynamic>
+     - Retrieves currently authenticated user
+     - Could return Trainer or Client
+     - Throws CacheFailure if token retrieval fails
+
+  5. logout() → Either<Failure, void>
+     - Clears authentication tokens and user session
+     - Throws CacheFailure if token clearing fails
+
+- ✓ Fixed import styling issues:
+  - Changed from absolute imports to relative imports
+  - Complies with prefer_relative_imports linting rule
+  - Proper import ordering (package imports first, then relative)
+
+- ✓ Executed ALL F019 verification steps:
+  1. ✅ lib/features/auth/domain/repositories/auth_repository.dart exists
+  2. ✅ All methods return Either<Failure, T>
+  3. ✅ All 5 methods present: loginTrainer, sendMagicLink, verifyOtp, getCurrentUser, logout
+  4. ✅ Interface is abstract class (no implementation)
+
+- ✓ Ran comprehensive code quality checks:
+  - flutter analyze: 0 issues (all import warnings fixed)
+  - flutter test: All 8 tests passed (no regressions)
+
+- ✓ Updated features.json:
+  - Marked F019 as passing
+  - Updated summary: 18 passing (F001-F019), 28 failing
+  - Progress: 39.1% complete (18/46 features)
+
+- ✓ Git commit: 855c59e
+  - Message: "feat: implement F019 - Define AuthRepository interface"
+  - Files: auth_repository.dart, features.json
+
+**Features Completed** (this session):
+- F019: Define AuthRepository interface ✓
+
+**Architecture Decisions**:
+- Used abstract class (not interface) for repository definition following Dart conventions
+- All methods are async Future<Either<>> for consistent error handling
+- getCurrentUser() returns dynamic to support both Trainer and Client union types
+- Comprehensive JSDoc documentation explains each method's purpose, return type, and potential failures
+
+**Implementation Details**:
+- AuthRepository extends from domain layer best practices established in F018 (entities)
+- Returns appropriate domain entities (Trainer, Client) not data models
+- Error handling follows established pattern from F004 (Failure classes)
+- Methods document specific failure types that can occur (ServerFailure, NetworkFailure, CacheFailure)
+- No implementation details - pure interface contract definition
+
+**Code Quality**:
+- Lint Status: No issues found! (0/0 after import fixes)
+- Test Status: All 8 tests passing (5 network_info + 3 trainer_dao)
+- Code Style: Relative imports, proper formatting
+- Architecture: Pure domain layer - no Flutter or data layer dependencies
+
+**Blockers**: None - all tasks completed successfully
+
+**Next Session**:
+- Implement F020: Create LoginTrainer use case
+  - Will implement domain use case that wraps repository call
+  - Takes email and password, calls AuthRepository.loginTrainer()
+  - Returns Either<Failure, Trainer>
+  - Unit tests verify use case behavior
+
+**Git Commits**:
+- 855c59e: feat: implement F019 - Define AuthRepository interface
+
+**Notes**:
+- AuthRepository interface defines the complete authentication contract
+- Foundation for implementing concrete auth repository (F028: AuthRepositoryImpl)
+- Use cases (F020-F022) will depend on this interface for type safety
+- Clean Architecture pattern maintained: domain layer has no concrete implementations
+- Code quality excellent: 0 linting issues, all tests passing
+- Total progress: 39.1% of project complete (18/46 features)
+
+---

@@ -237,10 +237,26 @@ For mutations: save locally first, mark for sync, then attempt remote sync.
 - Use `AsyncNotifier` for mutable state
 - Use `FutureProvider` for read-only async data
 
-### 4. Authentication (Two-Tier System)
-- **Trainers**: Email/password (`lib/features/auth/data/datasources/auth_remote_datasource.dart:loginTrainer`)
-- **Clients**: Magic link + OTP/PIN (`lib/features/auth/data/datasources/auth_remote_datasource.dart:sendMagicLink`)
-- **Token Storage**: ALWAYS use `flutter_secure_storage`, NEVER `shared_preferences`
+### 4. Authentication (Unified Passwordless System)
+**No credentials stored. All users authenticate via magic links + device-bound biometric/PIN.**
+
+Flow (Sequential):
+1. User enters email → Backend sends magic link via email
+2. User enters code from email → Backend verifies code validity
+3. User authenticates locally with device (biometric/PIN) → `local_auth` package
+4. Token stored securely → `flutter_secure_storage` (NEVER `shared_preferences`)
+
+Methods in `AuthRepository`:
+- `sendMagicLink(email)` - Initiates passwordless flow, sends email link
+- `verifyMagicLink(email, code)` - Validates code, returns authenticated user
+- Device-bound auth happens in presentation layer via `local_auth` (Touch ID, Face ID, PIN)
+
+Security principles:
+- **Zero password storage** - Email/code based, device-bound verification prevents token reuse on other devices
+- **Time-limited codes** - Codes expire after 10-15 minutes (backend responsibility)
+- **Biometric/PIN binding** - Each authentication attempt requires device verification (cannot complete on different device)
+- **Secure token storage** - Use `flutter_secure_storage` with encryption
+- **Token refresh** - Implement short-lived tokens with secure refresh mechanism
 
 ### 5. Database (Drift/SQLite)
 - All tables in `lib/database/tables/`
