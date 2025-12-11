@@ -328,7 +328,7 @@
         "Methods: saveTokens, getAccessToken, getRefreshToken, clearTokens",
         "Tokens persist across app restarts"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F028",
@@ -582,8 +582,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 18,
-    "failing": 28,
+    "passing": 26,
+    "failing": 20,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
