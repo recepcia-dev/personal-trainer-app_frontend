@@ -225,7 +225,7 @@
         "Methods: loginTrainer, sendMagicLink, verifyOtp, getCurrentUser, logout",
         "Interface is abstract class (no implementation)"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F020",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 17,
-    "failing": 29,
+    "passing": 18,
+    "failing": 28,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
