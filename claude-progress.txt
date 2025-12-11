@@ -1410,3 +1410,93 @@
 - Total progress: 39.1% of project complete (18/46 features)
 
 ---
+
+## Session 21 - 2025-12-11
+**Goal**: Implement F020 - Create SendMagicLink use case
+
+**Completed**:
+- ✓ Verified Flutter environment (3.24.3, all tests passing)
+- ✓ Created lib/features/auth/domain/usecases/send_magic_link.dart
+  - SendMagicLink class with const constructor
+  - Accepts email parameter only (no password)
+  - Returns Future<Either<Failure, void>>
+  - Calls authRepository.sendMagicLink(email: email)
+  - Comprehensive JSDoc explaining passwordless flow
+
+- ✓ Created comprehensive unit test test/features/auth/domain/usecases/send_magic_link_test.dart
+  - 4 test cases covering all scenarios
+  - Test 1: Verifies repository method is called with email
+  - Test 2: Verifies Right(void) on successful send
+  - Test 3: Verifies ServerFailure on invalid email
+  - Test 4: Verifies NetworkFailure on no internet
+
+- ✓ Fixed all linting issues:
+  - Moved constructor before field in SendMagicLink class
+  - Used const constructors for Failure instances
+  - Used const for Left/Right dartz types
+  - Result: 0 linting issues
+
+- ✓ Executed ALL F020 verification steps:
+  1. ✅ lib/features/auth/domain/usecases/send_magic_link.dart exists
+  2. ✅ Accepts email parameter only (no password)
+  3. ✅ Returns Either<Failure, void>
+  4. ✅ Calls authRepository.sendMagicLink()
+  5. ✅ Unit test verifies use case behavior (4 comprehensive tests)
+
+- ✓ Ran comprehensive code quality checks:
+  - flutter analyze: 0 issues ✓
+  - flutter test: All 12 tests passed (8 existing + 4 new) ✓
+
+- ✓ Updated features.json:
+  - Marked F020 as passing: "passes": true
+  - Updated count: 19 passing (F001-F020), 27 failing
+  - Progress: 41.3% complete (19/46 features)
+
+- ✓ Git commit: 6cb3e10
+  - Message: "feat: implement F020 - Create SendMagicLink use case"
+  - Files: send_magic_link.dart, send_magic_link_test.dart, features.json
+
+**Features Completed** (this session):
+- F020: Create SendMagicLink use case ✓
+
+**Architecture Decisions**:
+- SendMagicLink follows use case pattern: accepts only domain-relevant parameters (email)
+- Returns Either<Failure, void> for type-safe error handling
+- Delegates to AuthRepository (domain layer abstraction, not direct data source)
+- No implementation logic in use case - pure pass-through to repository
+- Tests use mocktail for repository mocking (following established pattern)
+
+**Implementation Details**:
+- Use case is lightweight wrapper around repository call
+- Email is the only parameter (no password for passwordless auth)
+- Returns void on success (email is sent, no data returned)
+- Error handling delegates to repository (ServerFailure, NetworkFailure)
+- Constructor is const for compile-time safety
+- Tests verify both success and error paths
+
+**Code Quality**:
+- Lint Status: No issues found! (0/0)
+- Test Status: All 12 tests passing (4 new tests all passed)
+- Test Coverage: Covers success case, ServerFailure, NetworkFailure
+- Code Style: Used const constructors, proper Dart patterns
+
+**Blockers**: None - all tasks completed successfully
+
+**Next Session**:
+- Implement F021: Create VerifyMagicLink use case
+  - Takes email and code, calls authRepository.verifyMagicLink()
+  - Returns Either<Failure, Client> or Either<Failure, dynamic>
+  - Completes step 2 of passwordless flow
+
+**Git Commits**:
+- 6cb3e10: feat: implement F020 - Create SendMagicLink use case
+
+**Notes**:
+- F020 completes first use case of passwordless authentication flow
+- Sequential flow: F020 (SendMagicLink) → F021 (VerifyMagicLink) → Device auth (presentation layer)
+- Use case pattern is established and reusable for subsequent features
+- Code quality excellent: 0 linting issues, all tests passing
+- Foundation laid for F021-F022 (additional use cases)
+- Total progress: 41.3% of project complete (19/46 features)
+
+---
