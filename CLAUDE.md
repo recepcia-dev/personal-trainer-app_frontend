@@ -267,7 +267,7 @@ Security principles:
 ## Key Files
 
 ### Project Management (READ THESE FIRST)
-- **`features.json`** - Granular feature list with verification steps (SOURCE OF TRUTH for what to implement)
+- **`features.json`** - **FRONTEND-ONLY** granular feature list with verification steps (SOURCE OF TRUTH for Flutter implementation). All 46 features target `lib/` and `test/` directories. Backend API contracts are referenced FROM frontend perspective only (e.g., "POST to /api/v1/auth/magic-link"), but backend implementation is NOT included in this features list.
 - **`claude-progress.txt`** - Session-by-session work log (UPDATE after every session)
 - **`init.sh`** - Environment setup script (RUN at start of each session)
 
@@ -283,6 +283,42 @@ Security principles:
 - `lib/database/app_database.dart` - Drift database schema
 - `lib/core/constants/api_endpoints.dart` - Backend API routes
 - `.env.development` / `.env.production` - Environment variables (NEVER commit)
+
+## Project Scope: Frontend vs Backend
+
+### Scope of features.json (FRONTEND ONLY)
+**`features.json` is exclusively for Flutter/Dart frontend implementation.** Evidence:
+- All 46 features reference only `.dart` and `.yaml` files
+- All file paths are within `lib/` (code), `test/` (tests), or `.github/` (CI/CD)
+- No Python, FastAPI, or backend files are mentioned
+- Backend API endpoints are only referenced as external contracts the frontend calls
+
+### Backend API Contracts
+When features reference backend endpoints (e.g., "POST /api/v1/auth/magic-link"), this describes:
+- **FRONTEND RESPONSIBILITY**: Making HTTP request to endpoint
+- **BACKEND RESPONSIBILITY**: Implementing endpoint and sending email (not tracked in frontend features.json)
+
+Examples:
+- F024: Frontend DataSource "posts to /api/v1/auth/magic-link" ← Frontend makes request
+- Email service selection (SendGrid, AWS SES, etc.) ← Backend concern, NOT in this features.json
+
+### Backend Implementation
+Backend API implementation is **NOT in this repository**. The backend:
+- Is implemented separately (different repo or different directory)
+- Should have its own features.json or requirements list
+- Implements the API endpoints that frontend features reference
+- Handles: email service configuration, database, token generation, etc.
+
+### When features.json Should Be Updated
+✓ When adding/modifying frontend code (screens, use cases, repositories, etc.)
+✗ When backend adds new API endpoints
+✗ When backend changes email service
+✗ When backend modifies database schema
+
+### Clarification for New Contributors
+If you see "POST /api/v1/auth/magic-link" in features.json and think "I need to implement the email sending":
+- ✓ Correct: Implement AuthRemoteDataSource to call that endpoint
+- ✗ Incorrect: Don't implement the backend endpoint itself (that's out of scope)
 
 ## Testing Requirements
 - **Minimum 80% coverage** for domain layer (use cases, entities)
