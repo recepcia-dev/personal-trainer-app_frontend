@@ -1,6 +1,7 @@
-import 'package:equatable/equatable.dart';
-
-class Client extends Equatable {
+/// Domain entity for Client
+///
+/// Pure data holder - equality is handled by data layer (Freezed models)
+class Client {
   const Client({
     required this.email,
     required this.name,
@@ -10,7 +11,4 @@ class Client extends Equatable {
   final String email;
   final String name;
   final int trainerId;
-
-  @override
-  List<Object> get props => [email, name, trainerId];
 }
