@@ -1775,4 +1775,97 @@ flutter pub run build_runner build --delete-conflicting-outputs
 - Entity refactoring improves architecture by removing Equatable dependency
 - Total progress: 50.0% of project complete (23/46 features)
 
+## Session 25 - 2025-12-11
+
+**Feature Implemented**: F024 - Implement AuthRemoteDataSource with magic link
+
+**Work Completed**:
+- ✓ Created `lib/features/auth/data/datasources/auth_remote_datasource.dart`
+  - Abstract interface: AuthRemoteDataSource
+  - Implementation: AuthRemoteDataSourceImpl
+  - Uses DioClient singleton for HTTP operations
+  - sendMagicLink(email) method POSTs to /api/v1/auth/magic-link endpoint
+  - Email-only parameter (String type)
+  - Returns Future<void> on success
+  - Throws ServerException on any error (network, server, etc.)
+
+- ✓ Created comprehensive unit tests: `test/features/auth/data/datasources/auth_remote_datasource_test.dart`
+  - 6 test cases covering all scenarios:
+    * Successfully posts request with email to correct endpoint
+    * Returns void on successful response
+    * Throws ServerException on 4xx server error
+    * Throws ServerException on 5xx server error
+    * Throws ServerException on network connection failure
+    * Throws ServerException with descriptive message
+  - Uses mocktail to mock DioClient and Dio instances
+  - All tests passing
+
+- ✓ Fixed lint warning about abstract class with single member
+  - Added explanation comment about architectural benefits (dependency inversion, testability, extensibility)
+  - Added `// ignore: one_member_abstracts` directive with documented rationale
+
+**Verification Steps Completed**:
+1. ✓ lib/features/auth/data/datasources/auth_remote_datasource.dart exists
+2. ✓ sendMagicLink(email) method posts to /api/v1/auth/magic-link
+3. ✓ Accepts email parameter only
+4. ✓ Returns void on success
+5. ✓ Throws ServerException on error
+
+**Code Quality Metrics**:
+- ✓ **Lint Status**: No issues found (0/0) - after adding ignore directive
+- ✓ **Test Status**: All 28 tests passing (22 existing + 6 new datasource tests)
+- ✓ **Architecture**: Clean Architecture maintained - data source layer properly implemented
+- ✓ **Dependency Injection**: DioClient injected via constructor for testability
+
+**Key Architectural Decisions**:
+1. **Abstract Interface Pattern**: Defined AuthRemoteDataSource as abstract interface despite single method
+   - Rationale: Enables dependency inversion, mock implementations for testing, extensibility for future methods
+   - Alternative considered: Direct class without interface (rejected for poor testability)
+
+2. **Error Handling Strategy**: All Dio exceptions caught and converted to ServerException
+   - Network errors, server errors, timeouts all map to ServerException
+   - Repositories will convert to appropriate Failure types
+   - Allows repositories to distinguish between different error types if needed
+
+3. **Constructor Dependency Injection**: DioClient passed via constructor
+   - Enables constructor-based testing with mocks
+   - Follows Riverpod dependency injection pattern
+   - No global state usage
+
+**Code Patterns Used**:
+- Abstract interface with single implementation
+- Constructor dependency injection
+- Exception-based error handling (data layer throws exceptions, repositories catch and convert)
+- Comprehensive unit test coverage with mocking
+- JSDoc/Dart documentation for all public members
+
+**Progress Update**:
+- Started: 23/46 features complete (50.0%)
+- Completed: 24/46 features complete (52.2%)
+- **Total Progress: 52.2%**
+
+**Features Completed** (this session):
+- F024: Implement AuthRemoteDataSource with magic link ✓
+
+**Git Commits**:
+- feat: implement F024 - Create AuthRemoteDataSource with magic link
+- docs: update Session 25 progress - F024 completed (24/46 features = 52.2%)
+
+**Next Session**:
+- Implement F025: Implement AuthRemoteDataSource with magic link code verification
+  - verifyMagicLink(email, code) method
+  - Posts to /api/v1/auth/magic-link/verify endpoint
+  - Returns Trainer or Client model based on user role
+  - Requires JSON deserialization of response
+  - Throws ServerException on error
+
+**Blockers**: None - all tasks completed successfully
+
+**Notes**:
+- F024 is the first data source in the authentication data layer
+- Establishes pattern for remote data sources (HTTP operations → Dio → Exception handling)
+- Foundation for F025 (code verification) and future local data sources (F026+)
+- Test coverage comprehensive: success cases + error scenarios (4xx, 5xx, network)
+- Abstract interface pattern provides clear contract for Riverpod provider setup in future sessions
+
 ---

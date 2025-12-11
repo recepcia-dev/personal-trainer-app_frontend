@@ -290,7 +290,7 @@
         "Returns void on success",
         "Throws ServerException on error"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F025",
