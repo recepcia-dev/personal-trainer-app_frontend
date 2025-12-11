@@ -277,7 +277,7 @@
         "Extends/implements Trainer entity",
         "build_runner generates .freezed.dart and .g.dart files"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F024",
