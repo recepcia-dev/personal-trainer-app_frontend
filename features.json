@@ -303,7 +303,7 @@
         "Returns Trainer or Client model",
         "Throws ServerException on error (invalid code, expired)"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F026",

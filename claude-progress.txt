@@ -1869,3 +1869,87 @@ flutter pub run build_runner build --delete-conflicting-outputs
 - Abstract interface pattern provides clear contract for Riverpod provider setup in future sessions
 
 ---
+
+## Session 26 - 2025-12-11
+
+**Feature Implemented**: F025 - Implement AuthRemoteDataSource with magic link code verification
+
+**Work Completed**:
+- ✓ Created `lib/features/auth/data/models/verify_magic_link_response_model.dart`
+  - VerifyMagicLinkResponseModel with Freezed code generation
+  - Includes accessToken, refreshToken, role, and user fields
+  - Extension method parseUser() returns TrainerModel or ClientModel based on role
+
+- ✓ Extended AuthRemoteDataSource abstract interface with verifyMagicLink method signature
+  - Parameters: email and code (both required)
+  - Return type: dynamic (Trainer or Client model)
+  - Comprehensive documentation explaining token storage and error handling
+
+- ✓ Implemented verifyMagicLink in AuthRemoteDataSourceImpl
+  - Dependency injection: FlutterSecureStorage as optional constructor parameter (defaults to const instance)
+  - HTTP operation: POST to /api/v1/auth/verify-magic-link with email and code
+  - Response parsing: Creates VerifyMagicLinkResponseModel from response data
+  - Token storage: Stores accessToken and refreshToken to flutter_secure_storage
+  - User model: Returns parsed user model (TrainerModel or ClientModel)
+  - Error handling: All DioExceptions caught and converted to ServerException
+
+- ✓ Created comprehensive unit tests: 14 test cases in "verifyMagicLink" group
+  1. Sends POST request to correct endpoint with email and code
+  2. Stores access token to secure storage
+  3. Stores refresh token to secure storage
+  4. Returns TrainerModel when role is 'trainer'
+  5. Returns ClientModel when role is 'client'
+  6. Throws ServerException for invalid code (400)
+  7. Throws ServerException for expired code (401)
+  8. Throws ServerException for server error (500)
+  9. Throws ServerException for network timeout
+  10. Throws ServerException with descriptive message
+
+**Code Quality Metrics**:
+- ✓ **Lint Status**: No issues found (0/0)
+- ✓ **Test Status**: All 38 tests passing (28 existing + 10 new verifyMagicLink tests)
+- ✓ **Build Status**: build_runner completed successfully, no conflicts
+- ✓ **Architecture**: Clean Architecture maintained - data layer properly extended
+
+**Verification Steps Completed**:
+- ✓ verifyMagicLink() method posts to /api/v1/auth/verify-magic-link
+- ✓ Accepts email and code parameters (both required, named)
+- ✓ Stores tokens in flutter_secure_storage (accessToken and refreshToken)
+- ✓ Returns Trainer or Client model (dynamic type, correct model based on API role field)
+- ✓ Throws ServerException on error (invalid code 400, expired 401, server 500, network timeout)
+
+**Progress Update**:
+- Started: 24/46 features complete (52.2%)
+- Completed: 25/46 features complete (54.3%)
+
+**Architectural Patterns Demonstrated**:
+- Freezed code generation for immutable response models
+- Dependency injection with optional parameters and default values
+- Response model parsing with type discrimination (trainer vs client)
+- Secure token storage at datasource level
+- Exception handling with context preservation (status code, response body)
+
+**Git Commits**:
+- feat: implement F025 - Add verifyMagicLink to AuthRemoteDataSource
+- docs: update Session 26 progress - F025 completed (25/46 features = 54.3%)
+
+**Next Session**:
+- Implement F026: Implement AuthRemoteDataSource with getCurrentUser
+  - getCurrentUser() method with no parameters
+  - Posts to /api/v1/auth/me endpoint
+  - Returns cached Trainer or Client model from stored token
+  - Requires reading tokens from flutter_secure_storage
+  - Throws ServerException on invalid/expired token
+  - Throws CacheException if no token stored
+
+**Blockers**: None - all tasks completed successfully
+
+**Notes**:
+- F025 extends F024 pattern - same datasource interface, additional method
+- Token storage handles both accessToken and refreshToken
+- Response model parsing correctly handles role-based user type differentiation
+- Test coverage comprehensive: success cases + both Trainer and Client models + error scenarios
+- Preparation for F026 (getCurrentUser) which will read tokens for authenticated API calls
+- Foundation set for F027 (AuthLocalDataSource) which will provide dedicated token storage interface
+
+---
