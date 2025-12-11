@@ -213,7 +213,7 @@
         "Entities are pure Dart (no Flutter dependencies)",
         "Use Freezed or Equatable for value equality"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F019",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 16,
-    "failing": 30,
+    "passing": 17,
+    "failing": 29,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
