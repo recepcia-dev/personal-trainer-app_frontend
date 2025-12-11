@@ -251,7 +251,7 @@
         "Calls authRepository.verifyMagicLink()",
         "Unit test verifies behavior"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F022",
