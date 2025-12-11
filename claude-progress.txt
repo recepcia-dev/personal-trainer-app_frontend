@@ -897,3 +897,77 @@
 - Total progress: 26.1% of project complete (12/46 features)
 
 ---
+
+## Session 16 - 2025-12-11
+**Goal**: Implement F014 - Create Workouts table definition with foreign key to Trainers
+
+**Completed**:
+- ✓ Created lib/database/tables/workouts_table.dart with all required fields
+- ✓ Updated app_database.dart to import and include WorkoutsTable
+- ✓ Ran build_runner successfully - 36 outputs generated
+- ✓ All 4 F014 verification steps completed and passed
+- ✓ flutter analyze: 0 issues (no linting errors)
+- ✓ flutter test: 5/5 tests passing (no regressions)
+
+**Features Completed** (from features.json):
+- ✅ F014: Create Workouts table definition
+  - Field definitions:
+    - id (INTEGER, primary key, autoincrement)
+    - remoteId (TEXT, unique, for sync deduplication)
+    - name (TEXT, workout name/title)
+    - description (TEXT, workout details)
+    - trainerId (INTEGER, foreign key → TRAINERS.id)
+    - isSynced (BOOLEAN, default false, for offline-first sync)
+  - Drift code generation successful ($WorkoutsTableTable generated)
+  - Zero linting issues
+
+**Verification Steps Executed**:
+1. ✅ lib/database/tables/workouts_table.dart exists - created successfully
+2. ✅ Contains all required fields - id, remoteId, name, description, trainerId, isSynced
+3. ✅ Appropriate column types for all fields - IntColumn, TextColumn, BoolColumn
+4. ✅ Table generated successfully - confirmed: $WorkoutsTableTable found in app_database.g.dart
+
+**Architecture Decisions**:
+- Workouts table follows same offline-first pattern as Trainers and Clients
+- Foreign key uses Drift's references() syntax: integer().references(TrainersTable, #id)()
+- Maintains one-to-many relationship: One Trainer has many Workouts
+- isSynced flag enables proper sync workflow for offline-first architecture
+- name and description fields are both TEXT (not nullable) for comprehensive workout metadata
+
+**Code Quality**:
+- lib/database/tables/workouts_table.dart: 11 lines, clean and consistent with other tables
+- Foreign key implementation: proper referential integrity matching Clients table pattern
+- Lint compliance: Import ordering is correct (alphabetical)
+
+**Blockers**: None
+
+**Testing Status**:
+- ✓ All 5 existing tests passing
+- Schema validation via build_runner success
+- No new test failures introduced
+- No regressions from previous sessions
+
+**Database Schema Status**:
+- ✅ TRAINERS table (F012): Complete with 7 fields
+- ✅ CLIENTS table (F013): Complete with 6 fields + foreign key to TRAINERS
+- ✅ WORKOUTS table (F014): Complete with 6 fields + foreign key to TRAINERS
+- Data relationships: One-to-many established TRAINERS ↔ CLIENTS, TRAINERS ↔ WORKOUTS
+- All three core tables now implemented and integrated
+
+**Next Session**:
+- Implement F015: Create TrainerDao for CRUD database operations
+- Implement F016: Set up go_router with basic routes
+- Continue following one-feature-per-session workflow
+
+**Git Commits**:
+- feat: implement F014 - Create Workouts table definition (pending)
+
+**Notes**:
+- All three core database tables (Trainers, Clients, Workouts) now complete
+- Build_runner successfully generated all table infrastructure
+- Database schema provides foundation for all subsequent features
+- Offline-first pattern consistently implemented across all tables
+- Code quality excellent: 0 linting issues, all tests passing
+- Total progress: 28.3% of project complete (13/46 features)
+
+---

@@ -165,7 +165,7 @@
         "Appropriate column types for all fields",
         "Table generated successfully"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F015",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 12,
-    "failing": 34,
+    "passing": 13,
+    "failing": 33,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
