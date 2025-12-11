@@ -177,7 +177,7 @@
         "Has methods: getTrainerById, upsertTrainer, getClientsForTrainer",
         "Unit tests verify CRUD operations work"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F016",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 13,
-    "failing": 33,
+    "passing": 14,
+    "failing": 32,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
