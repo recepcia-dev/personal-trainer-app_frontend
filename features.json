@@ -316,7 +316,7 @@
         "Throws ServerException on invalid/expired token",
         "Throws CacheException if no token stored"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F027",

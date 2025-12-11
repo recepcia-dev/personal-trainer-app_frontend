@@ -458,5 +458,282 @@ void main() {
         );
       });
     });
+
+    group('getCurrentUser', () {
+      test('throws CacheException when no access token is stored', () async {
+        // Arrange
+        when(() => mockSecureStorage.read(key: 'accessToken'))
+            .thenAnswer((_) async => null);
+
+        // Act & Assert
+        expect(
+          () => dataSource.getCurrentUser(),
+          throwsA(isA<CacheException>()),
+        );
+      });
+
+      test('throws CacheException when access token is empty', () async {
+        // Arrange
+        when(() => mockSecureStorage.read(key: 'accessToken'))
+            .thenAnswer((_) async => '');
+
+        // Act & Assert
+        expect(
+          () => dataSource.getCurrentUser(),
+          throwsA(isA<CacheException>()),
+        );
+      });
+
+      test(
+          'sends POST request with Bearer token to /api/v1/auth/me endpoint',
+          () async {
+        // Arrange
+        const token = 'access_token_123';
+        when(() => mockSecureStorage.read(key: 'accessToken'))
+            .thenAnswer((_) async => token);
+
+        final responseData = {
+          'accessToken': token,
+          'refreshToken': 'refresh_token_123',
+          'role': 'trainer',
+          'user': {
+            'email': 'trainer@example.com',
+            'name': 'John Trainer',
+            'photoUrl': null,
+          },
+        };
+
+        when(() => mockDio.post(
+              '/api/v1/auth/me',
+              options: any(named: 'options'),
+            )).thenAnswer((_) async => Response(
+          requestOptions: RequestOptions(path: ''),
+          statusCode: 200,
+          data: responseData,
+        ));
+
+        // Act
+        await dataSource.getCurrentUser();
+
+        // Assert
+        verify(() => mockDio.post(
+              '/api/v1/auth/me',
+              options: any(named: 'options'),
+            )).called(1);
+      });
+
+      test('returns TrainerModel when role is trainer', () async {
+        // Arrange
+        const token = 'access_token_123';
+        const email = 'trainer@example.com';
+        when(() => mockSecureStorage.read(key: 'accessToken'))
+            .thenAnswer((_) async => token);
+
+        final responseData = {
+          'accessToken': token,
+          'refreshToken': 'refresh_token_123',
+          'role': 'trainer',
+          'user': {
+            'email': email,
+            'name': 'John Trainer',
+            'photoUrl': 'https://example.com/photo.jpg',
+          },
+        };
+
+        when(() => mockDio.post(
+              '/api/v1/auth/me',
+              options: any(named: 'options'),
+            )).thenAnswer((_) async => Response(
+          requestOptions: RequestOptions(path: ''),
+          statusCode: 200,
+          data: responseData,
+        ));
+
+        // Act
+        final result = await dataSource.getCurrentUser();
+
+        // Assert
+        expect(result, isA<TrainerModel>());
+        expect((result as TrainerModel).email, equals(email));
+        expect(result.name, equals('John Trainer'));
+      });
+
+      test('returns ClientModel when role is client', () async {
+        // Arrange
+        const token = 'access_token_123';
+        const email = 'client@example.com';
+        when(() => mockSecureStorage.read(key: 'accessToken'))
+            .thenAnswer((_) async => token);
+
+        final responseData = {
+          'accessToken': token,
+          'refreshToken': 'refresh_token_123',
+          'role': 'client',
+          'user': {
+            'email': email,
+            'name': 'Jane Client',
+            'trainerId': 42,
+          },
+        };
+
+        when(() => mockDio.post(
+              '/api/v1/auth/me',
+              options: any(named: 'options'),
+            )).thenAnswer((_) async => Response(
+          requestOptions: RequestOptions(path: ''),
+          statusCode: 200,
+          data: responseData,
+        ));
+
+        // Act
+        final result = await dataSource.getCurrentUser();
+
+        // Assert
+        expect(result, isA<ClientModel>());
+        expect((result as ClientModel).email, equals(email));
+        expect(result.name, equals('Jane Client'));
+        expect(result.trainerId, equals(42));
+      });
+
+      test('throws ServerException when token is invalid (401 response)',
+          () async {
+        // Arrange
+        const token = 'invalid_token';
+        when(() => mockSecureStorage.read(key: 'accessToken'))
+            .thenAnswer((_) async => token);
+
+        final dioException = DioException(
+          requestOptions: RequestOptions(path: '/api/v1/auth/me'),
+          response: Response(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 401,
+            data: {'message': 'Unauthorized'},
+          ),
+          message: 'Unauthorized',
+        );
+
+        when(() => mockDio.post(
+              '/api/v1/auth/me',
+              options: any(named: 'options'),
+            )).thenThrow(dioException);
+
+        // Act & Assert
+        expect(
+          () => dataSource.getCurrentUser(),
+          throwsA(isA<ServerException>()),
+        );
+      });
+
+      test('throws ServerException when token is expired (401 response)',
+          () async {
+        // Arrange
+        const token = 'expired_token';
+        when(() => mockSecureStorage.read(key: 'accessToken'))
+            .thenAnswer((_) async => token);
+
+        final dioException = DioException(
+          requestOptions: RequestOptions(path: '/api/v1/auth/me'),
+          response: Response(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 401,
+            data: {'message': 'Token expired'},
+          ),
+          message: 'Unauthorized',
+        );
+
+        when(() => mockDio.post(
+              '/api/v1/auth/me',
+              options: any(named: 'options'),
+            )).thenThrow(dioException);
+
+        // Act & Assert
+        expect(
+          () => dataSource.getCurrentUser(),
+          throwsA(isA<ServerException>()),
+        );
+      });
+
+      test('throws ServerException when server returns 500 error', () async {
+        // Arrange
+        const token = 'access_token_123';
+        when(() => mockSecureStorage.read(key: 'accessToken'))
+            .thenAnswer((_) async => token);
+
+        final dioException = DioException(
+          requestOptions: RequestOptions(path: '/api/v1/auth/me'),
+          response: Response(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 500,
+            data: {'message': 'Internal server error'},
+          ),
+          message: 'Internal server error',
+        );
+
+        when(() => mockDio.post(
+              '/api/v1/auth/me',
+              options: any(named: 'options'),
+            )).thenThrow(dioException);
+
+        // Act & Assert
+        expect(
+          () => dataSource.getCurrentUser(),
+          throwsA(isA<ServerException>()),
+        );
+      });
+
+      test('throws ServerException when network connection fails', () async {
+        // Arrange
+        const token = 'access_token_123';
+        when(() => mockSecureStorage.read(key: 'accessToken'))
+            .thenAnswer((_) async => token);
+
+        final dioException = DioException(
+          requestOptions: RequestOptions(path: '/api/v1/auth/me'),
+          message: 'Connection timeout',
+          type: DioExceptionType.connectionTimeout,
+        );
+
+        when(() => mockDio.post(
+              '/api/v1/auth/me',
+              options: any(named: 'options'),
+            )).thenThrow(dioException);
+
+        // Act & Assert
+        expect(
+          () => dataSource.getCurrentUser(),
+          throwsA(isA<ServerException>()),
+        );
+      });
+
+      test('throws ServerException with message when Dio throws exception',
+          () async {
+        // Arrange
+        const token = 'access_token_123';
+        when(() => mockSecureStorage.read(key: 'accessToken'))
+            .thenAnswer((_) async => token);
+
+        final dioException = DioException(
+          requestOptions: RequestOptions(path: '/api/v1/auth/me'),
+          message: 'Network error',
+        );
+
+        when(() => mockDio.post(
+              '/api/v1/auth/me',
+              options: any(named: 'options'),
+            )).thenThrow(dioException);
+
+        // Act & Assert
+        expect(
+          () => dataSource.getCurrentUser(),
+          throwsA(
+            isA<ServerException>().having(
+              (e) => e.message,
+              'message',
+              contains('Failed to get current user'),
+            ),
+          ),
+        );
+      });
+    });
   });
 }

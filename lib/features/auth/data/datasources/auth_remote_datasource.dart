@@ -50,6 +50,23 @@ abstract class AuthRemoteDataSource {
     required String email,
     required String code,
   });
+
+  /// Get the current authenticated user from the server.
+  ///
+  /// Retrieves the authenticated user (Trainer or Client) from the backend using
+  /// the stored access token. This method is called to check if a user is still
+  /// authenticated and to refresh their user data from the server.
+  ///
+  /// No parameters required - uses the access token stored in flutter_secure_storage.
+  ///
+  /// Returns:
+  ///   - Trainer or Client model depending on user role
+  ///
+  /// Throws:
+  ///   - CacheException: If no access token is stored in flutter_secure_storage
+  ///   - ServerException: If token is invalid, expired, or server error occurs
+  ///   - NetworkException: If network connectivity issues prevent the request
+  Future<dynamic> getCurrentUser();
 }
 
 /// Implementation of [AuthRemoteDataSource].
@@ -112,6 +129,45 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on DioException catch (e) {
       throw ServerException(
         message: 'Failed to verify magic link: ${e.message}',
+        statusCode: e.response?.statusCode,
+        responseBody: e.response?.toString(),
+      );
+    }
+  }
+
+  @override
+  Future<dynamic> getCurrentUser() async {
+    try {
+      // Retrieve access token from secure storage
+      final accessToken = await secureStorage.read(key: 'accessToken');
+
+      // Throw CacheException if no token is stored
+      if (accessToken == null || accessToken.isEmpty) {
+        throw CacheException(
+          message: 'No access token stored. User must authenticate first.',
+        );
+      }
+
+      // Make request to /api/v1/auth/me endpoint
+      final response = await dioClient.dio.post(
+        '/api/v1/auth/me',
+        options: Options(
+          headers: {'Authorization': 'Bearer $accessToken'},
+        ),
+      );
+
+      // Parse the response
+      final responseModel = VerifyMagicLinkResponseModel.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+
+      // Return the parsed user model (Trainer or Client)
+      return responseModel.parseUser();
+    } on CacheException {
+      rethrow;
+    } on DioException catch (e) {
+      throw ServerException(
+        message: 'Failed to get current user: ${e.message}',
         statusCode: e.response?.statusCode,
         responseBody: e.response?.toString(),
       );
