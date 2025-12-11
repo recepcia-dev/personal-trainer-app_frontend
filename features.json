@@ -1,6 +1,6 @@
 {
   "project": "Personal Trainer App",
-  "description": "Flutter mobile app with offline-first architecture, dual authentication, and Stripe payments",
+  "description": "Flutter mobile app with offline-first architecture, passwordless magic link + device-bound biometric/PIN authentication, and Stripe payments",
   "features": [
     {
       "id": "F001",
@@ -218,37 +218,37 @@
     {
       "id": "F019",
       "category": "Authentication - Domain",
-      "description": "Define AuthRepository interface",
+      "description": "Define AuthRepository interface (passwordless magic link + device-bound auth)",
       "verification": [
         "lib/features/auth/domain/repositories/auth_repository.dart exists",
         "Methods return Either<Failure, T>",
-        "Methods: loginTrainer, sendMagicLink, verifyOtp, getCurrentUser, logout",
-        "Interface is abstract class (no implementation)"
+        "Methods: sendMagicLink, verifyMagicLink, getCurrentUser, logout",
+        "No password-based login methods; magic link + code verification only"
       ],
       "passes": true
     },
     {
       "id": "F020",
       "category": "Authentication - Domain",
-      "description": "Create LoginTrainer use case",
+      "description": "Create SendMagicLink use case",
       "verification": [
-        "lib/features/auth/domain/usecases/login_trainer.dart exists",
-        "Accepts email and password parameters",
-        "Returns Either<Failure, Trainer>",
-        "Calls authRepository.loginTrainer()",
-        "Unit test verifies use case calls repository"
+        "lib/features/auth/domain/usecases/send_magic_link.dart exists",
+        "Accepts email parameter only (no password)",
+        "Returns Either<Failure, void>",
+        "Calls authRepository.sendMagicLink()",
+        "Unit test verifies use case behavior"
       ],
       "passes": false
     },
     {
       "id": "F021",
       "category": "Authentication - Domain",
-      "description": "Create SendMagicLink use case",
+      "description": "Create VerifyMagicLink use case",
       "verification": [
-        "lib/features/auth/domain/usecases/send_magic_link.dart exists",
-        "Accepts email parameter",
-        "Returns Either<Failure, void>",
-        "Calls authRepository.sendMagicLink()",
+        "lib/features/auth/domain/usecases/verify_magic_link.dart exists",
+        "Accepts email and code parameters",
+        "Returns Either<Failure, dynamic> (Trainer or Client)",
+        "Calls authRepository.verifyMagicLink()",
         "Unit test verifies behavior"
       ],
       "passes": false
@@ -256,11 +256,12 @@
     {
       "id": "F022",
       "category": "Authentication - Domain",
-      "description": "Create VerifyOtp use case",
+      "description": "Create GetCurrentUser use case",
       "verification": [
-        "lib/features/auth/domain/usecases/verify_otp.dart exists",
-        "Accepts email and otp parameters",
-        "Returns Either<Failure, Client>",
+        "lib/features/auth/domain/usecases/get_current_user.dart exists",
+        "No parameters required",
+        "Returns Either<Failure, dynamic> (Trainer or Client or null)",
+        "Calls authRepository.getCurrentUser()",
         "Unit test verifies behavior"
       ],
       "passes": false
@@ -281,12 +282,12 @@
     {
       "id": "F024",
       "category": "Authentication - Data",
-      "description": "Implement AuthRemoteDataSource with trainer login",
+      "description": "Implement AuthRemoteDataSource with magic link",
       "verification": [
         "lib/features/auth/data/datasources/auth_remote_datasource.dart exists",
-        "loginTrainer() method posts to /api/v1/auth/trainer/login",
-        "Stores tokens in flutter_secure_storage",
-        "Returns TrainerModel from response",
+        "sendMagicLink(email) method posts to /api/v1/auth/magic-link",
+        "Accepts email parameter only",
+        "Returns void on success",
         "Throws ServerException on error"
       ],
       "passes": false
@@ -294,24 +295,26 @@
     {
       "id": "F025",
       "category": "Authentication - Data",
-      "description": "Implement AuthRemoteDataSource with magic link",
+      "description": "Implement AuthRemoteDataSource with magic link code verification",
       "verification": [
-        "sendMagicLink() method posts to /api/v1/auth/client/magic-link",
-        "Accepts email parameter",
-        "Returns void on success",
-        "Throws ServerException on error"
+        "verifyMagicLink() method posts to /api/v1/auth/verify-magic-link",
+        "Accepts email and code parameters",
+        "Stores tokens in flutter_secure_storage",
+        "Returns Trainer or Client model",
+        "Throws ServerException on error (invalid code, expired)"
       ],
       "passes": false
     },
     {
       "id": "F026",
       "category": "Authentication - Data",
-      "description": "Implement AuthRemoteDataSource with OTP verification",
+      "description": "Implement AuthRemoteDataSource with getCurrentUser",
       "verification": [
-        "verifyOtp() method posts to /api/v1/auth/client/verify-otp",
-        "Accepts email and otp",
-        "Stores tokens in flutter_secure_storage",
-        "Returns ClientModel"
+        "getCurrentUser() method posts to /api/v1/auth/me",
+        "No parameters required",
+        "Returns Trainer or Client model from cached token",
+        "Throws ServerException on invalid/expired token",
+        "Throws CacheException if no token stored"
       ],
       "passes": false
     },
@@ -346,9 +349,9 @@
       "description": "Create AuthStateProvider with Riverpod",
       "verification": [
         "lib/features/auth/presentation/providers/auth_state_provider.dart exists",
-        "Uses @riverpod class annotation",
-        "Exposes: login, sendMagicLink, verifyOtp, logout methods",
-        "State is AsyncValue<User?>",
+        "Uses @riverpod class annotation for async state management",
+        "Exposes methods: sendMagicLink, verifyMagicLink, authenticateWithBiometric, logout",
+        "State is AsyncValue<User?> (Trainer or Client or null)",
         "build_runner generates provider code"
       ],
       "passes": false
@@ -356,52 +359,53 @@
     {
       "id": "F030",
       "category": "Authentication - Presentation",
-      "description": "Create TrainerLoginScreen UI",
+      "description": "Create LoginScreen UI with magic link (unified for trainers and clients)",
       "verification": [
-        "lib/features/auth/presentation/screens/trainer_login_screen.dart exists",
-        "Contains email and password TextFields",
-        "Has login button",
-        "Shows loading indicator during login",
-        "Displays error messages from auth failures",
-        "Navigates to dashboard on success"
+        "lib/features/auth/presentation/screens/login_screen.dart exists",
+        "Contains email TextField only (no password)",
+        "Has 'Send Magic Link' button",
+        "Shows loading indicator while sending",
+        "Shows success message 'Check your email for magic link'",
+        "Displays error messages for invalid email/failures"
       ],
       "passes": false
     },
     {
       "id": "F031",
       "category": "Authentication - Presentation",
-      "description": "Create ClientLoginScreen UI with magic link",
+      "description": "Create MagicLinkVerificationScreen UI",
       "verification": [
-        "lib/features/auth/presentation/screens/client_login_screen.dart exists",
-        "Contains email TextField",
-        "Has 'Send Magic Link' button",
-        "Shows success message after sending",
-        "Navigates to OTP screen"
+        "lib/features/auth/presentation/screens/magic_link_verification_screen.dart exists",
+        "Displays email of user being verified",
+        "Has code input field (6 characters, auto-focus, masked)",
+        "Auto-advances to next step after code entry",
+        "Shows 'Resend link' button with countdown",
+        "On success: triggers device-bound auth (biometric/PIN)"
       ],
       "passes": false
     },
     {
       "id": "F032",
       "category": "Authentication - Presentation",
-      "description": "Create OtpVerificationScreen UI",
+      "description": "Create BiometricAuthScreen UI (device-bound authentication)",
       "verification": [
-        "lib/features/auth/presentation/screens/otp_verification_screen.dart exists",
-        "Has OTP input fields (6 digits)",
-        "Auto-focuses next field on input",
-        "Has verify button",
-        "Shows error for invalid OTP",
-        "Navigates to dashboard on success"
+        "lib/features/auth/presentation/screens/biometric_auth_screen.dart exists",
+        "Shows biometric option (Face ID/Touch ID/PIN selection)",
+        "Shows message: 'Use biometric to complete login'",
+        "Has fallback to PIN entry if biometric fails",
+        "On success: stores session, navigates to /dashboard",
+        "On failure: shows error, allows retry"
       ],
       "passes": false
     },
     {
       "id": "F033",
       "category": "Authentication - Testing",
-      "description": "Write unit tests for LoginTrainer use case",
+      "description": "Write unit tests for SendMagicLink use case",
       "verification": [
-        "test/features/auth/domain/usecases/login_trainer_test.dart exists",
-        "Tests successful login returns Trainer",
-        "Tests failure returns Failure",
+        "test/features/auth/domain/usecases/send_magic_link_test.dart exists",
+        "Tests successful send returns void",
+        "Tests failure returns appropriate Failure type",
         "Uses mocktail for mocking repository",
         "All tests pass with 'flutter test'"
       ],
@@ -410,38 +414,40 @@
     {
       "id": "F034",
       "category": "Authentication - Testing",
-      "description": "Write widget tests for TrainerLoginScreen",
+      "description": "Write unit tests for VerifyMagicLink use case",
       "verification": [
-        "test/features/auth/presentation/screens/trainer_login_screen_test.dart exists",
-        "Tests email/password input",
-        "Tests login button tap triggers provider",
-        "Tests error message display",
-        "All tests pass"
+        "test/features/auth/domain/usecases/verify_magic_link_test.dart exists",
+        "Tests successful verification returns Trainer or Client",
+        "Tests failure returns appropriate Failure type",
+        "Tests with invalid code returns failure",
+        "Uses mocktail for mocking repository"
       ],
       "passes": false
     },
     {
       "id": "F035",
       "category": "Biometric Authentication",
-      "description": "Implement biometric authentication service",
+      "description": "Implement BiometricAuthService for device-bound authentication",
       "verification": [
         "lib/core/auth/biometric_auth_service.dart exists",
-        "Uses local_auth package",
-        "Has authenticate() method",
-        "Checks for biometric availability",
-        "Falls back to password if biometric fails"
+        "Uses local_auth package for biometrics",
+        "Methods: canAuthenticateWithBiometrics(), authenticate()",
+        "authenticate() checks biometric availability",
+        "Falls back to PIN/Pattern entry if biometric unavailable",
+        "Works on both iOS (Face ID/Touch ID) and Android (Fingerprint/Face/PIN)"
       ],
       "passes": false
     },
     {
       "id": "F036",
       "category": "Biometric Authentication",
-      "description": "Add biometric option to login screens",
+      "description": "Integrate device-bound auth into magic link verification flow",
       "verification": [
-        "Login screens show fingerprint/Face ID icon when available",
-        "Tapping icon triggers biometric auth",
-        "Success logs user in automatically",
-        "Failure shows error and keeps login form"
+        "After magic link code verification, BiometricAuthScreen shown",
+        "User MUST authenticate with biometric/PIN (mandatory, not optional)",
+        "On success: token issued, session created, navigate to /dashboard",
+        "Device binding: same token cannot be used on other devices",
+        "Failure retries allowed; max 3 attempts before abort"
       ],
       "passes": false
     },
