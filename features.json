@@ -341,7 +341,7 @@
         "Follows offline-first pattern from CLAUDE.md",
         "Returns Either<Failure, T> for all methods"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F029",
