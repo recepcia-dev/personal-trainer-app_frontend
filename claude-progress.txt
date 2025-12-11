@@ -1118,3 +1118,103 @@
 - Total progress: 32.6% of project complete (15/46 features)
 
 ---
+
+## Session 18 - 2025-12-11
+**Goal**: Implement F017 - Implement authentication-based route guards
+
+**Completed**:
+- ✓ Created lib/features/auth/presentation/providers/auth_provider.dart
+  - Implemented AuthNotifier as StateNotifier<bool>
+  - Initial state: false (unauthenticated)
+  - Methods: login(), logout(), isAuthenticated property
+  - Placeholder for full auth system (will be enhanced in F018+)
+
+- ✓ Updated lib/core/router/app_router.dart with redirect logic
+  - Added redirect: callback to GoRouter configuration
+  - Watches authProvider for state changes via ref.watch()
+  - Unauthenticated users accessing /dashboard redirect to /login
+  - Authenticated users accessing /login redirect to /dashboard
+  - Splash screen navigates based on auth state (login if unauthenticated, dashboard if authenticated)
+  - All state changes trigger automatic route updates
+
+- ✓ Updated LoginScreen to use auth provider
+  - Converted to ConsumerWidget for auth provider access
+  - Login button calls authProvider.notifier.login()
+  - Router automatically redirects to /dashboard after authentication
+  - Maintained "Back to Splash" button for testing
+
+- ✓ Updated DashboardScreen to use auth provider
+  - Converted to ConsumerWidget for auth provider access
+  - Logout button calls authProvider.notifier.logout()
+  - Router automatically redirects to /login after logout
+  - Maintained "Go to Splash" button for testing
+
+- ✓ Fixed all linting issues:
+  - Corrected import paths (prefer relative imports for lib/ files)
+  - Changed block function body to arrow function in auth_provider
+  - Fixed import ordering
+
+- ✓ Executed ALL F017 verification steps:
+  1. ✅ Router has redirect logic based on auth state - YES (redirect callback with ref.watch)
+  2. ✅ Unauthenticated users redirect to /login - YES (if !isAuthenticated && location == /dashboard)
+  3. ✅ Authenticated users redirect to /dashboard from /login - YES (if isAuthenticated && location == /login)
+  4. ✅ Auth state changes trigger route updates - YES (ref.watch(authProvider) monitors changes)
+
+- ✓ Ran comprehensive code quality checks:
+  - flutter analyze: 0 issues (all linting warnings fixed)
+  - flutter test: All 8 tests passed (no regressions)
+
+- ✓ Updated features.json:
+  - Marked F017 as passing
+  - Updated summary: 16 passing (F001-F017), 30 failing
+  - Progress: 34.8% complete (16/46 features)
+
+- ✓ Git commit: 6bd758a
+  - Message: "feat: implement F017 - Implement authentication-based route guards"
+  - Files changed: 6 (auth_provider.dart, app_router.dart, login/dashboard screens, features.json)
+
+**Features Completed** (this session):
+- F017: Implement authentication-based route guards ✓
+
+**Architecture Decisions**:
+- Created simple AuthNotifier for placeholder auth state (will be replaced by full auth in F018+)
+- Used StateNotifierProvider for mutable authentication state
+- Redirect logic integrated directly into GoRouter provider callback
+- Auth state watched via ref.watch() to trigger automatic redirects
+- Screens converted to ConsumerWidget for provider access
+
+**Implementation Details**:
+- AuthNotifier: Simple bool state, login() sets true, logout() sets false
+- GoRouter redirect: Monitors auth state and route changes to apply redirects
+- Splash screen has conditional redirect: if authenticated → /dashboard, else → /login
+- Login/Dashboard screens have buttons that modify auth state, triggering automatic redirects
+- All auth logic happens synchronously for testing purposes
+
+**Code Quality**:
+- Build Status: No issues with build_runner
+- Lint Status: No issues found! (flutter analyze)
+- Test Status: All 8 tests passing (no regressions)
+- Code Style: Used relative imports, arrow functions per Dart guidelines
+- No breaking changes to existing functionality
+
+**Blockers**: None - all tasks completed successfully
+
+**Next Session**:
+- Implement F018: Create Trainer and Client entity classes
+  - Will define domain layer entities using Freezed or Equatable
+  - Pure Dart (no Flutter dependencies)
+- Continue following one-feature-per-session workflow
+
+**Git Commits**:
+- 6bd758a: feat: implement F017 - Implement authentication-based route guards
+
+**Notes**:
+- Authentication-based routing now fully functional
+- Router automatically protects routes based on auth state
+- Auth state changes trigger seamless navigation updates
+- Placeholder auth system ready for real implementation in F018+
+- Code quality excellent: 0 linting issues, all tests passing
+- Theme switching continues to work perfectly with auth-based routing
+- Total progress: 34.8% of project complete (16/46 features)
+
+---
