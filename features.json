@@ -201,7 +201,7 @@
         "Authenticated users redirect to /dashboard from /login",
         "Auth state changes trigger route updates"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F018",
@@ -576,8 +576,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 15,
-    "failing": 31,
+    "passing": 16,
+    "failing": 30,
     "categories": [
       "Project Setup",
       "Core Infrastructure",

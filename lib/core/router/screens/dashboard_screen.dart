@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class DashboardScreen extends StatelessWidget {
+import '../../../features/auth/presentation/providers/auth_provider.dart';
+
+class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context, WidgetRef ref) => Scaffold(
     appBar: AppBar(
       title: const Text('Dashboard'),
     ),
@@ -19,8 +22,12 @@ class DashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           ElevatedButton(
-            onPressed: () => context.go('/login'),
-            child: const Text('Go to Login'),
+            onPressed: () {
+              // Call logout on auth provider
+              ref.read(authProvider.notifier).logout();
+              // After logout, router redirect will automatically navigate to login
+            },
+            child: const Text('Logout'),
           ),
           const SizedBox(height: 16),
           ElevatedButton(

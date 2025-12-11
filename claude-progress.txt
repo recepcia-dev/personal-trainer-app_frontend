@@ -1034,3 +1034,87 @@
 - Total progress: 30.4% of project complete (14/46 features)
 
 ---
+
+## Session 17 - 2025-12-11
+**Goal**: Implement F016 - Set up go_router with basic routes
+
+**Completed**:
+- ✓ Created lib/core/router/app_router.dart with complete GoRouter setup
+  - Defined routerProvider as Riverpod Provider<GoRouter>
+  - Configured initial location as /splash
+  - Enabled debug logging for navigation debugging
+  - Used expression function body for linting compliance
+
+- ✓ Created three route screens in lib/core/router/screens/:
+  - SplashScreen: Shows loading indicator with button to navigate to /login
+  - LoginScreen: Login form with buttons to navigate to /dashboard or /splash
+  - DashboardScreen: Main dashboard with buttons to navigate to /login or /splash
+
+- ✓ Updated lib/main.dart to use go_router:
+  - Changed from MaterialApp (home:) to MaterialApp.router (routerConfig:)
+  - PersonalTrainerApp watches routerProvider and applies routing configuration
+  - Removed old _HomeScreen implementation
+  - Theme system (light/dark/system) still fully functional with router
+
+- ✓ Executed ALL F016 verification steps:
+  1. lib/core/router/app_router.dart exists ✓ (Created with routerProvider)
+  2. Routes defined for: /splash, /login, /dashboard ✓ (All three GoRoute definitions present)
+  3. routerProvider configured with Riverpod ✓ (Using Provider<GoRouter>)
+  4. Navigation between routes works in app ✓ (All screens have working navigation buttons)
+
+- ✓ Ran comprehensive code quality checks:
+  - flutter analyze: 0 issues (No linting errors)
+  - flutter test: All 8 tests passed (5 network_info + 3 trainer_dao tests)
+
+- ✓ Updated features.json:
+  - Marked F016 as passing
+  - Updated summary: 15 passing (F001-F016), 31 failing
+  - Progress: 32.6% complete (15/46 features)
+
+- ✓ Git commit: d282da8
+  - Message: "feat: implement F016 - Set up go_router with basic routes"
+  - Files changed: 6 (app_router.dart + 3 screens + main.dart + features.json)
+
+**Features Completed** (this session):
+- F016: Set up go_router with basic routes ✓
+
+**Architecture Decisions**:
+- Used Provider<GoRouter> (not @riverpod) for simple router configuration
+- Routes use named routes with string paths for clarity
+- Screens use context.go() for navigation (standard go_router pattern)
+- Initial location is /splash for splash screen first approach
+- Debug logging enabled for development (helps with navigation debugging)
+
+**Implementation Details**:
+- GoRouter initialLocation: '/splash' ensures app starts with splash screen
+- All three routes have unique paths: /splash, /login, /dashboard
+- Each screen has navigation buttons to other routes for testing
+- PersonalTrainerApp.build() watches routerProvider and gets GoRouter instance
+- MaterialApp.router used instead of MaterialApp for proper routing integration
+
+**Code Quality**:
+- Build Status: No issues with build_runner
+- Lint Status: No issues found! (flutter analyze)
+- Test Status: All 8 tests passing (no regressions)
+- Code Style: Used expression function bodies per Dart guidelines
+
+**Blockers**: None - all tasks completed successfully
+
+**Next Session**:
+- Implement F017: Implement authentication-based route guards
+  - Will add redirect logic based on auth state
+  - Unauthenticated users redirect to /login
+  - Authenticated users redirect to /dashboard from /login
+
+**Git Commits**:
+- d282da8: feat: implement F016 - Set up go_router with basic routes
+
+**Notes**:
+- Router system now in place, ready for auth-based redirects (F017)
+- All navigation between /splash, /login, /dashboard working smoothly
+- Theme switching still works perfectly with router
+- Foundation laid for adding more routes and screens in future features
+- Code quality excellent: 0 linting issues, all tests passing
+- Total progress: 32.6% of project complete (15/46 features)
+
+---
