@@ -1500,3 +1500,95 @@
 - Total progress: 41.3% of project complete (19/46 features)
 
 ---
+
+## Session 22 - 2025-12-11
+**Goal**: Implement F021 - Create VerifyMagicLink use case
+
+**Completed**:
+- ✓ Verified Flutter environment (3.24.3, all existing tests passing)
+- ✓ Created lib/features/auth/domain/usecases/verify_magic_link.dart
+  - VerifyMagicLink class with const constructor
+  - Accepts email and code parameters (both required)
+  - Returns Future<Either<Failure, dynamic>>
+  - Calls authRepository.verifyMagicLink(email: email, code: code)
+  - Comprehensive JSDoc explaining second step of passwordless flow
+
+- ✓ Created comprehensive unit test test/features/auth/domain/usecases/verify_magic_link_test.dart
+  - 5 test cases covering all scenarios:
+    1. Verifies repository method is called with email and code
+    2. Verifies Right(user) on successful verification
+    3. Verifies ServerFailure if code is invalid/expired
+    4. Verifies NetworkFailure if network is unavailable
+    5. Verifies email and code are passed exactly as provided
+
+- ✓ Fixed all linting issues:
+  - Changed positional Failure arguments to named parameters (message:)
+  - Used const constructors for all Left/Right instances
+  - Added type annotations: Right<Failure, String>
+  - Result: 0 linting issues
+
+- ✓ Executed ALL F021 verification steps:
+  1. ✅ lib/features/auth/domain/usecases/verify_magic_link.dart exists
+  2. ✅ Accepts email and code parameters
+  3. ✅ Returns Either<Failure, dynamic>
+  4. ✅ Calls authRepository.verifyMagicLink()
+  5. ✅ Unit test verifies behavior (5 comprehensive tests)
+
+- ✓ Ran comprehensive code quality checks:
+  - flutter analyze: 0 issues ✓
+  - flutter test: All 17 tests passed (12 existing + 5 new) ✓
+
+- ✓ Updated features.json:
+  - Marked F021 as passing: "passes": true
+  - Updated count: 21 passing (F001-F021), 25 failing
+  - Progress: 45.7% complete (21/46 features)
+
+- ✓ Git commit: 01cd3e2
+  - Message: "feat: implement F021 - Create VerifyMagicLink use case"
+  - Files: verify_magic_link.dart, verify_magic_link_test.dart, features.json
+
+**Features Completed** (this session):
+- F021: Create VerifyMagicLink use case ✓
+
+**Architecture Decisions**:
+- VerifyMagicLink follows same pattern as SendMagicLink (use case wrapper around repository)
+- Takes both email and code as required parameters (no password for passwordless auth)
+- Returns dynamic type to support both Trainer and Client unions (same as repository)
+- Tests use mocktail for repository mocking (established pattern)
+- Named parameters for Failure constructors (message:) ensures type safety
+
+**Implementation Details**:
+- Use case is lightweight wrapper around repository call
+- Email and code are the key parameters for magic link verification
+- Returns authenticated user on success
+- Error handling delegates to repository (ServerFailure, NetworkFailure)
+- Constructor is const for compile-time safety
+- Tests verify success case, invalid code, and network failure scenarios
+
+**Code Quality**:
+- Lint Status: No issues found! (0/0)
+- Test Status: All 17 tests passing (5 new tests all passed)
+- Test Coverage: Covers success case, ServerFailure, NetworkFailure, parameter passing
+- Code Style: Used const constructors, named parameters, proper Dart patterns
+
+**Blockers**: None - all tasks completed successfully
+
+**Next Session**:
+- Implement F022: Create GetCurrentUser use case
+  - No parameters required
+  - Returns Either<Failure, dynamic>
+  - Calls authRepository.getCurrentUser()
+  - Completes third core use case of authentication system
+
+**Git Commits**:
+- 01cd3e2: feat: implement F021 - Create VerifyMagicLink use case
+
+**Notes**:
+- F021 completes second use case of passwordless authentication flow
+- Sequential flow: F020 (SendMagicLink) → F021 (VerifyMagicLink) → F022 (GetCurrentUser)
+- All three core authentication use cases now follow same pattern
+- Code quality excellent: 0 linting issues, all tests passing
+- Foundation laid for data layer implementation (F023+ features)
+- Total progress: 45.7% of project complete (21/46 features)
+
+---
