@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../providers/auth_state_provider.dart';
 
@@ -69,14 +70,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
 
-    // Watch for state changes to show success/error messages
+    // Watch for state changes to navigate or show error messages
     ref.listen<AsyncValue<dynamic>>(
       authStateProvider,
       (previous, next) {
         next.whenData((_) {
-          // Magic link sent successfully
+          // Magic link sent successfully - navigate to verification screen
           if (_emailSubmitted) {
-            _showSuccessMessage(context);
+            final email = _emailController.text.trim();
+            context.push('/verify-magic-link?email=${Uri.encodeComponent(email)}');
           }
         });
         next.maybeWhen(

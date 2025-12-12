@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/providers/auth_provider.dart';
+import '../../features/auth/presentation/screens/magic_link_verification_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/splash_screen.dart';
@@ -46,6 +47,14 @@ final routerProvider = Provider<GoRouter>(
         path: '/login',
         name: 'login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/verify-magic-link',
+        name: 'verifyMagicLink',
+        builder: (context, state) {
+          final email = state.uri.queryParameters['email'] ?? '';
+          return MagicLinkVerificationScreen(email: email);
+        },
       ),
       GoRoute(
         path: '/dashboard',

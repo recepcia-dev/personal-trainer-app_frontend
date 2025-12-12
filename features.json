@@ -382,7 +382,7 @@
         "Shows 'Resend link' button with countdown",
         "On success: triggers device-bound auth (biometric/PIN)"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F032",
