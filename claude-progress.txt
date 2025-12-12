@@ -61,3 +61,19 @@ Next: F034
 Notes: VerifyMagicLink unit tests with mocktail mocks, tests success/ServerFailure/NetworkFailure/invalid code cases
 Commits: 8ba5c5a
 Next: F036
+
+---
+
+## Session 14 - 2025-12-12 | Goal: F036 (Device-bound auth integration)
+
+✓ Done: F036
+Notes: Device binding after biometric auth succeeds, prevents token reuse on other devices
+- Added device_info_plus package for device ID retrieval
+- Created DeviceService to extract device ID (Android/iOS compatible)
+- Extended AuthRepository with bindDevice() method
+- Implemented device binding API call in AuthRemoteDataSource: POST /api/v1/auth/bind-device
+- Updated BiometricAuthScreen to call bindDevice() after successful biometric auth
+- Complete flow: Magic Link → Biometric Auth → Device Binding → Dashboard
+- Graceful fallback: warns if device binding fails, still allows access
+Commits: 728b480
+Next: F037

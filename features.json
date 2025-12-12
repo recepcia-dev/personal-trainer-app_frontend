@@ -449,7 +449,7 @@
         "Device binding: same token cannot be used on other devices",
         "Failure retries allowed; max 3 attempts before abort"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F037",
