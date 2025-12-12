@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../../core/device/device_service.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../payments/data/models/payment_intent_model.dart';
 import '../models/verify_magic_link_response_model.dart';
 
 /// Abstract interface for remote authentication data operations.
@@ -83,6 +84,30 @@ abstract class AuthRemoteDataSource {
   ///   - NetworkException: If network connectivity issues prevent the request
   ///   - DeviceException: If device ID cannot be retrieved
   Future<void> bindDevice();
+
+  /// Create a payment intent for payment processing.
+  ///
+  /// Calls the backend to create a Stripe payment intent.
+  /// Returns a PaymentIntent model containing the client secret needed
+  /// to initialize the Stripe payment sheet on the client side.
+  ///
+  /// Parameters:
+  ///   - amount: Payment amount in cents (e.g., 1000 = $10.00)
+  ///   - currency: Currency code (e.g., 'USD')
+  ///   - metadata: Optional metadata to attach to the payment intent
+  ///
+  /// Returns:
+  ///   - PaymentIntentModel with client secret and other payment details
+  ///
+  /// Throws:
+  ///   - CacheException: If no access token is stored
+  ///   - ServerException: If payment intent creation fails or server error occurs
+  ///   - NetworkException: If network connectivity issues prevent the request
+  Future<PaymentIntentModel> createPaymentIntent({
+    required int amount,
+    required String currency,
+    Map<String, String>? metadata,
+  });
 }
 
 /// Implementation of [AuthRemoteDataSource].
@@ -224,6 +249,54 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on DioException catch (e) {
       throw ServerException(
         message: 'Failed to bind device: ${e.message}',
+        statusCode: e.response?.statusCode,
+        responseBody: e.response?.toString(),
+      );
+    }
+  }
+
+  @override
+  Future<PaymentIntentModel> createPaymentIntent({
+    required int amount,
+    required String currency,
+    Map<String, String>? metadata,
+  }) async {
+    try {
+      // Retrieve access token from secure storage
+      final accessToken = await secureStorage.read(key: 'accessToken');
+
+      // Throw CacheException if no token is stored
+      if (accessToken == null || accessToken.isEmpty) {
+        throw CacheException(
+          message: 'No access token stored. User must authenticate first.',
+        );
+      }
+
+      // Prepare request body
+      final data = {
+        'amount': amount,
+        'currency': currency,
+        if (metadata != null) 'metadata': metadata,
+      };
+
+      // Send request to create payment intent
+      final response = await dioClient.dio.post(
+        '/api/v1/payments/create-intent',
+        data: data,
+        options: Options(
+          headers: {'Authorization': 'Bearer $accessToken'},
+        ),
+      );
+
+      // Parse and return the payment intent model
+      return PaymentIntentModel.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+    } on CacheException {
+      rethrow;
+    } on DioException catch (e) {
+      throw ServerException(
+        message: 'Failed to create payment intent: ${e.message}',
         statusCode: e.response?.statusCode,
         responseBody: e.response?.toString(),
       );
