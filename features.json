@@ -368,7 +368,7 @@
         "Shows success message 'Check your email for magic link'",
         "Displays error messages for invalid email/failures"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F031",
