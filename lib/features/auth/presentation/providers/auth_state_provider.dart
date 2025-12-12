@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/crashlytics/crashlytics_service_provider.dart';
 import '../../../../core/error/failures.dart';
 import 'auth_repository_provider.dart';
 
@@ -98,9 +99,13 @@ class AuthState extends _$AuthState {
       (failure) {
         state = AsyncError(failure, StackTrace.current);
       },
-      (user) {
+      (user) async {
         // Code verified successfully - user authenticated from server
         state = AsyncData(user);
+
+        // Set user ID in Crashlytics for crash tracking
+        final crashlytics = ref.read(crashlyticsProvider);
+        await crashlytics.setUserId(email);
       },
     );
   }
@@ -171,9 +176,13 @@ class AuthState extends _$AuthState {
       (failure) {
         state = AsyncError(failure, StackTrace.current);
       },
-      (_) {
+      (_) async {
         // Logout successful - clear user state
         state = const AsyncData(null);
+
+        // Clear user ID from Crashlytics
+        final crashlytics = ref.read(crashlyticsProvider);
+        await crashlytics.clearUserId();
       },
     );
   }

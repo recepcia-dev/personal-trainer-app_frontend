@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/analytics/analytics_service_provider.dart';
 import 'core/constants/app_constants.dart';
+import 'core/crashlytics/crashlytics_service_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
@@ -18,6 +19,9 @@ void main() async {
 
   // Initialize analytics service
   await container.read(analyticsServiceProvider.future);
+
+  // Initialize Crashlytics service
+  await container.read(crashlyticsServiceProvider.future);
 
   runApp(
     ProviderScope(

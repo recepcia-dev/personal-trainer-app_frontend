@@ -539,7 +539,7 @@
         "User identifiers set on login",
         "Test crash recorded successfully"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F044",
@@ -582,8 +582,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 32,
-    "failing": 14,
+    "passing": 33,
+    "failing": 13,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
