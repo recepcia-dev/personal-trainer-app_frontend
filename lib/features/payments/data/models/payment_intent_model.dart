@@ -8,7 +8,7 @@ part 'payment_intent_model.freezed.dart';
 /// Implements immutability via @freezed annotation
 /// Provides JSON serialization via json_serializable
 /// Extends domain PaymentIntent entity for use throughout application
-@Freezed(toJson: false)
+@Freezed(toJson: false, fromJson: false)
 class PaymentIntentModel with _$PaymentIntentModel implements PaymentIntent {
   const factory PaymentIntentModel({
     required String clientSecret,

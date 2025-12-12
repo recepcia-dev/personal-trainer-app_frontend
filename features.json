@@ -500,7 +500,7 @@
         "Handles user cancellation",
         "Handles payment errors gracefully"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F041",

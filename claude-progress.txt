@@ -123,3 +123,22 @@ Notes: Payment intent creation with API integration and comprehensive testing
 - All 5 verification steps passed: method exists, calls API, returns Either, tests pass
 Commits: 058f6ee
 Next: F040
+
+---
+
+## Session 18 - 2025-12-12 | Goal: F040 (Payment sheet presentation)
+
+✓ Done: F040
+Notes: Payment sheet presentation with Stripe SDK integration and comprehensive testing
+- Created PaymentResult domain entity to represent successful payment with paymentIntentId
+- Extended StripeService with presentPaymentSheet() method returning Either<Failure, PaymentResult>
+- Validates client secret format and extracts payment intent ID from client secret
+- Initializes Stripe payment sheet with SetupPaymentSheetParameters (merchantDisplayName, clientSecret, theme)
+- Handles successful payment: returns Right(PaymentResult)
+- Handles user cancellation: catches FailureCode.Canceled, returns Left(ServerFailure)
+- Handles payment errors: catches StripeException for card declined, validation errors, etc.
+- Comprehensive unit tests: 11 tests total (5 for createPaymentIntent + 6 for presentPaymentSheet)
+- All tests passing: verifies method exists, shows UI, handles success/cancellation/errors gracefully
+- All 5 verification steps passed: method exists, shows UI, handles success, handles cancellation, handles errors
+Commits: (pending)
+Next: F041
