@@ -552,7 +552,7 @@
         "Magic link verification route works",
         "Workout sharing links work"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F045",
@@ -582,8 +582,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 33,
-    "failing": 13,
+    "passing": 34,
+    "failing": 12,
     "categories": [
       "Project Setup",
       "Core Infrastructure",

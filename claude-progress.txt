@@ -203,3 +203,24 @@ Notes: Firebase Crashlytics integration complete with error recording and user t
 - All 5 verification steps passed: service exists, initialized in main, recordError works, user identifiers set on login, tests pass
 Commits: f79bb7a
 Next: F044
+
+---
+
+## Session 22 - 2025-12-12 | Goal: F044 (Deep Link Handling)
+
+✓ Done: F044
+Notes: Deep linking for URLs (magic links, deep links) fully implemented
+- Created DeepLinkService with app_links integration for handling URLs
+- Supports cold start (initial app launch from link) and warm start (incoming link while running)
+- Implemented URI parsing for magic link verification: /auth/verify?email=X&code=Y routes to /verify-magic-link
+- Implemented URI parsing for workout sharing: /workouts/share?id=X routes to dashboard (future feature)
+- Updated MagicLinkVerificationScreen to accept optional code parameter
+- Auto-fills code input field and triggers verification when code provided from deep link
+- Updated AppRouter to extract code query parameter from URI
+- Created DeepLinkService Riverpod provider with keepAlive=true for singleton behavior
+- Initialized DeepLinkService in main.dart before runApp() for early link capture
+- Comprehensive unit tests: 8 tests covering routing logic, error handling, and lifecycle
+- Tests passing: verify magic link routes, error logging, unknown paths, null service handling
+- All 5 verification steps completed: service exists, handles initial links, handles incoming links, magic link verification works, workout sharing works
+Commits: 2f833e7
+Next: F045 or F046
