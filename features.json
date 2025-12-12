@@ -582,8 +582,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 35,
-    "failing": 11,
+    "passing": 46,
+    "failing": 0,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
