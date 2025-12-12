@@ -396,7 +396,7 @@
         "On success: stores session, navigates to /dashboard",
         "On failure: shows error, allows retry"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F033",
@@ -582,8 +582,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 27,
-    "failing": 19,
+    "passing": 28,
+    "failing": 18,
     "categories": [
       "Project Setup",
       "Core Infrastructure",

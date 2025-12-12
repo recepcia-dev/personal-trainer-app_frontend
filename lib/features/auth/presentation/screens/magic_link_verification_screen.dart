@@ -121,10 +121,9 @@ class _MagicLinkVerificationScreenState
             // Success: User verified and authenticated
             _showSuccessMessage(context, 'Verification successful!');
 
-            // TODO: Navigate to BiometricAuthScreen (F032) when implemented
-            // For now, navigate directly to dashboard
+            // Navigate to biometric authentication screen for device-bound auth
             if (mounted) {
-              context.go('/dashboard');
+              context.go('/biometric-auth');
             }
           }
         });

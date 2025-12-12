@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/providers/auth_provider.dart';
+import '../../features/auth/presentation/screens/biometric_auth_screen.dart';
 import '../../features/auth/presentation/screens/magic_link_verification_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/login_screen.dart';
@@ -55,6 +56,11 @@ final routerProvider = Provider<GoRouter>(
           final email = state.uri.queryParameters['email'] ?? '';
           return MagicLinkVerificationScreen(email: email);
         },
+      ),
+      GoRoute(
+        path: '/biometric-auth',
+        name: 'biometricAuth',
+        builder: (context, state) => const BiometricAuthScreen(),
       ),
       GoRoute(
         path: '/dashboard',
