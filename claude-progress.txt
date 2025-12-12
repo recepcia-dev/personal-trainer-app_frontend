@@ -182,3 +182,24 @@ Notes: Firebase Analytics integration complete with screen view tracking and cus
 - All 5 verification steps verified and passed
 Commits: ebb10f6
 Next: F043
+
+---
+
+## Session 21 - 2025-12-12 | Goal: F043 (Firebase Crashlytics)
+
+✓ Done: F043
+Notes: Firebase Crashlytics integration complete with error recording and user tracking
+- Created CrashlyticsService with initialization and comprehensive error reporting methods
+- Implemented recordError(error, stackTrace, reason?) for non-fatal errors
+- Implemented recordFatalError(error, stackTrace, reason?) for app crashes
+- Added setUserId(userId) and clearUserId() for user tracking in crashes
+- Added setUserProperty(key, value) for custom crash metadata
+- Added logMessage(message) for debug context in crash reports
+- Created crashlytics_service_provider.dart with Riverpod providers (initialization and access)
+- Initialized Crashlytics in main.dart via crashlyticsServiceProvider.future before app startup
+- Integrated user ID tracking: setUserId on successful magic link verification, clearUserId on logout
+- Comprehensive unit tests: 15 tests covering initialization, error recording, user tracking, and error handling
+- All tests passing with proper exception handling (silently fails to not crash app)
+- All 5 verification steps passed: service exists, initialized in main, recordError works, user identifiers set on login, tests pass
+Commits: f79bb7a
+Next: F044
