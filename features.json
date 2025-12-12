@@ -526,7 +526,7 @@
         "Custom events logged (workout_created, etc.)",
         "Events visible in Firebase Console"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F043",

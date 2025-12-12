@@ -2,6 +2,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/analytics/analytics_service_provider.dart';
 import 'core/constants/app_constants.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -14,6 +15,9 @@ void main() async {
   // Initialize theme persistence
   final container = ProviderContainer();
   await container.read(themeModeProvider.notifier).initialize();
+
+  // Initialize analytics service
+  await container.read(analyticsServiceProvider.future);
 
   runApp(
     ProviderScope(
