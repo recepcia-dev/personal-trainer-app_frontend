@@ -57,4 +57,16 @@ abstract class AuthRepository {
   /// Returns void on success
   /// Throws [CacheFailure] if token clearing from storage fails
   Future<Either<Failure, void>> logout();
+
+  /// Binds the current device to the authenticated user's session
+  ///
+  /// Called after successful biometric/PIN authentication.
+  /// Registers this device with the backend to enable device-bound authentication.
+  /// Prevents the same token from being used on different devices.
+  ///
+  /// Returns void on success
+  /// Throws [ServerFailure] if device binding fails or server error occurs
+  /// Throws [NetworkFailure] if network is unavailable
+  /// Throws [CacheFailure] if device ID cannot be retrieved
+  Future<Either<Failure, void>> bindDevice();
 }

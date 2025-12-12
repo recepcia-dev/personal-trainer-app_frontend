@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:local_auth/local_auth.dart';
 
 import '../../../../core/auth/biometric_auth_service.dart';
+import '../providers/auth_repository_provider.dart';
 
 /// Device-bound authentication screen using biometric (Face ID, Touch ID, Fingerprint).
 ///
@@ -109,12 +110,46 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
       );
 
       if (authenticated) {
+        // Biometric authentication succeeded - now bind the device
         if (mounted) {
-          _showSuccessMessage('Authentication successful!');
+          setState(() {
+            _errorMessage = null;
+          });
 
-          // Navigate to dashboard after successful authentication
+          _showSuccessMessage('Biometric authentication successful!');
+
+          // Bind device to authenticated session
+          final authRepository = ref.read(authRepositoryProvider);
+          final bindResult = await authRepository.bindDevice();
+
           if (mounted) {
-            context.go('/dashboard');
+            bindResult.fold(
+              (failure) {
+                // Device binding failed, but biometric auth succeeded
+                // Still allow navigation but show warning
+                setState(() {
+                  _errorMessage = 'Device binding failed: ${failure.message}';
+                });
+                _showErrorMessage(
+                  'Warning: Device binding incomplete. Your session may be less secure.',
+                );
+
+                // Still navigate to dashboard after brief delay
+                Future.delayed(const Duration(seconds: 1), () {
+                  if (mounted) {
+                    context.go('/dashboard');
+                  }
+                });
+              },
+              (_) {
+                // Device binding succeeded - navigate to dashboard
+                _showSuccessMessage('Device binding successful!');
+
+                if (mounted) {
+                  context.go('/dashboard');
+                }
+              },
+            );
           }
         }
       } else {

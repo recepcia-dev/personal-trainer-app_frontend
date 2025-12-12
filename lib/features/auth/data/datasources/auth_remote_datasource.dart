@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../../../../core/device/device_service.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/dio_client.dart';
 import '../models/verify_magic_link_response_model.dart';
@@ -67,6 +68,21 @@ abstract class AuthRemoteDataSource {
   ///   - ServerException: If token is invalid, expired, or server error occurs
   ///   - NetworkException: If network connectivity issues prevent the request
   Future<dynamic> getCurrentUser();
+
+  /// Bind the current device to the user's authenticated session.
+  ///
+  /// Called after successful biometric/PIN authentication.
+  /// Registers this device with the backend to enable device-bound authentication.
+  /// Prevents the same authentication token from being used on different devices.
+  ///
+  /// Requires an existing access token in flutter_secure_storage.
+  ///
+  /// Throws:
+  ///   - CacheException: If no access token is stored
+  ///   - ServerException: If device binding fails or server error occurs
+  ///   - NetworkException: If network connectivity issues prevent the request
+  ///   - DeviceException: If device ID cannot be retrieved
+  Future<void> bindDevice();
 }
 
 /// Implementation of [AuthRemoteDataSource].
@@ -168,6 +184,46 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on DioException catch (e) {
       throw ServerException(
         message: 'Failed to get current user: ${e.message}',
+        statusCode: e.response?.statusCode,
+        responseBody: e.response?.toString(),
+      );
+    }
+  }
+
+  @override
+  Future<void> bindDevice() async {
+    try {
+      // Retrieve access token from secure storage
+      final accessToken = await secureStorage.read(key: 'accessToken');
+
+      // Throw CacheException if no token is stored
+      if (accessToken == null || accessToken.isEmpty) {
+        throw CacheException(
+          message: 'No access token stored. User must authenticate first.',
+        );
+      }
+
+      // Get device ID
+      final deviceService = DeviceService();
+      final deviceId = await deviceService.getDeviceId();
+      final deviceName = await deviceService.getDeviceName();
+
+      // Send device binding request to backend
+      await dioClient.dio.post(
+        '/api/v1/auth/bind-device',
+        data: {
+          'deviceId': deviceId,
+          'deviceName': deviceName,
+        },
+        options: Options(
+          headers: {'Authorization': 'Bearer $accessToken'},
+        ),
+      );
+    } on CacheException {
+      rethrow;
+    } on DioException catch (e) {
+      throw ServerException(
+        message: 'Failed to bind device: ${e.message}',
         statusCode: e.response?.statusCode,
         responseBody: e.response?.toString(),
       );
