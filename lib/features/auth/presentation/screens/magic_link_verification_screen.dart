@@ -12,10 +12,18 @@ import '../providers/auth_state_provider.dart';
 ///
 /// Users enter the 6-digit code they received via email.
 /// On success, the app navigates to device-bound authentication (biometric/PIN).
+///
+/// The [code] parameter is optional and used for deep link handling.
+/// If provided, the code will be auto-filled and verification will be triggered.
 class MagicLinkVerificationScreen extends ConsumerStatefulWidget {
-  const MagicLinkVerificationScreen({required this.email, super.key});
+  const MagicLinkVerificationScreen({
+    required this.email,
+    this.code,
+    super.key,
+  });
 
   final String email;
+  final String? code;
 
   @override
   ConsumerState<MagicLinkVerificationScreen> createState() =>
@@ -34,6 +42,15 @@ class _MagicLinkVerificationScreenState
   void initState() {
     super.initState();
     _startResendCountdown();
+
+    // If code is provided via deep link, auto-fill and verify
+    if (widget.code != null && widget.code!.length == 6) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _codeController.text = widget.code!;
+        setState(() => _autoVerifyAttempted = true);
+        _verifyCode();
+      });
+    }
   }
 
   @override

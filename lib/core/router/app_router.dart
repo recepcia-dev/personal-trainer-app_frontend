@@ -80,7 +80,8 @@ final routerProvider = Provider<GoRouter>(
             );
           });
           final email = state.uri.queryParameters['email'] ?? '';
-          return MagicLinkVerificationScreen(email: email);
+          final code = state.uri.queryParameters['code'];
+          return MagicLinkVerificationScreen(email: email, code: code);
         },
       ),
       GoRoute(

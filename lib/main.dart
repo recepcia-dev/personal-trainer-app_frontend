@@ -6,6 +6,7 @@ import 'core/analytics/analytics_service_provider.dart';
 import 'core/constants/app_constants.dart';
 import 'core/crashlytics/crashlytics_service_provider.dart';
 import 'core/router/app_router.dart';
+import 'core/router/deep_link_service_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 
@@ -22,6 +23,9 @@ void main() async {
 
   // Initialize Crashlytics service
   await container.read(crashlyticsServiceProvider.future);
+
+  // Initialize deep link service for handling URLs (magic links, deep links)
+  await container.read(deepLinkServiceProvider.future);
 
   runApp(
     ProviderScope(
