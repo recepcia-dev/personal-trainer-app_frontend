@@ -171,6 +171,32 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, void>> registerFcmToken(String fcmToken) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.registerFcmToken(fcmToken);
+        return const Right(null);
+      } on CacheException catch (e) {
+        return Left(CacheFailure(message: e.message));
+      } on ServerException catch (e) {
+        return Left(
+          ServerFailure(message: e.message, statusCode: e.statusCode),
+        );
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(message: e.message));
+      } catch (e) {
+        return Left(ServerFailure(message: 'Failed to register FCM token: $e'));
+      }
+    } else {
+      return const Left(
+        NetworkFailure(
+          message: 'No internet connection. Cannot register FCM token.',
+        ),
+      );
+    }
+  }
+
   /// Helper method to attempt getting cached user data.
   ///
   /// Returns Right(null) if no cached user data is available.

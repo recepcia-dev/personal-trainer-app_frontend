@@ -7,6 +7,7 @@ import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/get_current_user.dart';
 import '../../domain/usecases/logout.dart';
+import '../../domain/usecases/register_fcm_token.dart';
 import '../../domain/usecases/send_magic_link.dart';
 import '../../domain/usecases/verify_magic_link.dart';
 import '../../../../core/network/dio_client.dart';
@@ -67,4 +68,11 @@ GetCurrentUser getCurrentUserUseCase(GetCurrentUserUseCaseRef ref) {
 Logout logoutUseCase(LogoutUseCaseRef ref) {
   final repository = ref.watch(authRepositoryProvider);
   return Logout(repository);
+}
+
+/// Provider for RegisterFcmToken use case
+@riverpod
+RegisterFcmToken registerFcmTokenUseCase(RegisterFcmTokenUseCaseRef ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return RegisterFcmToken(repository);
 }

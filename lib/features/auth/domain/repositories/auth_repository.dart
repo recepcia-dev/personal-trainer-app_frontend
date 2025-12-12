@@ -69,4 +69,19 @@ abstract class AuthRepository {
   /// Throws [NetworkFailure] if network is unavailable
   /// Throws [CacheFailure] if device ID cannot be retrieved
   Future<Either<Failure, void>> bindDevice();
+
+  /// Registers the device's Firebase Cloud Messaging (FCM) token with the backend
+  ///
+  /// Called after receiving an FCM token from Firebase Cloud Messaging.
+  /// Sends the token to the backend so the server can use it to send
+  /// push notifications to this specific device.
+  ///
+  /// Parameters:
+  ///   - fcmToken: The Firebase Cloud Messaging token
+  ///
+  /// Returns void on success
+  /// Throws [ServerFailure] if token registration fails or server error occurs
+  /// Throws [NetworkFailure] if network is unavailable
+  /// Throws [CacheFailure] if no authenticated user exists
+  Future<Either<Failure, void>> registerFcmToken(String fcmToken);
 }

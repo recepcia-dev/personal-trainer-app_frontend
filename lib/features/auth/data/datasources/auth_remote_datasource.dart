@@ -108,6 +108,20 @@ abstract class AuthRemoteDataSource {
     required String currency,
     Map<String, String>? metadata,
   });
+
+  /// Register the device's FCM token for push notifications.
+  ///
+  /// Sends the Firebase Cloud Messaging token to the backend so that
+  /// the server can send push notifications to this device.
+  ///
+  /// Parameters:
+  ///   - fcmToken: The FCM token from Firebase Cloud Messaging
+  ///
+  /// Throws:
+  ///   - CacheException: If no access token is stored
+  ///   - ServerException: If token registration fails or server error occurs
+  ///   - NetworkException: If network connectivity issues prevent the request
+  Future<void> registerFcmToken(String fcmToken);
 }
 
 /// Implementation of [AuthRemoteDataSource].
@@ -297,6 +311,38 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on DioException catch (e) {
       throw ServerException(
         message: 'Failed to create payment intent: ${e.message}',
+        statusCode: e.response?.statusCode,
+        responseBody: e.response?.toString(),
+      );
+    }
+  }
+
+  @override
+  Future<void> registerFcmToken(String fcmToken) async {
+    try {
+      // Retrieve access token from secure storage
+      final accessToken = await secureStorage.read(key: 'accessToken');
+
+      // Throw CacheException if no token is stored
+      if (accessToken == null || accessToken.isEmpty) {
+        throw CacheException(
+          message: 'No access token stored. User must authenticate first.',
+        );
+      }
+
+      // Send request to register FCM token
+      await dioClient.dio.post(
+        '/api/v1/notifications/register-token',
+        data: {'fcmToken': fcmToken},
+        options: Options(
+          headers: {'Authorization': 'Bearer $accessToken'},
+        ),
+      );
+    } on CacheException {
+      rethrow;
+    } on DioException catch (e) {
+      throw ServerException(
+        message: 'Failed to register FCM token: ${e.message}',
         statusCode: e.response?.statusCode,
         responseBody: e.response?.toString(),
       );
