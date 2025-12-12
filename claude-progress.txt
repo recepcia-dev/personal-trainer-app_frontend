@@ -77,3 +77,19 @@ Notes: Device binding after biometric auth succeeds, prevents token reuse on oth
 - Graceful fallback: warns if device binding fails, still allows access
 Commits: 728b480
 Next: F037
+
+---
+
+## Session 15 - 2025-12-12 | Goal: F037 (SyncService)
+
+✓ Done: F037
+Notes: Background sync service with exponential backoff and Crashlytics logging
+- Created SyncService with periodic sync every 5 minutes when online
+- Implemented exponential backoff with jitter for rate limiting
+- Added Crashlytics logging for sync errors
+- Created Riverpod provider (sync_service_provider.dart) for lifecycle management
+- Service starts automatically when first accessed, stops on disposal
+- Gracefully handles offline mode by checking network connectivity
+- Includes TODO for implementing actual sync logic (fetch/merge)
+Commits: cc778af
+Next: F038
