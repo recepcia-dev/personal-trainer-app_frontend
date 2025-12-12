@@ -73,14 +73,45 @@ Each feature in `features.json` has a `"verification"` array with explicit, test
 3. ✓ Tests written/updated for the feature
 4. ✓ Git commit with descriptive message
 5. ✓ Update features.json: set `"passes": true` (ONLY if step 2 complete)
-6. ✓ Update claude-progress.txt with session summary
+6. ✓ Update claude-progress.txt with **compact session summary** (see format below)
 7. ✓ **Handle any persistent bugs**:
-   - If encountered persistent bugs/errors that required workarounds:
-     * Ask user: "Would you like me to add this bug to `doc/bug.md`?"
-     * If yes: Document in bug.md with full details (status, environment, steps, resolution)
-     * If no: Note in claude-progress.txt for future reference
-   - If bug already exists in bug.md: Reference it and verify resolution matches documented approach
+   - Ask user: "Would you like me to add this bug to `doc/bug.md`?"
+   - If yes: Document in bug.md with full details
+   - If no: Note in claude-progress.txt
 8. ✓ Push to remote (if appropriate)
+
+### claude-progress.txt Compact Format
+**Keep sessions concise and scannable. Refer to features.json for feature details.**
+
+```markdown
+## Session N - DATE | Goal: FXXX (feature name)
+
+✓ Done: FXXX, FYYY
+⚠ Partial: FZZZ (reason)
+❌ Blocker: X (prevents Y)
+Commits: hash1, hash2
+Next: FABC
+Notes: Key decision or architecture note (keep brief)
+```
+
+**Format rules:**
+- **Header**: One line with session number, date, goal feature
+- **Done**: Comma-separated list of feature IDs that passed
+- **Partial**: Features partially completed with reason in parentheses
+- **Blocker**: What blocked further progress (if any)
+- **Commits**: Git commit hashes only (not full messages)
+- **Next**: Which feature to start in next session
+- **Notes**: Brief architectural decisions or integration details (use `doc/decision.md` for major ADRs)
+
+**What NOT to include:**
+- Feature descriptions (reference features.json)
+- Detailed verification step lists (only report result: passed/failed)
+- Verbose explanations already in code comments
+- Session-by-session architectural details (use `doc/decision.md`)
+
+**Archive strategy:**
+- Keep last 5 sessions visible
+- Move older sessions to `doc/sessions-archive.md` for reference
 
 ### Example Session Flow:
 ```bash
@@ -149,11 +180,11 @@ git commit -m "feat: implement feature F001 description"
 
 ### Documentation Requirements
 - **All documentation goes in `doc/` directory** - Architecture decisions, API docs, deployment guides
-- **Update `claude-progress.txt` after EVERY session** - Session log for agent continuity
-- **Update `features.json` after completing features** - Mark `"passes": true` with verification
-- **Update `doc/progress.md` after major milestones** - Track implementation progress
-- **Log bugs in `doc/bug.md`** - Include reproduction steps and stack traces
-- **Architectural decisions in `doc/decision.md`** - ADR format: Context, Decision, Consequences
+- **Update `claude-progress.txt` after EVERY session** - Compact format per section above, agent continuity
+- **Update `features.json` after completing features** - Mark `"passes": true` only after verification
+- **Update `doc/decision.md` for major architectural decisions** - ADR format: Context, Decision, Consequences
+- **Log bugs in `doc/bug.md`** - Include reproduction steps and status
+- **Archive old sessions to `doc/sessions-archive.md`** - Keep last 5 in claude-progress.txt
 
 ## Commands
 
@@ -268,7 +299,8 @@ Security principles:
 
 ### Project Management (READ THESE FIRST)
 - **`features.json`** - **FRONTEND-ONLY** granular feature list with verification steps (SOURCE OF TRUTH for Flutter implementation). All 46 features target `lib/` and `test/` directories. Backend API contracts are referenced FROM frontend perspective only (e.g., "POST to /api/v1/auth/magic-link"), but backend implementation is NOT included in this features list.
-- **`claude-progress.txt`** - Session-by-session work log (UPDATE after every session)
+- **`claude-progress.txt`** - Compact session-by-session work log (last 5 sessions). UPDATE after every session. Use **compact format** defined in Agent Session Workflow section.
+- **`doc/sessions-archive.md`** - Archive of older sessions (sessions 1-6+) for historical reference
 - **`init.sh`** - Environment setup script (RUN at start of each session)
 
 ### Documentation
