@@ -577,13 +577,13 @@
         "Uploads coverage to Codecov",
         "Workflow completes successfully"
       ],
-      "passes": false
+      "passes": true
     }
   ],
   "summary": {
     "total": 46,
-    "passing": 34,
-    "failing": 12,
+    "passing": 35,
+    "failing": 11,
     "categories": [
       "Project Setup",
       "Core Infrastructure",
