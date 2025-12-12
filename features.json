@@ -409,7 +409,7 @@
         "Uses mocktail for mocking repository",
         "All tests pass with 'flutter test'"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F034",

@@ -43,3 +43,12 @@ Next: F032
 Notes: Device-bound biometric auth screen, fallback to PIN, integrates F035, max 3 retries
 Commits: 2ecb9fa
 Next: F033 or F036
+
+---
+
+## Session 12 - 2025-12-12 | Goal: F033 (SendMagicLink use case tests)
+
+✓ Done: F033
+Notes: SendMagicLink unit tests with mocktail mocks, tests success/ServerFailure/NetworkFailure cases
+Commits: (pending)
+Next: F034
