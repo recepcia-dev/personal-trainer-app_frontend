@@ -103,9 +103,13 @@ class AuthState extends _$AuthState {
         // Code verified successfully - user authenticated from server
         state = AsyncData(user);
 
-        // Set user ID in Crashlytics for crash tracking
-        final crashlytics = ref.read(crashlyticsProvider);
-        await crashlytics.setUserId(email);
+        // Set user ID in Crashlytics for crash tracking (best effort, don't fail if it errors)
+        try {
+          final crashlytics = ref.read(crashlyticsProvider);
+          await crashlytics.setUserId(email);
+        } catch (e) {
+          // Silently fail - setting crashlytics user ID shouldn't prevent verification
+        }
       },
     );
   }
@@ -180,9 +184,13 @@ class AuthState extends _$AuthState {
         // Logout successful - clear user state
         state = const AsyncData(null);
 
-        // Clear user ID from Crashlytics
-        final crashlytics = ref.read(crashlyticsProvider);
-        await crashlytics.clearUserId();
+        // Clear user ID from Crashlytics (best effort, don't fail if it errors)
+        try {
+          final crashlytics = ref.read(crashlyticsProvider);
+          await crashlytics.clearUserId();
+        } catch (e) {
+          // Silently fail - clearing crashlytics shouldn't prevent logout
+        }
       },
     );
   }

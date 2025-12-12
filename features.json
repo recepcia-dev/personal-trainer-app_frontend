@@ -564,7 +564,7 @@
         "All use cases have unit tests",
         "All entities have tests"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F046",
