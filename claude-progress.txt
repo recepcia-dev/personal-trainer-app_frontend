@@ -140,5 +140,26 @@ Notes: Payment sheet presentation with Stripe SDK integration and comprehensive 
 - Comprehensive unit tests: 11 tests total (5 for createPaymentIntent + 6 for presentPaymentSheet)
 - All tests passing: verifies method exists, shows UI, handles success/cancellation/errors gracefully
 - All 5 verification steps passed: method exists, shows UI, handles success, handles cancellation, handles errors
-Commits: (pending)
+Commits: dc09d80
 Next: F041
+
+---
+
+## Session 19 - 2025-12-12 | Goal: F041 (Firebase Cloud Messaging)
+
+✓ Done: F041
+Notes: Complete FCM setup with local notification integration and token synchronization
+- Created NotificationService with FCM initialization, permission request, and local notification integration
+- Implemented foreground message handling: shows local notifications for messages received while app in foreground
+- Implemented background message handling: onMessage and onMessageOpenedApp listeners configured
+- FCM token retrieval: getFCMToken() returns token or null on error
+- Token refresh listening: setTokenRefreshListener() for handling token updates
+- Extended AuthRemoteDataSource with registerFcmToken(fcmToken) method posting to /api/v1/notifications/register-token
+- Extended AuthRepository interface and implementation with registerFcmToken() following Either<Failure, void> pattern
+- Created RegisterFcmToken use case for domain layer
+- Added Riverpod providers: notificationServiceProvider, fcmTokenProvider, notificationStreamProvider
+- Comprehensive unit tests: 9 tests covering token retrieval, stream access, topic management, notification initialization
+- All tests passing with proper mocking setup
+- All 5 verification steps verified and passed
+Commits: fa928c3
+Next: F042
