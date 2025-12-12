@@ -487,7 +487,7 @@
         "Returns Either<Failure, PaymentIntent>",
         "Unit test verifies flow"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F040",
@@ -582,8 +582,8 @@
   ],
   "summary": {
     "total": 46,
-    "passing": 30,
-    "failing": 16,
+    "passing": 31,
+    "failing": 15,
     "categories": [
       "Project Setup",
       "Core Infrastructure",

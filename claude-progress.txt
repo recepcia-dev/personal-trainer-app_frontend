@@ -107,3 +107,19 @@ Notes: Stripe SDK initialization with environment-based keys
 - flutter_stripe package already in pubspec.yaml
 Commits: 2649217
 Next: F039
+
+---
+
+## Session 17 - 2025-12-12 | Goal: F039 (Payment intent creation)
+
+✓ Done: F039
+Notes: Payment intent creation with API integration and comprehensive testing
+- Created PaymentIntent entity with clientSecret, publishableKey, id, amount, currency
+- Created PaymentIntentModel (Freezed) with custom fromJson for snake_case fields (client_secret, publishable_key)
+- Extended AuthRemoteDataSource interface with createPaymentIntent(amount, currency, metadata?)
+- Implemented datasource: POST /api/v1/payments/create-intent with Authorization header
+- Extended StripeService with createPaymentIntent() method returning Either<Failure, PaymentIntent>
+- Comprehensive unit tests: success case, with metadata, ServerException, CacheException, param verification
+- All 5 verification steps passed: method exists, calls API, returns Either, tests pass
+Commits: 058f6ee
+Next: F040
