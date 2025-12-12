@@ -38,12 +38,12 @@ class AuthRepositoryImpl implements AuthRepository {
       try {
         await remoteDataSource.sendMagicLink(email);
         return const Right(null);
-      } on ServerException {
-        return const Left(
-          ServerFailure(message: 'Failed to send magic link'),
+      } on ServerException catch (e) {
+        return Left(
+          ServerFailure(message: e.message, statusCode: e.statusCode),
         );
-      } on NetworkException {
-        return const Left(NetworkFailure(message: 'Network error'));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(message: e.message));
       } catch (_) {
         return const Left(
           ServerFailure(message: 'Unexpected error occurred'),
@@ -70,12 +70,12 @@ class AuthRepositoryImpl implements AuthRepository {
           code: code,
         );
         return Right(user);
-      } on ServerException {
-        return const Left(
-          ServerFailure(message: 'Failed to verify magic link'),
+      } on ServerException catch (e) {
+        return Left(
+          ServerFailure(message: e.message, statusCode: e.statusCode),
         );
-      } on NetworkException {
-        return const Left(NetworkFailure(message: 'Network error'));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(message: e.message));
       } catch (_) {
         return const Left(
           ServerFailure(message: 'Unexpected error occurred'),
@@ -96,19 +96,18 @@ class AuthRepositoryImpl implements AuthRepository {
       try {
         final user = await remoteDataSource.getCurrentUser();
         return Right(user);
-      } on CacheException {
+      } on CacheException catch (e) {
         // No token stored locally - user not authenticated
-        return const Left(CacheFailure(message: 'No authentication token'));
-      } on ServerException {
+        return Left(CacheFailure(message: e.message));
+      } on ServerException catch (e) {
         // Server error - try to get user from cache if available
         return _getCachedUser() ??
-            const Left(
-              ServerFailure(message: 'Failed to get current user'),
+            Left(
+              ServerFailure(message: e.message, statusCode: e.statusCode),
             );
-      } on NetworkException {
+      } on NetworkException catch (e) {
         // Network error - try to get user from cache if available
-        return _getCachedUser() ??
-            const Left(NetworkFailure(message: 'Network error'));
+        return _getCachedUser() ?? Left(NetworkFailure(message: e.message));
       } catch (_) {
         return const Left(ServerFailure(message: 'Unexpected error occurred'));
       }
