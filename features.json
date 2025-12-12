@@ -422,7 +422,7 @@
         "Tests with invalid code returns failure",
         "Uses mocktail for mocking repository"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F035",
