@@ -3,10 +3,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/biometric_auth_screen.dart';
+import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/magic_link_verification_screen.dart';
 import '../analytics/analytics_service_provider.dart';
 import 'screens/dashboard_screen.dart';
-import 'screens/login_screen.dart';
 import 'screens/splash_screen.dart';
 
 // Create router provider using Riverpod with authentication-based redirects

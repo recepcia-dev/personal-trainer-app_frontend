@@ -1,4 +1,5 @@
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,14 +19,17 @@ void main() async {
   final container = ProviderContainer();
   await container.read(themeModeProvider.notifier).initialize();
 
-  // Initialize analytics service
-  await container.read(analyticsServiceProvider.future);
+  // Skip Firebase services on web (requires special web configuration)
+  if (!kIsWeb) {
+    // Initialize analytics service
+    await container.read(analyticsServiceProvider.future);
 
-  // Initialize Crashlytics service
-  await container.read(crashlyticsServiceProvider.future);
+    // Initialize Crashlytics service
+    await container.read(crashlyticsServiceProvider.future);
 
-  // Initialize deep link service for handling URLs (magic links, deep links)
-  await container.read(deepLinkServiceProvider.future);
+    // Initialize deep link service for handling URLs (magic links, deep links)
+    await container.read(deepLinkServiceProvider.future);
+  }
 
   runApp(
     ProviderScope(
