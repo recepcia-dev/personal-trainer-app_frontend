@@ -1,5 +1,6 @@
 import '../../../../core/network/network_info.dart';
 import '../../domain/entities/workout.dart';
+import '../../domain/entities/workout_assignment.dart';
 import '../../domain/repositories/workout_repository.dart';
 import '../datasources/workout_local_datasource.dart';
 import '../datasources/workout_remote_datasource.dart';
