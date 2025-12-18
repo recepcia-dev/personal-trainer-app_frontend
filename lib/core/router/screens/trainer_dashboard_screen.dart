@@ -8,14 +8,14 @@ import 'dashboard_tabs/workouts_tab.dart';
 import 'dashboard_tabs/profile_tab.dart';
 import 'dashboard_tabs/settings_tab.dart';
 
-/// Trainer dashboard with bottom navigation
+/// Professional Trainer Dashboard with workflow-oriented layout and blue theme
 ///
-/// Displays different tabs based on bottom navigation selection:
-/// - Home: Overview, stats, recent activity
-/// - Clients: Manage assigned clients, view progress, edit client info
-/// - Workouts: List of workouts created by trainer
-/// - Profile: Trainer profile information
-/// - Settings: App settings, logout, etc.
+/// Features:
+/// - Home tab: Quick actions and recent activity
+/// - Clients tab: Grid view of assigned clients
+/// - Workouts tab: List of created workouts
+/// - Nutrition tab: Meal plans management
+/// - Profile tab: Trainer profile settings
 class TrainerDashboardScreen extends ConsumerStatefulWidget {
   const TrainerDashboardScreen({super.key});
 
@@ -23,59 +23,107 @@ class TrainerDashboardScreen extends ConsumerStatefulWidget {
   ConsumerState<TrainerDashboardScreen> createState() => _TrainerDashboardScreenState();
 }
 
-class _TrainerDashboardScreenState extends ConsumerState<TrainerDashboardScreen> {
-  int _currentIndex = 0;
+class _TrainerDashboardScreenState extends ConsumerState<TrainerDashboardScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
-  final List<Widget> _tabs = const [
-    HomeTab(),
-    ClientsTab(),
-    WorkoutsTab(),
-    ProfileTab(),
-    SettingsTab(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 5, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authStateProvider);
 
     return Scaffold(
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        child: _tabs[_currentIndex],
+      appBar: AppBar(
+        title: Text(
+          'Welcome, ${(user?.firstName ?? user?.name) ?? 'Trainer'}',
+          style: const TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
+        ),
+        elevation: 1,
+        surfaceTintColor: Colors.blue,
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: Colors.blue,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: Colors.blue,
+          indicatorWeight: 3,
+          isScrollable: false,
+          tabs: const [
+            Tab(
+              icon: Icon(Icons.home_outlined),
+              text: 'Home',
+            ),
+            Tab(
+              icon: Icon(Icons.people_outline),
+              text: 'Clients',
+            ),
+            Tab(
+              icon: Icon(Icons.fitness_center_outlined),
+              text: 'Workouts',
+            ),
+            Tab(
+              icon: Icon(Icons.restaurant_outlined),
+              text: 'Nutrition',
+            ),
+            Tab(
+              icon: Icon(Icons.person_outline),
+              text: 'Profile',
+            ),
+          ],
+        ),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        elevation: 8,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
+      body: TabBarView(
+        controller: _tabController,
+        children: const [
+          HomeTab(),
+          ClientsTab(),
+          WorkoutsTab(),
+          _TrainerNutritionTab(),
+          ProfileTab(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Placeholder for Nutrition tab - displays trainer's meal plans
+class _TrainerNutritionTab extends StatelessWidget {
+  const _TrainerNutritionTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.restaurant_outlined,
+            size: 64,
+            color: Colors.blue.withOpacity(0.5),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.people_outline),
-            selectedIcon: Icon(Icons.people),
-            label: 'Clients',
+          const SizedBox(height: 16),
+          Text(
+            'Nutrition & Meal Plans',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.fitness_center_outlined),
-            selectedIcon: Icon(Icons.fitness_center),
-            label: 'Workouts',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
+          const SizedBox(height: 8),
+          Text(
+            'Create and manage meal plans for your clients',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[600],
+                ),
           ),
         ],
       ),
