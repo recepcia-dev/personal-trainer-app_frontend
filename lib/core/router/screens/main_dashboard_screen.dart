@@ -33,8 +33,7 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authStateProvider);
-    final user = authState.value;
+    final user = ref.watch(authStateProvider);
 
     return Scaffold(
       body: AnimatedSwitcher(

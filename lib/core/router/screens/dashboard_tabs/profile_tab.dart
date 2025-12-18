@@ -9,8 +9,7 @@ class ProfileTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authStateProvider);
-    final user = authState.value;
+    final user = ref.watch(authStateProvider);
     final theme = Theme.of(context);
 
     // Extract user info
