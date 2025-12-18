@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../features/auth/presentation/providers/auth_state_provider.dart';
 import 'dashboard_tabs/home_tab.dart';
 import 'dashboard_tabs/workouts_tab.dart';

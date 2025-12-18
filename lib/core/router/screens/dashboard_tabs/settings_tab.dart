@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../../theme/theme_provider.dart';
 import '../../../providers/app_preferences_provider.dart' hide themeModeProvider;
@@ -188,12 +187,12 @@ class SettingsTab extends ConsumerWidget {
               child: const Text('Cancel'),
             ),
             FilledButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop();
-                // Logout
-                ref.read(authProvider.notifier).logout();
-                ref.read(authStateProvider.notifier).logout();
-                // Router will automatically redirect to login
+                await ref.read(authStateProvider.notifier).logout();
+                if (context.mounted) {
+                  context.go('/role-selection');
+                }
               },
               style: FilledButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.error,

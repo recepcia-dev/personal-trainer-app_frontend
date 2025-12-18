@@ -3,241 +3,97 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/crashlytics/crashlytics_service_provider.dart';
 import '../../../../core/error/failures.dart';
 import '../../data/models/admin_model.dart';
-import 'auth_provider.dart';
 import 'auth_repository_provider.dart';
-import 'pending_email_provider.dart';
 
 part 'auth_state_provider.g.dart';
 
-/// Authentication state provider using Riverpod with async state management
+/// Simple authentication state provider.
 ///
-/// Manages the complete authentication lifecycle:
-/// - Initialization: Loads current authenticated user on app start
-/// - sendMagicLink: Initiates passwordless authentication
-/// - verifyMagicLink: Validates magic link code and authenticates
-/// - authenticateWithBiometric: Device-bound authentication (placeholder for F035)
-/// - logout: Clears authentication tokens and session
-///
-/// State: AsyncValue<dynamic> where the value is:
-/// - null: No authenticated user
-/// - Trainer: Trainer is authenticated
-/// - Client: Client is authenticated
-///
-/// Usage:
-/// ```dart
-/// ref.watch(authStateProvider);  // Listen to auth state
-/// await ref.read(authStateProvider.notifier).sendMagicLink(email: 'user@example.com');
-/// ```
-@riverpod
+/// State is the authenticated user (Trainer, Client, or Admin), or null if not logged in.
+/// Navigation is handled directly by screens, not by router redirects.
+@Riverpod(keepAlive: true)
 class AuthState extends _$AuthState {
-  /// Initialize authentication state by fetching current user
   @override
-  Future<dynamic> build() async {
-    final getCurrentUserUseCase = ref.watch(getCurrentUserUseCaseProvider);
-    final result = await getCurrentUserUseCase.call();
-
-    final user = result.fold(
-      (failure) => null, // No authenticated user or error
-      (user) => user,    // Return authenticated user (Trainer or Client)
-    );
-
-    // IMPORTANT: Sync authProvider state with authStateProvider
-    // When user is loaded, update authProvider so router knows user is authenticated
-    if (user != null) {
-      print('🔐 AuthState.build(): User loaded, updating authProvider to true');
-      ref.read(authProvider.notifier).login();
-    }
-
-    return user;
+  dynamic build() {
+    // Start with no authenticated user
+    // User will be set after successful magic link verification
+    return null;
   }
 
-  /// Initiate passwordless authentication by sending magic link to email
-  ///
-  /// Sends a time-limited magic link to the user's email address.
-  /// User will receive an email with a code to enter in the next step.
-  ///
-  /// Parameters:
-  ///   - email: User's email address
-  ///
-  /// Returns: true if successful, false if error
-  ///
-  /// State transitions:
-  ///   - Initial: null (no user yet)
-  ///   - Loading: AsyncLoading while sending email
-  ///   - Success: AsyncData(null) - keeps null state (user not auth'd yet)
-  ///   - Error: AsyncError with Failure
-  Future<bool> sendMagicLink({required String email}) async {
-    print('📧 DEBUG: sendMagicLink starting for $email');
-    state = const AsyncLoading();
-    print('📧 DEBUG: state = AsyncLoading');
+  /// Check if user is authenticated
+  bool get isAuthenticated => state != null;
 
-    final sendMagicLinkUseCase = ref.watch(sendMagicLinkUseCaseProvider);
-    final result = await sendMagicLinkUseCase.call(email: email);
+  /// Send magic link to email
+  ///
+  /// Returns true if successful, false otherwise.
+  Future<bool> sendMagicLink(String email) async {
+    final useCase = ref.read(sendMagicLinkUseCaseProvider);
+    final result = await useCase.call(email: email);
 
     return result.fold(
       (failure) {
-        print('❌ DEBUG: sendMagicLink failed: ${failure.message}');
-        state = AsyncError(failure, StackTrace.current);
-        ref.read(pendingEmailProvider.notifier).state = ''; // Clear on failure
+        print('❌ sendMagicLink failed: ${failure.message}');
         return false;
       },
       (_) {
-        // Link sent successfully - store email for router to detect
-        print('✅ DEBUG: sendMagicLink succeeded, setting state = AsyncData(null)');
-        ref.read(pendingEmailProvider.notifier).state = email; // Save for router redirect
-        state = const AsyncData(null);
-        print('✅ DEBUG: state changed to AsyncData(null), email pending verification');
+        print('✅ Magic link sent to $email');
         return true;
       },
     );
   }
 
-  String getPendingVerificationEmail() => ref.read(pendingEmailProvider);
-
   /// Verify magic link code and authenticate user
   ///
-  /// Called after user enters the verification code from email.
-  /// On success, authentication tokens are stored securely.
-  ///
-  /// Parameters:
-  ///   - email: User's email address
-  ///   - code: 6-digit verification code from email
-  ///
-  /// State transitions:
-  ///   - Initial: null
-  ///   - Loading: AsyncLoading while verifying code
-  ///   - Success: AsyncData(Trainer|Client) with authenticated user
-  ///   - Error: AsyncError with Failure
-  ///
-  /// Next step: Call authenticateWithBiometric() for device-bound auth
-  Future<void> verifyMagicLink({
+  /// Returns the authenticated user on success, null on failure.
+  Future<dynamic> verifyMagicLink({
     required String email,
     required String code,
   }) async {
-    state = const AsyncLoading();
+    final useCase = ref.read(verifyMagicLinkUseCaseProvider);
+    final result = await useCase.call(email: email, code: code);
 
-    final verifyMagicLinkUseCase = ref.watch(verifyMagicLinkUseCaseProvider);
-    final result = await verifyMagicLinkUseCase.call(email: email, code: code);
-
-    result.fold(
+    return result.fold(
       (failure) {
-        print('❌ DEBUG: verifyMagicLink failed: ${failure.message}');
-        state = AsyncError(failure, StackTrace.current);
+        print('❌ verifyMagicLink failed: ${failure.message}');
+        return null;
       },
-      (user) async {
-        print('✅ DEBUG: verifyMagicLink succeeded, user: $user');
+      (user) {
+        print('✅ Magic link verified, user: $user');
 
-        // Check if email is admin domain (@thegamechangers.es)
-        final isAdminEmail = email.endsWith('@thegamechangers.es');
-        print('🔐 DEBUG: isAdminEmail=$isAdminEmail for email=$email');
-
+        // Check if admin email
         dynamic finalUser = user;
-        if (isAdminEmail) {
-          print('🔐 DEBUG: Converting user to AdminModel');
-          // Create an AdminModel from the email
-          finalUser = AdminModel(
-            email: email,
-            name: 'Admin User',
-          );
+        if (email.endsWith('@thegamechangers.es')) {
+          finalUser = AdminModel(email: email, name: 'Admin');
         }
 
-        // Code verified successfully - user authenticated from server
-        state = AsyncData(finalUser);
+        // Set authenticated user
+        state = finalUser;
 
-        // UPDATE authProvider so router knows user is authenticated
-        print('🔍 DEBUG: Updating authProvider.login()');
-        ref.read(authProvider.notifier).login();
-        print('✅ DEBUG: authProvider.login() called successfully');
+        // Set crashlytics user ID (best effort)
+        _setCrashlyticsUser(email);
 
-        // Set user ID in Crashlytics for crash tracking (best effort, don't fail if it errors)
-        try {
-          final crashlytics = ref.read(crashlyticsProvider);
-          await crashlytics.setUserId(email);
-        } catch (e) {
-          // Silently fail - setting crashlytics user ID shouldn't prevent verification
-        }
+        return finalUser;
       },
     );
   }
 
-  /// Authenticate with device-bound biometric or PIN
-  ///
-  /// Second factor authentication using local biometric (Face ID, Touch ID) or PIN.
-  /// Ensures that the token issued by the server is bound to this specific device.
-  ///
-  /// Called after successful magic link verification to complete the authentication flow.
-  /// The user is already authenticated server-side at this point. This method confirms
-  /// device binding to prevent token reuse on other devices.
-  ///
-  /// State transitions:
-  ///   - Initial: Trainer|Client (already authenticated)
-  ///   - Success: AsyncData remains with same user
-  ///   - Error: AsyncError if biometric auth fails
-  Future<void> authenticateWithBiometric() async {
-    try {
-      // Get current user from state - should be authenticated from magic link
-      final currentUser = state.value;
-
-      if (currentUser == null) {
-        state = AsyncError(
-          const AuthFailure(message: 'No user found. Please log in again.'),
-          StackTrace.current,
-        );
-        return;
-      }
-
-      // User is already authenticated via magic link verification.
-      // Biometric is an additional device-bound security layer.
-      // In the future, this will include:
-      // - Device ID extraction
-      // - Device binding registration with backend
-      // - Prevention of token reuse on other devices
-
-      // TODO: Add device ID binding logic here when backend API is ready
-      // - Get device ID (device_info_plus package)
-      // - Send device ID to backend: POST /api/v1/auth/bind-device
-      // - Backend stores device ID with token
-      // - Future token validation requires matching device ID
-
-      // For now, just trigger state rebuild to notify listeners
-      state = AsyncData(currentUser);
-    } catch (e, stackTrace) {
-      state = AsyncError(e, stackTrace);
-    }
-  }
-
-  /// Logout the current user
-  ///
-  /// Clears authentication tokens from secure storage and resets auth state.
-  /// User is returned to unauthenticated state (null).
-  ///
-  /// State transitions:
-  ///   - Initial: Trainer|Client (authenticated)
-  ///   - Loading: AsyncLoading while clearing tokens
-  ///   - Success: AsyncData(null) - no authenticated user
-  ///   - Error: AsyncError with Failure (token clear failed)
+  /// Logout - clear authenticated user
   Future<void> logout() async {
-    state = const AsyncLoading();
+    final useCase = ref.read(logoutUseCaseProvider);
+    await useCase.call();
+    state = null;
 
-    final logoutUseCase = ref.watch(logoutUseCaseProvider);
-    final result = await logoutUseCase.call();
+    // Clear crashlytics user (best effort)
+    try {
+      final crashlytics = ref.read(crashlyticsProvider);
+      await crashlytics.clearUserId();
+    } catch (_) {}
+  }
 
-    result.fold(
-      (failure) {
-        state = AsyncError(failure, StackTrace.current);
-      },
-      (_) async {
-        // Logout successful - clear user state
-        state = const AsyncData(null);
-
-        // Clear user ID from Crashlytics (best effort, don't fail if it errors)
-        try {
-          final crashlytics = ref.read(crashlyticsProvider);
-          await crashlytics.clearUserId();
-        } catch (e) {
-          // Silently fail - clearing crashlytics shouldn't prevent logout
-        }
-      },
-    );
+  void _setCrashlyticsUser(String email) {
+    try {
+      final crashlytics = ref.read(crashlyticsProvider);
+      crashlytics.setUserId(email);
+    } catch (_) {}
   }
 }

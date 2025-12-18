@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 
 import '../providers/auth_state_provider.dart';
 
-/// Login screen with passwordless authentication via magic link.
+/// Login screen - user enters email to receive magic link.
 ///
-/// Users enter their email, receive a magic link, and verify the code
-/// in the next screen. This unified screen works for both trainers and clients.
+/// Simple flow:
+/// 1. User enters email
+/// 2. Click "Send Magic Link"
+/// 3. Navigate directly to verification screen
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -17,9 +19,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
-  bool _emailSubmitted = false;
-  String? _emailErrorMessage;
-  String _pendingEmail = ''; // Store the email being sent for navigation
+  String? _errorMessage;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -27,173 +28,116 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  /// Validate email format
   bool _isValidEmail(String email) {
-    final emailRegex = RegExp(
-      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-    );
-    return emailRegex.hasMatch(email);
+    final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return regex.hasMatch(email);
   }
 
-  /// Handle sending magic link
   Future<void> _sendMagicLink() async {
     final email = _emailController.text.trim();
 
-    // Clear previous error
+    // Validate
+    if (email.isEmpty) {
+      setState(() => _errorMessage = 'Email is required');
+      return;
+    }
+    if (!_isValidEmail(email)) {
+      setState(() => _errorMessage = 'Please enter a valid email');
+      return;
+    }
+
     setState(() {
-      _emailErrorMessage = null;
+      _errorMessage = null;
+      _isLoading = true;
     });
 
-    // Validate email
-    if (email.isEmpty) {
-      setState(() {
-        _emailErrorMessage = 'Email is required';
-      });
-      return;
-    }
+    // Send magic link
+    final success = await ref.read(authStateProvider.notifier).sendMagicLink(email);
 
-    if (!_isValidEmail(email)) {
-      setState(() {
-        _emailErrorMessage = 'Please enter a valid email address';
-      });
-      return;
-    }
+    if (!mounted) return;
 
-    // Call sendMagicLink on auth state provider
-    print('📧 Sending magic link for: $email');
-    final success = await ref.read(authStateProvider.notifier).sendMagicLink(email: email);
-
-    print('✅ Backend returned: success=$success');
+    setState(() => _isLoading = false);
 
     if (success) {
-      print('🔄 Magic link sent successfully, router will redirect automatically');
-      // Router redirect will handle navigation to /verify-magic-link
-      // No manual navigation needed - this prevents conflicts
+      // Navigate directly to verification screen
+      context.go('/verify?email=${Uri.encodeComponent(email)}');
     } else {
-      print('❌ Magic link send failed');
-      if (mounted) {
-        setState(() {
-          _emailErrorMessage = 'Failed to send magic link. Please try again.';
-        });
-        _showErrorMessage(context, 'Failed to send magic link.');
-      }
+      setState(() => _errorMessage = 'Failed to send magic link. Please try again.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authStateProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
-        elevation: 0,
+        leading: BackButton(onPressed: () => context.go('/role-selection')),
+        title: const Text('Sign In'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                const SizedBox(height: 32),
-                Text(
-                  'Sign In',
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Enter your email to receive a magic link',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                ),
-                const SizedBox(height: 48),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 32),
 
-                // Email input field
-                TextField(
-                  controller: _emailController,
-                  enabled: !authState.isLoading,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'you@example.com',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    prefixIcon: const Icon(Icons.email),
-                    errorText: _emailErrorMessage,
-                    errorMaxLines: 2,
-                  ),
-                  onSubmitted: (_) {
-                    if (!authState.isLoading) {
-                      _sendMagicLink();
-                    }
-                  },
+              // Header
+              Text(
+                'Enter your email',
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(height: 32),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "We'll send you a code to verify your identity",
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 32),
 
-                // Send Magic Link button or loading indicator
-                if (authState.isLoading)
-                  Center(
-                    child: Column(
-                      children: [
-                        const CircularProgressIndicator(),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Sending magic link...',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  ElevatedButton(
-                    onPressed: _sendMagicLink,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 24,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                    child: const Text(
-                      'Send Magic Link',
-                      style: TextStyle(fontSize: 16),
-                    ),
+              // Email field
+              TextField(
+                controller: _emailController,
+                enabled: !_isLoading,
+                keyboardType: TextInputType.emailAddress,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  hintText: 'you@example.com',
+                  prefixIcon: const Icon(Icons.email_outlined),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-              ],
-            ),
+                  errorText: _errorMessage,
+                ),
+                onSubmitted: (_) => _sendMagicLink(),
+              ),
+              const SizedBox(height: 24),
+
+              // Send button
+              FilledButton(
+                onPressed: _isLoading ? null : _sendMagicLink,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Send Magic Link', style: TextStyle(fontSize: 16)),
+              ),
+            ],
           ),
         ),
-      ),
-    );
-  }
-
-  /// Show success message to user
-  void _showSuccessMessage(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Check your email for the magic link'),
-        backgroundColor: Colors.green[600],
-        duration: const Duration(seconds: 4),
-      ),
-    );
-  }
-
-  /// Show error message to user
-  void _showErrorMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red[600],
-        duration: const Duration(seconds: 4),
       ),
     );
   }

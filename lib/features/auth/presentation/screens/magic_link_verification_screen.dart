@@ -5,17 +5,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/error/failures.dart';
+import '../../data/models/admin_model.dart';
+import '../../data/models/client_model.dart';
+import '../../data/models/trainer_model.dart';
 import '../providers/auth_state_provider.dart';
-import '../providers/pending_email_provider.dart';
 
-/// Magic link verification screen for passwordless authentication.
+/// Verification screen - user enters code from email.
 ///
-/// Users enter the 6-digit code they received via email.
-/// On success, the app navigates to device-bound authentication (biometric/PIN).
-///
-/// The [code] parameter is optional and used for deep link handling.
-/// If provided, the code will be auto-filled and verification will be triggered.
+/// Simple flow:
+/// 1. User enters 6-digit code
+/// 2. Code is verified
+/// 3. Navigate directly to appropriate dashboard
 class MagicLinkVerificationScreen extends ConsumerStatefulWidget {
   const MagicLinkVerificationScreen({
     required this.email,
@@ -36,19 +36,18 @@ class _MagicLinkVerificationScreenState
   final _codeController = TextEditingController();
   Timer? _resendTimer;
   int _resendCountdown = 60;
-  bool _autoVerifyAttempted = false;
-  String? _codeErrorMessage;
+  String? _errorMessage;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _startResendCountdown();
 
-    // If code is provided via deep link, auto-fill and verify
+    // Auto-fill code if provided via deep link
     if (widget.code != null && widget.code!.length == 6) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _codeController.text = widget.code!;
-        setState(() => _autoVerifyAttempted = true);
         _verifyCode();
       });
     }
@@ -61,237 +60,173 @@ class _MagicLinkVerificationScreenState
     super.dispose();
   }
 
-  /// Start countdown timer for resending magic link
   void _startResendCountdown() {
-    setState(() {
-      _resendCountdown = 60;
-    });
-
+    _resendCountdown = 60;
     _resendTimer?.cancel();
-
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        if (_resendCountdown > 0) {
-          _resendCountdown--;
-        } else {
-          timer.cancel();
-        }
-      });
+      if (mounted) {
+        setState(() {
+          if (_resendCountdown > 0) {
+            _resendCountdown--;
+          } else {
+            timer.cancel();
+          }
+        });
+      }
     });
   }
 
-  /// Verify the entered code
   Future<void> _verifyCode() async {
     final code = _codeController.text.trim();
 
     if (code.length != 6) {
-      setState(() {
-        _codeErrorMessage = 'Code must be 6 digits';
-      });
+      setState(() => _errorMessage = 'Code must be 6 digits');
       return;
     }
 
     setState(() {
-      _codeErrorMessage = null;
+      _errorMessage = null;
+      _isLoading = true;
     });
 
-    await ref.read(authStateProvider.notifier).verifyMagicLink(
-          email: widget.email,
-          code: code,
-        );
+    final user = await ref.read(authStateProvider.notifier).verifyMagicLink(
+      email: widget.email,
+      code: code,
+    );
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (user != null) {
+      // Navigate to appropriate dashboard
+      if (user is AdminModel) {
+        context.go('/admin/dashboard');
+      } else if (user is TrainerModel) {
+        context.go('/trainer/dashboard');
+      } else if (user is ClientModel) {
+        context.go('/client/dashboard');
+      } else {
+        context.go('/trainer/dashboard'); // fallback
+      }
+    } else {
+      setState(() => _errorMessage = 'Invalid code. Please try again.');
+    }
   }
 
-  /// Resend magic link to user's email
-  Future<void> _resendMagicLink() async {
-    if (_resendCountdown > 0) {
-      return;
-    }
+  Future<void> _resendCode() async {
+    if (_resendCountdown > 0) return;
 
-    await ref
-        .read(authStateProvider.notifier)
-        .sendMagicLink(email: widget.email);
-
-    _startResendCountdown();
+    final success = await ref.read(authStateProvider.notifier).sendMagicLink(widget.email);
 
     if (mounted) {
-      _showSuccessMessage(context, 'Magic link resent to ${widget.email}');
+      _startResendCountdown();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success ? 'Code resent to ${widget.email}' : 'Failed to resend code'),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
     }
-  }
-
-  /// Extract error message from failure object
-  String _getErrorMessage(Object error) {
-    if (error is Failure) {
-      return error.message;
-    }
-    return error.toString();
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authStateProvider);
-
-    // Listen for verification errors only - let router handle success redirect
-    ref.listen<AsyncValue<dynamic>>(
-      authStateProvider,
-      (previous, next) {
-        next.maybeWhen(
-          data: (_) {
-            // Verification successful - clear pending email
-            print('✅ Verification successful, clearing pending email');
-            ref.read(pendingEmailProvider.notifier).state = '';
-          },
-          error: (error, stack) {
-            final errorMsg = _getErrorMessage(error);
-            print('❌ Verification error: $errorMsg');
-            setState(() {
-              _autoVerifyAttempted = false;
-              _codeErrorMessage = errorMsg;
-            });
-            _showErrorMessage(context, errorMsg);
-          },
-          orElse: () {},
-        );
-      },
-    );
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(onPressed: () => context.go('/login')),
         title: const Text('Verify Code'),
-        elevation: 0,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                const SizedBox(height: 32),
-                Text(
-                  'Check Your Email',
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'We sent a 6-digit code to\n${widget.email}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                ),
-                const SizedBox(height: 48),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 32),
 
-                // Code input field
-                TextField(
-                  controller: _codeController,
-                  enabled: !authState.isLoading,
-                  autofocus: true,
-                  obscureText: true,
-                  maxLength: 6,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
-                  decoration: InputDecoration(
-                    labelText: 'Verification Code',
-                    hintText: '000000',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    prefixIcon: const Icon(Icons.lock),
-                    errorText: _codeErrorMessage,
-                    errorMaxLines: 2,
+              // Header
+              Text(
+                'Check your email',
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'We sent a 6-digit code to\n${widget.email}',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Code input
+              TextField(
+                controller: _codeController,
+                enabled: !_isLoading,
+                autofocus: true,
+                maxLength: 6,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  letterSpacing: 8,
+                ),
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: InputDecoration(
+                  labelText: 'Verification Code',
+                  hintText: '000000',
+                  counterText: '',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  onChanged: (value) {
-                    // Auto-verify when code is complete
-                    if (value.length == 6 && !_autoVerifyAttempted) {
-                      setState(() => _autoVerifyAttempted = true);
-                      _verifyCode();
-                    } else if (value.length < 6) {
-                      setState(() => _autoVerifyAttempted = false);
-                    }
-                  },
-                  onSubmitted: (_) {
-                    if (!authState.isLoading && !_autoVerifyAttempted) {
-                      _verifyCode();
-                    }
-                  },
+                  errorText: _errorMessage,
                 ),
-                const SizedBox(height: 32),
+                onChanged: (value) {
+                  // Auto-verify when complete
+                  if (value.length == 6) {
+                    _verifyCode();
+                  }
+                },
+                onSubmitted: (_) => _verifyCode(),
+              ),
+              const SizedBox(height: 24),
 
-                // Verify button or loading indicator
-                if (authState.isLoading)
-                  Center(
-                    child: Column(
-                      children: [
-                        const CircularProgressIndicator(),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Verifying code...',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  ElevatedButton(
-                    onPressed: _verifyCode,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 24,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                    child: const Text(
-                      'Verify Code',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                const SizedBox(height: 24),
-
-                // Resend link button with countdown
-                Center(
-                  child: TextButton(
-                    onPressed: _resendCountdown > 0 ? null : _resendMagicLink,
-                    child: Text(
-                      _resendCountdown > 0
-                          ? 'Resend link (${_resendCountdown}s)'
-                          : 'Resend link',
-                    ),
+              // Verify button
+              FilledButton(
+                onPressed: _isLoading ? null : _verifyCode,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-              ],
-            ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Verify Code', style: TextStyle(fontSize: 16)),
+              ),
+              const SizedBox(height: 16),
+
+              // Resend button
+              Center(
+                child: TextButton(
+                  onPressed: _resendCountdown > 0 ? null : _resendCode,
+                  child: Text(
+                    _resendCountdown > 0
+                        ? 'Resend code (${_resendCountdown}s)'
+                        : 'Resend code',
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-      ),
-    );
-  }
-
-  /// Show success message to user
-  void _showSuccessMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green[600],
-        duration: const Duration(seconds: 4),
-      ),
-    );
-  }
-
-  /// Show error message to user
-  void _showErrorMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red[600],
-        duration: const Duration(seconds: 4),
       ),
     );
   }
