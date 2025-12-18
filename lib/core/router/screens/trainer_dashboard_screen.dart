@@ -96,34 +96,92 @@ class _TrainerDashboardScreenState extends ConsumerState<TrainerDashboardScreen>
   }
 }
 
-/// Placeholder for Nutrition tab - displays trainer's meal plans
+/// Nutrition tab - displays trainer's meal plans and actions
 class _TrainerNutritionTab extends StatelessWidget {
   const _TrainerNutritionTab();
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.restaurant_outlined,
-            size: 64,
-            color: Colors.blue.withOpacity(0.5),
-          ),
-          const SizedBox(height: 16),
+          // Header
           Text(
-            'Nutrition & Meal Plans',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            'Meal Plans',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Create and manage meal plans for your clients',
+            'Create and manage nutrition plans for your clients',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[600],
                 ),
+          ),
+          const SizedBox(height: 24),
+
+          // Quick Actions
+          Text(
+            'Quick Actions',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 12),
+          FilledButton.tonal(
+            onPressed: () {
+              Navigator.of(context).pushNamed('mealPlanBuilder');
+            },
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(double.infinity, 56),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.add),
+                SizedBox(width: 8),
+                Text('Create New Meal Plan'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Empty State
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey[50],
+            ),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.restaurant_outlined,
+                    size: 48,
+                    color: Colors.blue.withOpacity(0.5),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'No meal plans yet',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Start by creating your first meal plan for your clients',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
