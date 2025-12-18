@@ -130,7 +130,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           // For now, create a mock meal plan to display
           // In real app, this would be passed as an extra parameter or fetched from database
-          const mockMealPlan = MealPlan(
+          final mockMealPlan = MealPlan(
             id: 'mock-1',
             trainerId: 'trainer-1',
             name: 'Sample Weekly Plan',
@@ -138,8 +138,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             meals: [],
             totalCalories: 0,
             isActive: true,
-            createdAt: null,
-            updatedAt: null,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
           );
           return ClientMealPlanScreen(mealPlan: mockMealPlan);
         },

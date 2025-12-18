@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/workout.dart';
+import '../../domain/entities/workout_assignment.dart';
 
 part 'workout_model.freezed.dart';
 part 'workout_model.g.dart';
@@ -27,6 +28,7 @@ class WorkoutModel with _$WorkoutModel {
   const WorkoutModel._();
 
   /// Convert to domain entity
+  /// Note: exercises must be loaded separately and set via copyWith
   Workout toEntity() => Workout(
     id: id,
     trainerId: trainerId,
@@ -37,6 +39,7 @@ class WorkoutModel with _$WorkoutModel {
     durationMinutes: durationMinutes,
     isPublic: isPublic,
     isActive: isActive,
+    exercises: const [],
     createdAt: createdAt,
     updatedAt: updatedAt,
   );

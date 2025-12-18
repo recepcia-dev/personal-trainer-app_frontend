@@ -228,9 +228,9 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
               // Gender dropdown
               DropdownButtonFormField<String>(
                 value: _selectedGender,
-                enabled: !_isLoading,
                 decoration: InputDecoration(
                   labelText: 'Gender',
+                  enabled: !_isLoading,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

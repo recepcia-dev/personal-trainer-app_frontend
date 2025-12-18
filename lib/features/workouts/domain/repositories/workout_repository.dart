@@ -1,4 +1,5 @@
 import '../entities/workout.dart';
+import '../entities/workout_assignment.dart';
 
 /// Repository interface for workout data operations
 abstract class WorkoutRepository {
