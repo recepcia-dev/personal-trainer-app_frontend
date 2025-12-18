@@ -21,51 +21,52 @@ class RoleSelectionScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-              // Logo or app name
-              Icon(
-                Icons.fitness_center,
-                size: 80,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(height: 24),
-
-              // Title
-              Text(
-                'Personal Trainer',
-                style: theme.textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+                // Logo or app name
+                Icon(
+                  Icons.fitness_center,
+                  size: 80,
+                  color: theme.colorScheme.primary,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
+                const SizedBox(height: 24),
 
-              // Subtitle
-              Text(
-                'Select your role to continue',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                // Title
+                Text(
+                  'Personal Trainer',
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 48),
+                const SizedBox(height: 8),
 
-              // Trainer button
-              _RoleButton(
-                icon: Icons.sports,
-                label: "I'm a Trainer",
-                description: 'Manage clients and create workouts',
-                onTap: () => context.go('/login?role=trainer'),
-              ),
-              const SizedBox(height: 16),
+                // Subtitle
+                Text(
+                  'Select your role to continue',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 48),
 
-              // Client button
-              _RoleButton(
-                icon: Icons.person,
-                label: "I'm a Client",
-                description: 'Track workouts and progress',
-                onTap: () => context.go('/login?role=client'),
-              ),
-            ],
+                // Trainer button
+                _RoleButton(
+                  icon: Icons.sports,
+                  label: "I'm a Trainer",
+                  description: 'Manage clients and create workouts',
+                  onTap: () => context.go('/login?role=trainer'),
+                ),
+                const SizedBox(height: 16),
+
+                // Client button
+                _RoleButton(
+                  icon: Icons.person,
+                  label: "I'm a Client",
+                  description: 'Track workouts and progress',
+                  onTap: () => context.go('/login?role=client'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -36,8 +36,7 @@ class _TrainerDashboardScreenState extends ConsumerState<TrainerDashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authStateProvider);
-    final user = authState.value;
+    final user = ref.watch(authStateProvider);
 
     return Scaffold(
       body: AnimatedSwitcher(
