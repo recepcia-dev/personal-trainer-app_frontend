@@ -54,7 +54,9 @@ class _MealPlanBuilderScreenState extends ConsumerState<MealPlanBuilderScreen> {
     final mealsByType = <String, List<Meal>>{};
     final mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
     for (final type in mealTypes) {
-      mealsByType[type] = builderState.getMealsByType(type);
+      mealsByType[type] = builderState.meals
+          .where((meal) => meal.mealType == type)
+          .toList();
     }
 
     return Scaffold(
@@ -169,6 +171,7 @@ class _MealPlanBuilderScreenState extends ConsumerState<MealPlanBuilderScreen> {
                   ref.read(mealPlanBuilderProvider.notifier).updateMeal(
                         mealId,
                         name: name,
+                        mealType: type,
                         description: description ?? '',
                         calories: calories,
                         proteinG: protein,
