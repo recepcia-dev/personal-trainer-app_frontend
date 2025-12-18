@@ -18,4 +18,10 @@ class ClientsTable extends Table {
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().nullable()();
   DateTimeColumn get updatedAt => dateTime().nullable()();
+
+  // Extended profile fields (added in schema version 5)
+  RealColumn get weightKg => real().nullable()();
+  RealColumn get heightCm => real().nullable()();
+  DateTimeColumn get dateOfBirth => dateTime().nullable()();
+  TextColumn get gender => text().nullable()();
 }
