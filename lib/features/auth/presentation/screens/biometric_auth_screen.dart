@@ -36,6 +36,19 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
     _checkBiometricAvailability();
   }
 
+  /// Auto-skip biometric for web/development without biometric support
+  void _autoSkipIfNoSupportedBiometric() {
+    if (!_biometricAvailable && mounted) {
+      print('🔍 DEBUG: No biometric available, auto-skipping to dashboard');
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          print('✅ DEBUG: Navigating to dashboard (no biometric needed for web)');
+          context.go('/dashboard');
+        }
+      });
+    }
+  }
+
   /// Check what biometric methods are available on this device
   Future<void> _checkBiometricAvailability() async {
     final biometricService = ref.read(biometricAuthServiceProvider);
@@ -51,12 +64,19 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
           _availableBiometrics = available;
           _errorMessage = null;
         });
+
+        // Auto-skip biometric for web/development
+        _autoSkipIfNoSupportedBiometric();
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _errorMessage = 'Error checking biometric availability: $e';
+          _biometricAvailable = false;
         });
+
+        // Auto-skip if there's an error (likely web/no biometric)
+        _autoSkipIfNoSupportedBiometric();
       }
     }
   }

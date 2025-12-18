@@ -74,16 +74,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.listen<AsyncValue<dynamic>>(
       authStateProvider,
       (previous, next) {
-        next.whenData((_) {
+        // Check if we just transitioned from loading to success
+        final wasLoading = previous?.isLoading ?? false;
+        final isSuccess = next.hasValue && !next.isLoading;
+
+        if (wasLoading && isSuccess && _emailSubmitted) {
           // Magic link sent successfully - navigate to verification screen
-          if (_emailSubmitted) {
-            final email = _emailController.text.trim();
-            context.push('/verify-magic-link?email=${Uri.encodeComponent(email)}');
-          }
-        });
+          final email = _emailController.text.trim();
+          print('🔄 Navigating to verify-magic-link screen for $email');
+          context.push('/verify-magic-link?email=${Uri.encodeComponent(email)}');
+        }
+
         next.maybeWhen(
           error: (error, stack) {
             // Error sending magic link
+            print('❌ Error sending magic link: $error');
             setState(() {
               _emailSubmitted = false;
               _emailErrorMessage = error.toString();

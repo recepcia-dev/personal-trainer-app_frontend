@@ -1,13 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/data/models/admin_model.dart';
+import '../../features/auth/data/models/client_model.dart';
+import '../../features/auth/data/models/trainer_model.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
+import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/screens/biometric_auth_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/magic_link_verification_screen.dart';
 import '../analytics/analytics_service_provider.dart';
-import 'screens/dashboard_screen.dart';
+import 'screens/admin_dashboard_screen.dart';
+import 'screens/client_dashboard_screen.dart';
+import 'screens/main_dashboard_screen.dart';
 import 'screens/splash_screen.dart';
+import 'screens/trainer_dashboard_screen.dart';
 
 // Create router provider using Riverpod with authentication-based redirects
 final routerProvider = Provider<GoRouter>(
@@ -17,23 +24,50 @@ final routerProvider = Provider<GoRouter>(
     redirect: (context, state) {
       // Watch auth state for changes
       final isAuthenticated = ref.watch(authProvider);
+      final authState = ref.watch(authStateProvider);
+      final user = authState.value;
 
       // Get the current route location
       final location = state.uri.path;
 
       // Handle authenticated users trying to access login
       if (isAuthenticated && location == '/login') {
+        // Redirect to appropriate dashboard based on user role
+        if (user is AdminModel) {
+          return '/admin/dashboard';
+        } else if (user is TrainerModel) {
+          return '/trainer/dashboard';
+        } else if (user is ClientModel) {
+          return '/client/dashboard';
+        }
+        // Fallback to old dashboard route
         return '/dashboard';
       }
 
-      // Handle unauthenticated users trying to access dashboard
-      if (!isAuthenticated && location == '/dashboard') {
+      // Handle unauthenticated users trying to access dashboards
+      if (!isAuthenticated &&
+          (location == '/dashboard' ||
+           location == '/admin/dashboard' ||
+           location == '/trainer/dashboard' ||
+           location == '/client/dashboard')) {
         return '/login';
       }
 
       // Handle splash screen navigation based on auth state
       if (location == '/splash') {
-        return isAuthenticated ? '/dashboard' : '/login';
+        if (!isAuthenticated) {
+          return '/login';
+        }
+        // Redirect to appropriate dashboard based on user role
+        if (user is AdminModel) {
+          return '/admin/dashboard';
+        } else if (user is TrainerModel) {
+          return '/trainer/dashboard';
+        } else if (user is ClientModel) {
+          return '/client/dashboard';
+        }
+        // Fallback to old dashboard route
+        return '/dashboard';
       }
 
       // No redirect needed
@@ -106,10 +140,52 @@ final routerProvider = Provider<GoRouter>(
           ref.read(analyticsServiceProvider).whenData((analytics) {
             analytics.logScreenView(
               screenName: 'dashboard',
-              screenClass: 'DashboardScreen',
+              screenClass: 'MainDashboardScreen',
             );
           });
-          return const DashboardScreen();
+          return const MainDashboardScreen();
+        },
+      ),
+      GoRoute(
+        path: '/admin/dashboard',
+        name: 'adminDashboard',
+        builder: (context, state) {
+          // Log screen view
+          ref.read(analyticsServiceProvider).whenData((analytics) {
+            analytics.logScreenView(
+              screenName: 'admin_dashboard',
+              screenClass: 'AdminDashboardScreen',
+            );
+          });
+          return const AdminDashboardScreen();
+        },
+      ),
+      GoRoute(
+        path: '/trainer/dashboard',
+        name: 'trainerDashboard',
+        builder: (context, state) {
+          // Log screen view
+          ref.read(analyticsServiceProvider).whenData((analytics) {
+            analytics.logScreenView(
+              screenName: 'trainer_dashboard',
+              screenClass: 'TrainerDashboardScreen',
+            );
+          });
+          return const TrainerDashboardScreen();
+        },
+      ),
+      GoRoute(
+        path: '/client/dashboard',
+        name: 'clientDashboard',
+        builder: (context, state) {
+          // Log screen view
+          ref.read(analyticsServiceProvider).whenData((analytics) {
+            analytics.logScreenView(
+              screenName: 'client_dashboard',
+              screenClass: 'ClientDashboardScreen',
+            );
+          });
+          return const ClientDashboardScreen();
         },
       ),
     ],

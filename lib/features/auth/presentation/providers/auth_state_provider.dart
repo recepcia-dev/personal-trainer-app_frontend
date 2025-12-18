@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/crashlytics/crashlytics_service_provider.dart';
 import '../../../../core/error/failures.dart';
+import 'auth_provider.dart';
 import 'auth_repository_provider.dart';
 
 part 'auth_state_provider.g.dart';
@@ -97,11 +98,18 @@ class AuthState extends _$AuthState {
 
     result.fold(
       (failure) {
+        print('❌ DEBUG: verifyMagicLink failed: ${failure.message}');
         state = AsyncError(failure, StackTrace.current);
       },
       (user) async {
+        print('✅ DEBUG: verifyMagicLink succeeded, user: $user');
         // Code verified successfully - user authenticated from server
         state = AsyncData(user);
+
+        // UPDATE authProvider so router knows user is authenticated
+        print('🔍 DEBUG: Updating authProvider.login()');
+        ref.read(authProvider.notifier).login();
+        print('✅ DEBUG: authProvider.login() called successfully');
 
         // Set user ID in Crashlytics for crash tracking (best effort, don't fail if it errors)
         try {

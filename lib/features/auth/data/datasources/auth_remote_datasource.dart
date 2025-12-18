@@ -159,34 +159,65 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String code,
   }) async {
     try {
+      print('\n🔍 DEBUG Frontend: verifyMagicLink starting - email=$email, code=$code');
+
       final response = await dioClient.dio.post(
         '/api/v1/auth/verify-magic-link',
         data: {'email': email, 'code': code},
       );
 
+      print('✅ DEBUG Frontend: POST request successful, status=${response.statusCode}');
+      print('📦 DEBUG Frontend: response.data type = ${response.data.runtimeType}');
+      print('📦 DEBUG Frontend: response.data = ${response.data}');
+
       // Parse the response
-      final responseModel = VerifyMagicLinkResponseModel.fromJson(
-        response.data as Map<String, dynamic>,
-      );
+      try {
+        print('🔍 DEBUG Frontend: Attempting to parse response with VerifyMagicLinkResponseModel.fromJson()');
+        final responseModel = VerifyMagicLinkResponseModel.fromJson(
+          response.data as Map<String, dynamic>,
+        );
+        print('✅ DEBUG Frontend: Response parsed successfully');
+        print('📦 DEBUG Frontend: accessToken length = ${responseModel.accessToken.length}');
+        print('📦 DEBUG Frontend: refreshToken length = ${responseModel.refreshToken.length}');
+        print('📦 DEBUG Frontend: role = ${responseModel.role}');
+        print('📦 DEBUG Frontend: user data = ${responseModel.user}');
 
-      // Store tokens securely
-      await secureStorage.write(
-        key: 'accessToken',
-        value: responseModel.accessToken,
-      );
-      await secureStorage.write(
-        key: 'refreshToken',
-        value: responseModel.refreshToken,
-      );
+        // Store tokens securely
+        print('🔍 DEBUG Frontend: Storing tokens securely');
+        await secureStorage.write(
+          key: 'accessToken',
+          value: responseModel.accessToken,
+        );
+        await secureStorage.write(
+          key: 'refreshToken',
+          value: responseModel.refreshToken,
+        );
+        print('✅ DEBUG Frontend: Tokens stored successfully');
 
-      // Return the parsed user model (Trainer or Client)
-      return responseModel.parseUser();
+        // Return the parsed user model (Trainer or Client)
+        print('🔍 DEBUG Frontend: Parsing user model based on role=${responseModel.role}');
+        final user = responseModel.parseUser();
+        print('✅ DEBUG Frontend: User model parsed successfully: $user');
+        return user;
+
+      } catch (parseError) {
+        print('❌ DEBUG Frontend: Error parsing response: ${parseError.runtimeType}: $parseError');
+        print('❌ DEBUG Frontend: Trying to see raw data keys: ${(response.data as Map).keys}');
+        rethrow;
+      }
+
     } on DioException catch (e) {
+      print('❌ DEBUG Frontend: DioException - ${e.message}');
+      print('❌ DEBUG Frontend: Status code = ${e.response?.statusCode}');
+      print('❌ DEBUG Frontend: Response = ${e.response?.data}');
       throw ServerException(
         message: 'Failed to verify magic link: ${e.message}',
         statusCode: e.response?.statusCode,
         responseBody: e.response?.toString(),
       );
+    } catch (e) {
+      print('❌ DEBUG Frontend: Unexpected exception: ${e.runtimeType}: $e');
+      rethrow;
     }
   }
 
