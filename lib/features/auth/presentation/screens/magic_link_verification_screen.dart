@@ -99,15 +99,22 @@ class _MagicLinkVerificationScreenState
     setState(() => _isLoading = false);
 
     if (user != null) {
-      // Navigate to appropriate dashboard
-      if (user is AdminModel) {
-        context.go('/admin/dashboard');
-      } else if (user is TrainerModel) {
-        context.go('/trainer/dashboard');
-      } else if (user is ClientModel) {
-        context.go('/client/dashboard');
+      // Check if profile is complete (firstName is set)
+      if (user.firstName == null || user.firstName!.isEmpty) {
+        // Redirect to profile completion first
+        final userType = user is AdminModel ? 'admin' : user is TrainerModel ? 'trainer' : 'client';
+        context.go('/complete-profile?email=${Uri.encodeComponent(widget.email)}&userType=$userType');
       } else {
-        context.go('/trainer/dashboard'); // fallback
+        // Profile already complete, go to dashboard
+        if (user is AdminModel) {
+          context.go('/admin/dashboard');
+        } else if (user is TrainerModel) {
+          context.go('/trainer/dashboard');
+        } else if (user is ClientModel) {
+          context.go('/client/dashboard');
+        } else {
+          context.go('/trainer/dashboard'); // fallback
+        }
       }
     } else {
       setState(() => _errorMessage = 'Invalid code. Please try again.');

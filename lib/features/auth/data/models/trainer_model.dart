@@ -15,6 +15,13 @@ class TrainerModel with _$TrainerModel implements Trainer {
     required String email,
     required String name,
     String? photoUrl,
+    String? firstName,
+    String? lastName,
+    int? age,
+    double? weightKg,
+    double? heightCm,
+    DateTime? dateOfBirth,
+    String? gender,
   }) = _TrainerModel;
 
   factory TrainerModel.fromJson(Map<String, dynamic> json) =>

@@ -14,6 +14,13 @@ class AdminModel with _$AdminModel implements Admin {
   const factory AdminModel({
     required String email,
     required String name,
+    String? firstName,
+    String? lastName,
+    int? age,
+    double? weightKg,
+    double? heightCm,
+    DateTime? dateOfBirth,
+    String? gender,
   }) = _AdminModel;
 
   factory AdminModel.fromJson(Map<String, dynamic> json) =>

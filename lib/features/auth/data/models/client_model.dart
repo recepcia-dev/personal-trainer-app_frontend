@@ -15,6 +15,13 @@ class ClientModel with _$ClientModel implements Client {
     required String email,
     required String name,
     required int trainerId,
+    String? firstName,
+    String? lastName,
+    int? age,
+    double? weightKg,
+    double? heightCm,
+    DateTime? dateOfBirth,
+    String? gender,
   }) = _ClientModel;
 
   factory ClientModel.fromJson(Map<String, dynamic> json) =>

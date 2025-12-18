@@ -5,6 +5,7 @@ import '../../features/auth/data/models/admin_model.dart';
 import '../../features/auth/data/models/client_model.dart';
 import '../../features/auth/data/models/trainer_model.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
+import '../../features/auth/presentation/screens/complete_profile_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/magic_link_verification_screen.dart';
 import '../../features/auth/presentation/screens/role_selection_screen.dart';
@@ -74,6 +75,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final email = state.uri.queryParameters['email'] ?? '';
           return MagicLinkVerificationScreen(email: email);
+        },
+      ),
+      GoRoute(
+        path: '/complete-profile',
+        name: 'completeProfile',
+        builder: (context, state) {
+          final email = state.uri.queryParameters['email'] ?? '';
+          final userType = state.uri.queryParameters['userType'] ?? 'client';
+          return CompleteProfileScreen(email: email, userType: userType);
         },
       ),
 
