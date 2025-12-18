@@ -1,18 +1,24 @@
-/// Domain entity for Workout
+import 'workout_exercise.dart';
+
+/// Domain entity representing a complete workout
+///
+/// A workout contains multiple exercises configured by a trainer
+/// and can be assigned to multiple clients.
 class Workout {
   final String id;
   final String trainerId;
   final String name;
   final String? description;
   final String? category;
-  final String? difficulty;
+  final String? difficulty; // beginner, intermediate, advanced
   final int? durationMinutes;
   final bool isPublic;
   final bool isActive;
+  final List<WorkoutExercise> exercises;
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  Workout({
+  const Workout({
     required this.id,
     required this.trainerId,
     required this.name,
@@ -20,74 +26,51 @@ class Workout {
     this.category,
     this.difficulty,
     this.durationMinutes,
-    this.isPublic = false,
-    this.isActive = true,
+    required this.isPublic,
+    required this.isActive,
+    required this.exercises,
     required this.createdAt,
     required this.updatedAt,
   });
 
-  /// Get display difficulty color
-  String getDifficultyColor() {
-    return switch (difficulty?.toLowerCase()) {
-      'beginner' => '#4CAF50', // green
-      'intermediate' => '#FF9800', // orange
-      'advanced' => '#F44336', // red
-      _ => '#9E9E9E', // grey
-    };
+  /// Get total exercise count
+  int get exerciseCount => exercises.length;
+
+  /// Get total estimated sets
+  int get totalSets => exercises.fold(0, (sum, ex) => sum + ex.sets);
+
+  /// Copy with method for creating modified instances
+  Workout copyWith({
+    String? id,
+    String? trainerId,
+    String? name,
+    String? description,
+    String? category,
+    String? difficulty,
+    int? durationMinutes,
+    bool? isPublic,
+    bool? isActive,
+    List<WorkoutExercise>? exercises,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Workout(
+      id: id ?? this.id,
+      trainerId: trainerId ?? this.trainerId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      category: category ?? this.category,
+      difficulty: difficulty ?? this.difficulty,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
+      isPublic: isPublic ?? this.isPublic,
+      isActive: isActive ?? this.isActive,
+      exercises: exercises ?? this.exercises,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 
-  /// Check if workout is available for assignment
-  bool get isAvailable => isActive;
-}
-
-/// Domain entity for Workout Assignment
-class WorkoutAssignment {
-  final String id;
-  final String workoutId;
-  final String clientId;
-  final String assignedBy;
-  final DateTime assignedAt;
-  final DateTime? startsAt;
-  final DateTime? endsAt;
-  final bool isCompleted;
-  final DateTime? completedAt;
-  final String? notes;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-
-  WorkoutAssignment({
-    required this.id,
-    required this.workoutId,
-    required this.clientId,
-    required this.assignedBy,
-    required this.assignedAt,
-    this.startsAt,
-    this.endsAt,
-    this.isCompleted = false,
-    this.completedAt,
-    this.notes,
-    required this.createdAt,
-    required this.updatedAt,
-  });
-
-  /// Check if assignment is overdue
-  bool get isOverdue {
-    if (endsAt == null || isCompleted) return false;
-    return DateTime.now().isAfter(endsAt!);
-  }
-
-  /// Get remaining days until due date
-  int? getRemainingDays() {
-    if (endsAt == null) return null;
-    if (isCompleted) return 0;
-    final difference = endsAt!.difference(DateTime.now()).inDays;
-    return difference < 0 ? 0 : difference;
-  }
-
-  /// Check if can be started
-  bool get canStart {
-    if (isCompleted) return false;
-    if (startsAt == null) return true;
-    return !DateTime.now().isBefore(startsAt!);
-  }
+  @override
+  String toString() =>
+      'Workout(id: $id, name: $name, difficulty: $difficulty, exercises: ${exercises.length}, mins: $durationMinutes)';
 }
