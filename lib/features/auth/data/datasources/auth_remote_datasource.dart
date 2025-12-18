@@ -5,6 +5,8 @@ import '../../../../core/device/device_service.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../payments/data/models/payment_intent_model.dart';
+import '../models/client_model.dart';
+import '../models/trainer_model.dart';
 import '../models/verify_magic_link_response_model.dart';
 
 /// Abstract interface for remote authentication data operations.
@@ -172,37 +174,57 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       // Parse the response
       try {
-        print('🔍 DEBUG Frontend: Attempting to parse response with VerifyMagicLinkResponseModel.fromJson()');
-        final responseModel = VerifyMagicLinkResponseModel.fromJson(
-          response.data as Map<String, dynamic>,
-        );
-        print('✅ DEBUG Frontend: Response parsed successfully');
-        print('📦 DEBUG Frontend: accessToken length = ${responseModel.accessToken.length}');
-        print('📦 DEBUG Frontend: refreshToken length = ${responseModel.refreshToken.length}');
-        print('📦 DEBUG Frontend: role = ${responseModel.role}');
-        print('📦 DEBUG Frontend: user data = ${responseModel.user}');
+        final responseData = response.data as Map<String, dynamic>;
+        print('🔍 DEBUG Frontend: Response keys: ${responseData.keys}');
 
-        // Store tokens securely
-        print('🔍 DEBUG Frontend: Storing tokens securely');
-        await secureStorage.write(
-          key: 'accessToken',
-          value: responseModel.accessToken,
-        );
-        await secureStorage.write(
-          key: 'refreshToken',
-          value: responseModel.refreshToken,
-        );
-        print('✅ DEBUG Frontend: Tokens stored successfully');
+        // Check if response has the standard VerifyMagicLinkResponseModel structure
+        if (responseData.containsKey('accessToken') && responseData.containsKey('role')) {
+          print('🔍 DEBUG Frontend: Parsing as VerifyMagicLinkResponseModel');
+          final responseModel = VerifyMagicLinkResponseModel.fromJson(responseData);
+          print('✅ DEBUG Frontend: Response parsed successfully');
 
-        // Return the parsed user model (Trainer or Client)
-        print('🔍 DEBUG Frontend: Parsing user model based on role=${responseModel.role}');
-        final user = responseModel.parseUser();
-        print('✅ DEBUG Frontend: User model parsed successfully: $user');
-        return user;
+          // Store tokens securely
+          await secureStorage.write(
+            key: 'accessToken',
+            value: responseModel.accessToken,
+          );
+          await secureStorage.write(
+            key: 'refreshToken',
+            value: responseModel.refreshToken,
+          );
+          print('✅ DEBUG Frontend: Tokens stored successfully');
+
+          final user = responseModel.parseUser();
+          print('✅ DEBUG Frontend: User model parsed: $user');
+          return user;
+        } else if (responseData.containsKey('user_type')) {
+          // Response is just user data (like /api/v1/auth/me format)
+          print('🔍 DEBUG Frontend: Parsing as direct user data');
+          final userType = responseData['user_type'] as String?;
+
+          if (userType == 'trainer') {
+            final trainer = TrainerModel.fromJson(responseData);
+            print('✅ DEBUG Frontend: TrainerModel parsed: $trainer');
+            return trainer;
+          } else if (userType == 'client') {
+            // Map response fields to ClientModel expectations
+            final mappedResponse = {
+              'id': responseData['id'],
+              'email': responseData['email'],
+              'name': '${responseData['first_name'] ?? ''} ${responseData['last_name'] ?? ''}'.trim(),
+              'trainerId': 0, // Default - will be set by backend later
+              'user_type': responseData['user_type'],
+            };
+            final client = ClientModel.fromJson(mappedResponse);
+            print('✅ DEBUG Frontend: ClientModel parsed: $client');
+            return client;
+          }
+        }
+
+        throw Exception('Unknown response format');
 
       } catch (parseError) {
         print('❌ DEBUG Frontend: Error parsing response: ${parseError.runtimeType}: $parseError');
-        print('❌ DEBUG Frontend: Trying to see raw data keys: ${(response.data as Map).keys}');
         rethrow;
       }
 
@@ -242,21 +264,62 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         ),
       );
 
-      // Parse the response
-      final responseModel = VerifyMagicLinkResponseModel.fromJson(
-        response.data as Map<String, dynamic>,
-      );
+      print('✅ DEBUG Frontend: getCurrentUser response status=${response.statusCode}');
+      print('📦 DEBUG Frontend: getCurrentUser response.data type = ${response.data.runtimeType}');
+      print('📦 DEBUG Frontend: getCurrentUser response.data = ${response.data}');
 
-      // Return the parsed user model (Trainer or Client)
-      return responseModel.parseUser();
+      // Parse the response - /api/v1/auth/me returns user data directly
+      try {
+        final userResponse = response.data as Map<String, dynamic>;
+        print('🔍 DEBUG Frontend: Parsing user directly from /api/v1/auth/me response');
+        final userType = userResponse['user_type'] as String?;
+        print('🔍 DEBUG Frontend: user_type = $userType');
+
+        if (userType == 'trainer') {
+          print('🔍 DEBUG Frontend: Parsing as TrainerModel');
+          print('🔍 DEBUG Frontend: userResponse keys: ${userResponse.keys}');
+          final trainer = TrainerModel.fromJson(userResponse);
+          print('✅ DEBUG Frontend: TrainerModel parsed: $trainer');
+          return trainer;
+        } else if (userType == 'client') {
+          print('🔍 DEBUG Frontend: Parsing as ClientModel');
+          print('🔍 DEBUG Frontend: userResponse keys: ${userResponse.keys}');
+          print('🔍 DEBUG Frontend: userResponse values: ${userResponse.values}');
+
+          // Map the response to match ClientModel expectations
+          final mappedResponse = {
+            'id': userResponse['id'],
+            'email': userResponse['email'],
+            'name': '${userResponse['first_name'] ?? ''} ${userResponse['last_name'] ?? ''}'.trim(),
+            'trainerId': 0, // TODO: Get from API or user context
+            'user_type': userResponse['user_type'],
+          };
+          print('🔍 DEBUG Frontend: mappedResponse: $mappedResponse');
+
+          final client = ClientModel.fromJson(mappedResponse);
+          print('✅ DEBUG Frontend: ClientModel parsed: $client');
+          return client;
+        } else {
+          throw ArgumentError('Unknown user_type: $userType');
+        }
+
+      } catch (parseError) {
+        print('❌ DEBUG Frontend: Error parsing user from /api/v1/auth/me: ${parseError.runtimeType}: $parseError');
+        rethrow;
+      }
+
     } on CacheException {
       rethrow;
     } on DioException catch (e) {
+      print('❌ DEBUG Frontend: DioException in getCurrentUser: ${e.message}');
       throw ServerException(
         message: 'Failed to get current user: ${e.message}',
         statusCode: e.response?.statusCode,
         responseBody: e.response?.toString(),
       );
+    } catch (e) {
+      print('❌ DEBUG Frontend: Unexpected error in getCurrentUser: ${e.runtimeType}: $e');
+      rethrow;
     }
   }
 

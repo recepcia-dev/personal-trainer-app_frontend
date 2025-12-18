@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/error/failures.dart';
 import '../providers/auth_state_provider.dart';
+import '../providers/pending_email_provider.dart';
 
 /// Magic link verification screen for passwordless authentication.
 ///
@@ -129,25 +130,19 @@ class _MagicLinkVerificationScreenState
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
 
-    // Listen for verification success/error
+    // Listen for verification errors only - let router handle success redirect
     ref.listen<AsyncValue<dynamic>>(
       authStateProvider,
       (previous, next) {
-        next.whenData((user) {
-          if (user != null && _autoVerifyAttempted) {
-            // Success: User verified and authenticated
-            _showSuccessMessage(context, 'Verification successful!');
-
-            // Navigate to biometric authentication screen for device-bound auth
-            if (mounted) {
-              context.go('/biometric-auth');
-            }
-          }
-        });
-
         next.maybeWhen(
+          data: (_) {
+            // Verification successful - clear pending email
+            print('✅ Verification successful, clearing pending email');
+            ref.read(pendingEmailProvider.notifier).state = '';
+          },
           error: (error, stack) {
             final errorMsg = _getErrorMessage(error);
+            print('❌ Verification error: $errorMsg');
             setState(() {
               _autoVerifyAttempted = false;
               _codeErrorMessage = errorMsg;

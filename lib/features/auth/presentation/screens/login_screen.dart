@@ -19,6 +19,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   bool _emailSubmitted = false;
   String? _emailErrorMessage;
+  String _pendingEmail = ''; // Store the email being sent for navigation
 
   @override
   void dispose() {
@@ -58,47 +59,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
-    setState(() {
-      _emailSubmitted = true;
-    });
-
     // Call sendMagicLink on auth state provider
-    await ref.read(authStateProvider.notifier).sendMagicLink(email: email);
+    print('📧 Sending magic link for: $email');
+    final success = await ref.read(authStateProvider.notifier).sendMagicLink(email: email);
+
+    print('✅ Backend returned: success=$success');
+
+    if (success) {
+      print('🔄 Magic link sent successfully, router will redirect automatically');
+      // Router redirect will handle navigation to /verify-magic-link
+      // No manual navigation needed - this prevents conflicts
+    } else {
+      print('❌ Magic link send failed');
+      if (mounted) {
+        setState(() {
+          _emailErrorMessage = 'Failed to send magic link. Please try again.';
+        });
+        _showErrorMessage(context, 'Failed to send magic link.');
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
-
-    // Watch for state changes to navigate or show error messages
-    ref.listen<AsyncValue<dynamic>>(
-      authStateProvider,
-      (previous, next) {
-        // Check if we just transitioned from loading to success
-        final wasLoading = previous?.isLoading ?? false;
-        final isSuccess = next.hasValue && !next.isLoading;
-
-        if (wasLoading && isSuccess && _emailSubmitted) {
-          // Magic link sent successfully - navigate to verification screen
-          final email = _emailController.text.trim();
-          print('🔄 Navigating to verify-magic-link screen for $email');
-          context.push('/verify-magic-link?email=${Uri.encodeComponent(email)}');
-        }
-
-        next.maybeWhen(
-          error: (error, stack) {
-            // Error sending magic link
-            print('❌ Error sending magic link: $error');
-            setState(() {
-              _emailSubmitted = false;
-              _emailErrorMessage = error.toString();
-            });
-            _showErrorMessage(context, error.toString());
-          },
-          orElse: () {},
-        );
-      },
-    );
 
     return Scaffold(
       appBar: AppBar(

@@ -2,8 +2,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/crashlytics/crashlytics_service_provider.dart';
 import '../../../../core/error/failures.dart';
+import '../../data/models/admin_model.dart';
 import 'auth_provider.dart';
 import 'auth_repository_provider.dart';
+import 'pending_email_provider.dart';
 
 part 'auth_state_provider.g.dart';
 
@@ -34,10 +36,19 @@ class AuthState extends _$AuthState {
     final getCurrentUserUseCase = ref.watch(getCurrentUserUseCaseProvider);
     final result = await getCurrentUserUseCase.call();
 
-    return result.fold(
+    final user = result.fold(
       (failure) => null, // No authenticated user or error
       (user) => user,    // Return authenticated user (Trainer or Client)
     );
+
+    // IMPORTANT: Sync authProvider state with authStateProvider
+    // When user is loaded, update authProvider so router knows user is authenticated
+    if (user != null) {
+      print('🔐 AuthState.build(): User loaded, updating authProvider to true');
+      ref.read(authProvider.notifier).login();
+    }
+
+    return user;
   }
 
   /// Initiate passwordless authentication by sending magic link to email
@@ -48,28 +59,40 @@ class AuthState extends _$AuthState {
   /// Parameters:
   ///   - email: User's email address
   ///
+  /// Returns: true if successful, false if error
+  ///
   /// State transitions:
   ///   - Initial: null (no user yet)
   ///   - Loading: AsyncLoading while sending email
   ///   - Success: AsyncData(null) - keeps null state (user not auth'd yet)
   ///   - Error: AsyncError with Failure
-  Future<void> sendMagicLink({required String email}) async {
+  Future<bool> sendMagicLink({required String email}) async {
+    print('📧 DEBUG: sendMagicLink starting for $email');
     state = const AsyncLoading();
+    print('📧 DEBUG: state = AsyncLoading');
 
     final sendMagicLinkUseCase = ref.watch(sendMagicLinkUseCaseProvider);
     final result = await sendMagicLinkUseCase.call(email: email);
 
-    result.fold(
+    return result.fold(
       (failure) {
+        print('❌ DEBUG: sendMagicLink failed: ${failure.message}');
         state = AsyncError(failure, StackTrace.current);
+        ref.read(pendingEmailProvider.notifier).state = ''; // Clear on failure
+        return false;
       },
       (_) {
-        // Link sent successfully - stay in null state
-        // User will verify code in next step
+        // Link sent successfully - store email for router to detect
+        print('✅ DEBUG: sendMagicLink succeeded, setting state = AsyncData(null)');
+        ref.read(pendingEmailProvider.notifier).state = email; // Save for router redirect
         state = const AsyncData(null);
+        print('✅ DEBUG: state changed to AsyncData(null), email pending verification');
+        return true;
       },
     );
   }
+
+  String getPendingVerificationEmail() => ref.read(pendingEmailProvider);
 
   /// Verify magic link code and authenticate user
   ///
@@ -103,8 +126,23 @@ class AuthState extends _$AuthState {
       },
       (user) async {
         print('✅ DEBUG: verifyMagicLink succeeded, user: $user');
+
+        // Check if email is admin domain (@thegamechangers.es)
+        final isAdminEmail = email.endsWith('@thegamechangers.es');
+        print('🔐 DEBUG: isAdminEmail=$isAdminEmail for email=$email');
+
+        dynamic finalUser = user;
+        if (isAdminEmail) {
+          print('🔐 DEBUG: Converting user to AdminModel');
+          // Create an AdminModel from the email
+          finalUser = AdminModel(
+            email: email,
+            name: 'Admin User',
+          );
+        }
+
         // Code verified successfully - user authenticated from server
-        state = AsyncData(user);
+        state = AsyncData(finalUser);
 
         // UPDATE authProvider so router knows user is authenticated
         print('🔍 DEBUG: Updating authProvider.login()');

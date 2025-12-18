@@ -11,7 +11,11 @@ class AuthNotifier extends StateNotifier<bool> {
   AuthNotifier() : super(false);
 
   /// Login user
-  void login() => state = true;
+  void login() {
+    print('🔐 AuthNotifier.login() called, setting state = true');
+    state = true;
+    print('🔐 AuthNotifier.login() complete, state is now: $state');
+  }
 
   /// Logout user
   void logout() => state = false;

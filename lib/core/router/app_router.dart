@@ -6,9 +6,11 @@ import '../../features/auth/data/models/client_model.dart';
 import '../../features/auth/data/models/trainer_model.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
+import '../../features/auth/presentation/providers/pending_email_provider.dart';
 import '../../features/auth/presentation/screens/biometric_auth_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/magic_link_verification_screen.dart';
+import '../../features/auth/presentation/screens/role_selection_screen.dart';
 import '../analytics/analytics_service_provider.dart';
 import 'screens/admin_dashboard_screen.dart';
 import 'screens/client_dashboard_screen.dart';
@@ -30,6 +32,22 @@ final routerProvider = Provider<GoRouter>(
       // Get the current route location
       final location = state.uri.path;
 
+      print('🔍 Router redirect: location=$location, isAuthenticated=$isAuthenticated, authState=$authState, user=$user');
+
+      // CRITICAL: If auth state is still loading, don't redirect - wait for it to complete
+      // This prevents infinite redirect loops during app startup
+      if (authState.isLoading) {
+        print('🔄 Router: Auth state is still loading, not redirecting');
+        return null;
+      }
+
+      // Check if there's a pending email verification (magic link sent)
+      final pendingEmail = ref.watch(pendingEmailProvider);
+      if (pendingEmail.isNotEmpty && location != '/verify-magic-link') {
+        print('🔄 Router: Redirecting to verify-magic-link for $pendingEmail');
+        return '/verify-magic-link?email=${Uri.encodeComponent(pendingEmail)}';
+      }
+
       // Handle authenticated users trying to access login
       if (isAuthenticated && location == '/login') {
         // Redirect to appropriate dashboard based on user role
@@ -50,13 +68,13 @@ final routerProvider = Provider<GoRouter>(
            location == '/admin/dashboard' ||
            location == '/trainer/dashboard' ||
            location == '/client/dashboard')) {
-        return '/login';
+        return '/role-selection';
       }
 
       // Handle splash screen navigation based on auth state
       if (location == '/splash') {
         if (!isAuthenticated) {
-          return '/login';
+          return '/role-selection';
         }
         // Redirect to appropriate dashboard based on user role
         if (user is AdminModel) {
@@ -71,6 +89,7 @@ final routerProvider = Provider<GoRouter>(
       }
 
       // No redirect needed
+      print('🔍 Router: no redirect needed for $location');
       return null;
     },
     routes: [
@@ -86,6 +105,20 @@ final routerProvider = Provider<GoRouter>(
             );
           });
           return const SplashScreen();
+        },
+      ),
+      GoRoute(
+        path: '/role-selection',
+        name: 'roleSelection',
+        builder: (context, state) {
+          // Log screen view
+          ref.read(analyticsServiceProvider).whenData((analytics) {
+            analytics.logScreenView(
+              screenName: 'role_selection',
+              screenClass: 'RoleSelectionScreen',
+            );
+          });
+          return const RoleSelectionScreen();
         },
       ),
       GoRoute(
