@@ -1,4 +1,6 @@
-/// Progress log domain entity - represents a single exercise completion
+/// Domain entity representing logged exercise progress
+///
+/// Tracks actual performance when a client completes an exercise
 class ProgressLog {
   final String id;
   final String? remoteId;
@@ -13,7 +15,7 @@ class ProgressLog {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  ProgressLog({
+  const ProgressLog({
     required this.id,
     this.remoteId,
     required this.clientId,
@@ -28,7 +30,42 @@ class ProgressLog {
     required this.updatedAt,
   });
 
+  /// Get summary string
+  String get summary =>
+      '$setsCompleted sets × $repsPerSet reps${weightKg != null ? ' @ ${weightKg}kg' : ''}';
+
+  /// Copy with method
+  ProgressLog copyWith({
+    String? id,
+    String? remoteId,
+    String? clientId,
+    String? exerciseId,
+    int? setsCompleted,
+    int? repsPerSet,
+    double? weightKg,
+    int? durationSeconds,
+    String? notes,
+    bool? isSynced,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return ProgressLog(
+      id: id ?? this.id,
+      remoteId: remoteId ?? this.remoteId,
+      clientId: clientId ?? this.clientId,
+      exerciseId: exerciseId ?? this.exerciseId,
+      setsCompleted: setsCompleted ?? this.setsCompleted,
+      repsPerSet: repsPerSet ?? this.repsPerSet,
+      weightKg: weightKg ?? this.weightKg,
+      durationSeconds: durationSeconds ?? this.durationSeconds,
+      notes: notes ?? this.notes,
+      isSynced: isSynced ?? this.isSynced,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   @override
   String toString() =>
-      'ProgressLog(id: $id, exerciseId: $exerciseId, setsCompleted: $setsCompleted)';
+      'ProgressLog(exercise: $exerciseId, sets: $setsCompleted, reps: $repsPerSet, weight: $weightKg kg)';
 }
