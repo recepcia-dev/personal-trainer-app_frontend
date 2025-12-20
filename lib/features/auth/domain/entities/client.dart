@@ -5,10 +5,10 @@ class Client {
   const Client({
     required this.email,
     required this.name,
-    required this.trainerId,
+    this.trainerId,  // Optional - may not be assigned yet
   });
 
   final String email;
   final String name;
-  final int trainerId;
+  final String? trainerId;  // Changed to String to match backend UUID
 }

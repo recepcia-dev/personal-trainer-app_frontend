@@ -28,6 +28,7 @@ abstract class AuthRepository {
   /// Throws [NetworkFailure] if network is unavailable
   Future<Either<Failure, void>> sendMagicLink({
     required String email,
+    required String userType,
   });
 
   /// Verifies the magic link code entered by the user
@@ -84,4 +85,56 @@ abstract class AuthRepository {
   /// Throws [NetworkFailure] if network is unavailable
   /// Throws [CacheFailure] if no authenticated user exists
   Future<Either<Failure, void>> registerFcmToken(String fcmToken);
+
+  /// Registers a new trainer account
+  ///
+  /// Creates a new trainer account with the provided information.
+  /// The backend will generate a unique trainer code.
+  ///
+  /// Parameters:
+  ///   - email: The trainer's email address
+  ///   - firstName: The trainer's first name
+  ///   - lastName: The trainer's last name
+  ///   - specialty: The trainer's specialization
+  ///   - bio: Optional biography/description
+  ///
+  /// Returns TrainerModel on success with unique code
+  /// Throws [ServerFailure] if registration fails or server error occurs
+  /// Throws [NetworkFailure] if network is unavailable
+  Future<Either<Failure, dynamic>> registerTrainer({
+    required String email,
+    required String firstName,
+    required String lastName,
+    required String specialty,
+    String? bio,
+  });
+
+  /// Registers a new client account
+  ///
+  /// Creates a new client account linked to a trainer via trainer code.
+  /// Stores client health data for fitness tracking.
+  ///
+  /// Parameters:
+  ///   - email: The client's email address
+  ///   - firstName: The client's first name
+  ///   - lastName: The client's last name
+  ///   - age: The client's age in years
+  ///   - weightKg: The client's weight in kilograms
+  ///   - heightCm: The client's height in centimeters
+  ///   - fitnessLevel: Fitness level (beginner/intermediate/advanced)
+  ///   - trainerCode: The unique trainer code to link to a trainer
+  ///
+  /// Returns ClientModel on success
+  /// Throws [ServerFailure] if registration fails or server error occurs
+  /// Throws [NetworkFailure] if network is unavailable
+  Future<Either<Failure, dynamic>> registerClient({
+    required String email,
+    required String firstName,
+    required String lastName,
+    required int age,
+    required double weightKg,
+    required double heightCm,
+    required String fitnessLevel,
+    required String trainerCode,
+  });
 }

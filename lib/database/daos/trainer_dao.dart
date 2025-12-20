@@ -18,7 +18,7 @@ class TrainerDao extends DatabaseAccessor<AppDatabase> {
       into(db.trainersTable).insertOnConflictUpdate(trainer);
 
   /// Get all clients for a specific trainer
-  Future<List<ClientsTableData>> getClientsForTrainer(int trainerId) =>
+  Future<List<ClientsTableData>> getClientsForTrainer(String trainerId) =>
       (select(db.clientsTable)..where((c) => c.trainerId.equals(trainerId)))
           .get();
 }

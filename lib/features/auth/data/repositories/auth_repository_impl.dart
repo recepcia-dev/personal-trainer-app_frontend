@@ -33,10 +33,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, void>> sendMagicLink({
     required String email,
+    required String userType,
   }) async {
     if (await networkInfo.isConnected) {
       try {
-        await remoteDataSource.sendMagicLink(email);
+        await remoteDataSource.sendMagicLink(email, userType);
         return const Right(null);
       } on ServerException catch (e) {
         return Left(
@@ -192,6 +193,84 @@ class AuthRepositoryImpl implements AuthRepository {
       return const Left(
         NetworkFailure(
           message: 'No internet connection. Cannot register FCM token.',
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failure, dynamic>> registerTrainer({
+    required String email,
+    required String firstName,
+    required String lastName,
+    required String specialty,
+    String? bio,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final trainer = await remoteDataSource.registerTrainer(
+          email: email,
+          firstName: firstName,
+          lastName: lastName,
+          specialty: specialty,
+          bio: bio,
+        );
+        return Right(trainer);
+      } on ServerException catch (e) {
+        return Left(
+          ServerFailure(message: e.message, statusCode: e.statusCode),
+        );
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(message: e.message));
+      } catch (e) {
+        return Left(ServerFailure(message: 'Failed to register trainer: $e'));
+      }
+    } else {
+      return const Left(
+        NetworkFailure(
+          message: 'No internet connection. Cannot register trainer.',
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failure, dynamic>> registerClient({
+    required String email,
+    required String firstName,
+    required String lastName,
+    required int age,
+    required double weightKg,
+    required double heightCm,
+    required String fitnessLevel,
+    required String trainerCode,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final client = await remoteDataSource.registerClient(
+          email: email,
+          firstName: firstName,
+          lastName: lastName,
+          age: age,
+          weightKg: weightKg,
+          heightCm: heightCm,
+          fitnessLevel: fitnessLevel,
+          trainerCode: trainerCode,
+        );
+        return Right(client);
+      } on ServerException catch (e) {
+        return Left(
+          ServerFailure(message: e.message, statusCode: e.statusCode),
+        );
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(message: e.message));
+      } catch (e) {
+        return Left(ServerFailure(message: 'Failed to register client: $e'));
+      }
+    } else {
+      return const Left(
+        NetworkFailure(
+          message: 'No internet connection. Cannot register client.',
         ),
       );
     }

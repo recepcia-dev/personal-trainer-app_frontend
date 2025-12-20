@@ -20,6 +20,7 @@ class SendMagicLink {
 
   Future<Either<Failure, void>> call({
     required String email,
+    required String userType,
   }) =>
-      authRepository.sendMagicLink(email: email);
+      authRepository.sendMagicLink(email: email, userType: userType);
 }

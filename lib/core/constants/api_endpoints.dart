@@ -31,6 +31,10 @@ class ApiEndpoints {
   static const String createPaymentIntent = '$apiV1/payments/create-intent';
   static const String paymentWebhook = '$apiV1/payments/webhook';
 
+  // Subscription endpoints
+  static const String getSubscriptionInfo = '$apiV1/auth/me/subscription';
+  static const String updateSubscriptionPlan = '$apiV1/auth/me/subscription';
+
   // Notification endpoints
   static const String registerFcmToken = '$apiV1/notifications/register-token';
 

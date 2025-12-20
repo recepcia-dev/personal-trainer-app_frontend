@@ -11,7 +11,9 @@ import '../providers/auth_state_provider.dart';
 /// 2. Click "Send Magic Link"
 /// 3. Navigate directly to verification screen
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  final String userType;
+
+  const LoginScreen({super.key, required this.userType});
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -52,7 +54,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     // Send magic link
-    final success = await ref.read(authStateProvider.notifier).sendMagicLink(email);
+    final success = await ref.read(authStateProvider.notifier).sendMagicLink(email, widget.userType);
 
     if (!mounted) return;
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../payments/presentation/providers/subscription_info_provider.dart';
 import '../providers/client_provider.dart';
 
 /// Screen for creating a new client
@@ -229,6 +231,44 @@ class _ClientCreateScreenState extends ConsumerState<ClientCreateScreen> {
     setState(() => _isSubmitting = true);
 
     try {
+      // Check subscription limit before creating client
+      final subscriptionInfo = await ref.read(subscriptionInfoProvider.future);
+
+      if (subscriptionInfo.maxClients != null &&
+          subscriptionInfo.currentClientsCount >= subscriptionInfo.maxClients!) {
+        if (!mounted) return;
+
+        // Show upgrade dialog
+        await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Client Limit Reached'),
+            content: Text(
+              'You have reached the maximum number of clients (${subscriptionInfo.maxClients!}) '
+              'for your ${subscriptionInfo.plan.toUpperCase()} plan. Upgrade your plan to add more clients.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  context.push('/payments/plans');
+                },
+                child: const Text('Upgrade Now'),
+              ),
+            ],
+          ),
+        );
+
+        if (mounted) {
+          setState(() => _isSubmitting = false);
+        }
+        return;
+      }
+
       await ref.read(createClientNotifierProvider.notifier).createClient(
         email: _emailController.text,
         firstName: _firstNameController.text.isNotEmpty

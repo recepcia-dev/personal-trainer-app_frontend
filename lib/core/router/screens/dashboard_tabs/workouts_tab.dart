@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../../../features/workouts/presentation/screens/trainer_workouts_tab.dart';
-
-/// Workouts tab - Displays trainer's workouts
+/// Workouts tab - Not used for trainers
+/// This file exists only to prevent import errors
 class WorkoutsTab extends StatelessWidget {
   const WorkoutsTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const TrainerWorkoutsTab();
+    return const Center(
+      child: Text('Workouts tab is not available for trainers'),
+    );
   }
 }

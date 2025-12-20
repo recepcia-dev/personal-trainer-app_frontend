@@ -55,6 +55,9 @@ class RoleSelectionScreen extends StatelessWidget {
                   label: "I'm a Trainer",
                   description: 'Manage clients and create workouts',
                   onTap: () => context.go('/login?role=trainer'),
+                  backgroundColor: Colors.blue[700]!,
+                  iconColor: Colors.white,
+                  textColor: Colors.white,
                 ),
                 const SizedBox(height: 16),
 
@@ -64,6 +67,9 @@ class RoleSelectionScreen extends StatelessWidget {
                   label: "I'm a Client",
                   description: 'Track workouts and progress',
                   onTap: () => context.go('/login?role=client'),
+                  backgroundColor: Colors.green[700]!,
+                  iconColor: Colors.white,
+                  textColor: Colors.white,
                 ),
               ],
             ),
@@ -80,54 +86,62 @@ class _RoleButton extends StatelessWidget {
     required this.label,
     required this.description,
     required this.onTap,
+    required this.backgroundColor,
+    required this.iconColor,
+    required this.textColor,
   });
 
   final IconData icon;
   final String label;
   final String description;
   final VoidCallback onTap;
+  final Color backgroundColor;
+  final Color iconColor;
+  final Color textColor;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Card(
-      elevation: 2,
+      elevation: 4,
+      color: backgroundColor,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   icon,
-                  size: 32,
-                  color: theme.colorScheme.onPrimaryContainer,
+                  size: 36,
+                  color: iconColor,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 20),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       label,
-                      style: theme.textTheme.titleMedium?.copyWith(
+                      style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
+                        color: textColor,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Text(
                       description,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: textColor.withOpacity(0.9),
                       ),
                     ),
                   ],
@@ -135,8 +149,8 @@ class _RoleButton extends StatelessWidget {
               ),
               Icon(
                 Icons.arrow_forward_ios,
-                size: 16,
-                color: theme.colorScheme.onSurfaceVariant,
+                size: 20,
+                color: iconColor.withOpacity(0.8),
               ),
             ],
           ),

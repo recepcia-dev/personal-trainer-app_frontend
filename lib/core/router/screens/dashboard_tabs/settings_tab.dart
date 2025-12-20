@@ -46,72 +46,41 @@ class SettingsTab extends ConsumerWidget {
                       _showThemeDialog(context, ref);
                     },
                   ),
+                  const SizedBox(height: 32),
+
+                  // Payments & Subscription
+                  _SectionTitle(title: 'Payments & Subscription'),
+                  const SizedBox(height: 12),
                   _SettingsTile(
-                    icon: Icons.security,
-                    title: 'Biometric Lock',
-                    subtitle: 'Require authentication to open app',
-                    trailing: Switch(value: true, onChanged: (value) {}),
+                    icon: Icons.credit_card,
+                    title: 'Subscription Plan',
+                    subtitle: 'Manage your subscription',
+                    onTap: () {
+                      // TODO: Navigate to subscription management screen
+                    },
+                  ),
+                  _SettingsTile(
+                    icon: Icons.receipt_long,
+                    title: 'Payment History',
+                    subtitle: 'View past payments and invoices',
+                    onTap: () {
+                      // TODO: Navigate to payment history screen
+                    },
+                  ),
+                  _SettingsTile(
+                    icon: Icons.account_balance,
+                    title: 'Billing Information',
+                    subtitle: 'Update payment methods',
+                    onTap: () {
+                      // TODO: Navigate to billing information screen
+                    },
                   ),
 
                   const SizedBox(height: 32),
 
-                  // Workout settings
-                  _SectionTitle(title: 'Workout'),
+                  // Account
+                  _SectionTitle(title: 'Account'),
                   const SizedBox(height: 12),
-                  _SettingsTile(
-                    icon: Icons.timer,
-                    title: 'Rest Timer',
-                    subtitle: 'Default: 60 seconds',
-                    onTap: () {},
-                  ),
-                  _SettingsTile(
-                    icon: Icons.volume_up,
-                    title: 'Sound & Haptics',
-                    subtitle: 'Workout completion sounds',
-                    trailing: Switch(value: true, onChanged: (value) {}),
-                  ),
-                  _SettingsTile(
-                    icon: Icons.straighten,
-                    title: 'Units',
-                    subtitle: 'Metric (kg, cm)',
-                    onTap: () {},
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Notifications
-                  _SectionTitle(title: 'Notifications'),
-                  const SizedBox(height: 12),
-                  _SettingsTile(
-                    icon: Icons.notifications_active,
-                    title: 'Push Notifications',
-                    subtitle: 'Workout reminders and updates',
-                    trailing: Switch(value: true, onChanged: (value) {}),
-                  ),
-                  _SettingsTile(
-                    icon: Icons.email,
-                    title: 'Email Notifications',
-                    subtitle: 'Weekly progress reports',
-                    trailing: Switch(value: false, onChanged: (value) {}),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Privacy & Security
-                  _SectionTitle(title: 'Privacy & Security'),
-                  const SizedBox(height: 12),
-                  _SettingsTile(
-                    icon: Icons.privacy_tip,
-                    title: 'Privacy Policy',
-                    subtitle: 'View our privacy policy',
-                    onTap: () {},
-                  ),
-                  _SettingsTile(
-                    icon: Icons.description,
-                    title: 'Terms of Service',
-                    subtitle: 'View terms and conditions',
-                    onTap: () {},
-                  ),
                   _SettingsTile(
                     icon: Icons.delete,
                     title: 'Delete Account',
@@ -120,24 +89,6 @@ class SettingsTab extends ConsumerWidget {
                       _showDeleteAccountDialog(context);
                     },
                     textColor: Colors.red,
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // About
-                  _SectionTitle(title: 'About'),
-                  const SizedBox(height: 12),
-                  _SettingsTile(
-                    icon: Icons.info,
-                    title: 'App Version',
-                    subtitle: '1.0.0 (Build 1)',
-                    onTap: () {},
-                  ),
-                  _SettingsTile(
-                    icon: Icons.star,
-                    title: 'Rate Us',
-                    subtitle: 'Rate us on the App Store',
-                    onTap: () {},
                   ),
 
                   const SizedBox(height: 48),

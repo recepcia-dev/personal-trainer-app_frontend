@@ -15,17 +15,20 @@ import '../../../../core/network/network_info.dart';
 
 part 'auth_repository_provider.g.dart';
 
-/// Provider for the remote data source (API client)
-@riverpod
-AuthRemoteDataSource authRemoteDataSource(AuthRemoteDataSourceRef ref) {
-  final dioClient = DioClient();
-  return AuthRemoteDataSourceImpl(dioClient: dioClient);
-}
-
 /// Provider for the local data source (secure token storage)
 @riverpod
 AuthLocalDataSource authLocalDataSource(AuthLocalDataSourceRef ref) {
   return const AuthLocalDataSourceImpl();
+}
+
+/// Provider for the remote data source (API client)
+@riverpod
+AuthRemoteDataSource authRemoteDataSource(AuthRemoteDataSourceRef ref) {
+  // Ensure DioClient is initialized
+  ref.watch(authLocalDataSourceProvider);
+
+  final dioClient = DioClient();
+  return AuthRemoteDataSourceImpl(dioClient: dioClient);
 }
 
 /// Provider for the auth repository

@@ -28,11 +28,24 @@ class ClientModel with _$ClientModel {
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _ClientModel;
 
+  /// Custom factory from API response to compute full name
+  factory ClientModel.fromApi(Map<String, dynamic> json) {
+    return _$ClientModelFromJson(json);
+  }
+
   factory ClientModel.fromJson(Map<String, dynamic> json) =>
       _$ClientModelFromJson(json);
 
   /// Convert to domain entity
   const ClientModel._();
+
+  /// Get full name from first and last name
+  String get fullName {
+    if (firstName != null && lastName != null) {
+      return '$firstName $lastName';
+    }
+    return email.split('@')[0];
+  }
 
   Client toEntity() => Client(
     id: id,

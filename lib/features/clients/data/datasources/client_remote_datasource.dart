@@ -53,19 +53,15 @@ class ClientRemoteDataSourceImpl implements ClientRemoteDataSource {
     int limit = 50,
   }) async {
     try {
+      // Use the trainer-specific endpoint to get trainer's clients
       final response = await dio.get(
-        '${ApiEndpoints.baseUrl}${ApiEndpoints.clients}',
-        queryParameters: {
-          'skip': skip,
-          'limit': limit,
-        },
+        '${ApiEndpoints.baseUrl}/api/v1/trainer/clients',
       );
 
       if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
-        final items = data['items'] as List<dynamic>;
+        final items = response.data as List<dynamic>;
         return items
-            .map((json) => ClientModel.fromJson(json as Map<String, dynamic>))
+            .map((json) => ClientModel.fromApi(json as Map<String, dynamic>))
             .toList();
       } else {
         throw Exception('Failed to fetch clients: ${response.statusCode}');

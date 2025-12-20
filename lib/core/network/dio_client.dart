@@ -72,6 +72,9 @@ class DioClient {
   /// (typically in main() after AppConstants.load())
   static set tokenProvider(TokenProvider provider) => _tokenProvider = provider;
 
+  /// Check if token provider has been initialized
+  static bool get isTokenProviderInitialized => _tokenProvider != null;
+
   /// Get the underlying Dio instance
   Dio get dio => _dio;
 }

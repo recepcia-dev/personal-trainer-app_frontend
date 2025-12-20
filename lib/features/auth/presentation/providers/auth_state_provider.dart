@@ -26,9 +26,9 @@ class AuthState extends _$AuthState {
   /// Send magic link to email
   ///
   /// Returns true if successful, false otherwise.
-  Future<bool> sendMagicLink(String email) async {
+  Future<bool> sendMagicLink(String email, String userType) async {
     final useCase = ref.read(sendMagicLinkUseCaseProvider);
-    final result = await useCase.call(email: email);
+    final result = await useCase.call(email: email, userType: userType);
 
     return result.fold(
       (failure) {
@@ -36,7 +36,7 @@ class AuthState extends _$AuthState {
         return false;
       },
       (_) {
-        print('✅ Magic link sent to $email');
+        print('✅ Magic link sent to $email as $userType');
         return true;
       },
     );

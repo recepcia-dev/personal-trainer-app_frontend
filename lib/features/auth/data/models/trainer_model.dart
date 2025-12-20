@@ -22,6 +22,9 @@ class TrainerModel with _$TrainerModel implements Trainer {
     double? heightCm,
     DateTime? dateOfBirth,
     String? gender,
+    String? trainerUniqueCode,  // Unique code for trainers to share with clients
+    String? specialty,           // Trainer specialization
+    String? bio,                 // Trainer bio
   }) = _TrainerModel;
 
   factory TrainerModel.fromJson(Map<String, dynamic> json) =>

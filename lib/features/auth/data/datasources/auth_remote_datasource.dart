@@ -28,11 +28,12 @@ abstract class AuthRemoteDataSource {
   ///
   /// Parameters:
   ///   - email: The user's email address
+  ///   - userType: The user type (trainer or client)
   ///
   /// Throws:
   ///   - ServerException: If the server returns an error response
   ///   - NetworkException: If network connectivity issues prevent the request
-  Future<void> sendMagicLink(String email);
+  Future<void> sendMagicLink(String email, String userType);
 
   /// Verify the magic link code and authenticate the user.
   ///
@@ -124,6 +125,64 @@ abstract class AuthRemoteDataSource {
   ///   - ServerException: If token registration fails or server error occurs
   ///   - NetworkException: If network connectivity issues prevent the request
   Future<void> registerFcmToken(String fcmToken);
+
+  /// Register a new trainer account.
+  ///
+  /// Creates a new trainer account with the provided information.
+  /// The backend will generate a unique trainer code (e.g., "TRAINER-ABC123").
+  ///
+  /// Parameters:
+  ///   - email: The trainer's email address
+  ///   - firstName: The trainer's first name
+  ///   - lastName: The trainer's last name
+  ///   - specialty: The trainer's specialization (e.g., "Strength & Conditioning")
+  ///   - bio: Optional biography/description
+  ///
+  /// Returns:
+  ///   - TrainerModel with unique code and other trainer details
+  ///
+  /// Throws:
+  ///   - ServerException: If registration fails or server error occurs
+  ///   - NetworkException: If network connectivity issues prevent the request
+  Future<TrainerModel> registerTrainer({
+    required String email,
+    required String firstName,
+    required String lastName,
+    required String specialty,
+    String? bio,
+  });
+
+  /// Register a new client account.
+  ///
+  /// Creates a new client account linked to a trainer via trainer code.
+  /// Stores client health data for fitness tracking.
+  ///
+  /// Parameters:
+  ///   - email: The client's email address
+  ///   - firstName: The client's first name
+  ///   - lastName: The client's last name
+  ///   - age: The client's age in years
+  ///   - weightKg: The client's weight in kilograms
+  ///   - heightCm: The client's height in centimeters
+  ///   - fitnessLevel: Fitness level (e.g., "beginner", "intermediate", "advanced")
+  ///   - trainerCode: The unique trainer code to link to a trainer
+  ///
+  /// Returns:
+  ///   - ClientModel with trainer linking and health data
+  ///
+  /// Throws:
+  ///   - ServerException: If registration fails or server error occurs
+  ///   - NetworkException: If network connectivity issues prevent the request
+  Future<ClientModel> registerClient({
+    required String email,
+    required String firstName,
+    required String lastName,
+    required int age,
+    required double weightKg,
+    required double heightCm,
+    required String fitnessLevel,
+    required String trainerCode,
+  });
 }
 
 /// Implementation of [AuthRemoteDataSource].
@@ -140,11 +199,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final FlutterSecureStorage secureStorage;
 
   @override
-  Future<void> sendMagicLink(String email) async {
+  Future<void> sendMagicLink(String email, String userType) async {
     try {
       await dioClient.dio.post(
         '/api/v1/auth/magic-link',
-        data: {'email': email},
+        data: {'email': email, 'user_type': userType},
       );
     } on DioException catch (e) {
       throw ServerException(
@@ -437,6 +496,83 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on DioException catch (e) {
       throw ServerException(
         message: 'Failed to register FCM token: ${e.message}',
+        statusCode: e.response?.statusCode,
+        responseBody: e.response?.toString(),
+      );
+    }
+  }
+
+  @override
+  Future<TrainerModel> registerTrainer({
+    required String email,
+    required String firstName,
+    required String lastName,
+    required String specialty,
+    String? bio,
+  }) async {
+    try {
+      final response = await dioClient.dio.post(
+        '/api/v1/auth/registration/trainer',
+        data: {
+          'email': email,
+          'first_name': firstName,
+          'last_name': lastName,
+          'specialty': specialty,
+          if (bio != null) 'bio': bio,
+        },
+      );
+
+      return TrainerModel.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ServerException(
+        message: 'Failed to register trainer: ${e.message}',
+        statusCode: e.response?.statusCode,
+        responseBody: e.response?.toString(),
+      );
+    }
+  }
+
+  @override
+  Future<ClientModel> registerClient({
+    required String email,
+    required String firstName,
+    required String lastName,
+    required int age,
+    required double weightKg,
+    required double heightCm,
+    required String fitnessLevel,
+    required String trainerCode,
+  }) async {
+    try {
+      final response = await dioClient.dio.post(
+        '/api/v1/auth/registration/client',
+        data: {
+          'email': email,
+          'first_name': firstName,
+          'last_name': lastName,
+          'age': age,
+          'weight_kg': weightKg,
+          'height_cm': heightCm,
+          'fitness_level': fitnessLevel,
+          'trainer_code': trainerCode,
+        },
+      );
+
+      // Parse response to ClientModel
+      final responseData = response.data as Map<String, dynamic>;
+      final mappedResponse = {
+        'id': responseData['id'],
+        'email': responseData['email'],
+        'name': '${responseData['first_name'] ?? ''} ${responseData['last_name'] ?? ''}'
+            .trim(),
+        'trainerId': 0, // Will be populated from trainer_id if available
+        'user_type': responseData['user_type'],
+      };
+
+      return ClientModel.fromJson(mappedResponse);
+    } on DioException catch (e) {
+      throw ServerException(
+        message: 'Failed to register client: ${e.message}',
         statusCode: e.response?.statusCode,
         responseBody: e.response?.toString(),
       );

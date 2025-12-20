@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../features/auth/presentation/providers/auth_state_provider.dart';
+import '../../../features/auth/data/models/client_model.dart';
+import '../../../features/workouts/presentation/providers/client_workout_provider.dart';
+import '../../../features/meals/presentation/providers/client_diet_provider.dart';
+import '../../../features/progress/presentation/widgets/workout_completion_dialog.dart';
 import 'dashboard_tabs/home_tab.dart';
 import 'dashboard_tabs/workouts_tab.dart';
 import 'dashboard_tabs/profile_tab.dart';
@@ -77,11 +81,11 @@ class _ClientDashboardScreenState extends ConsumerState<ClientDashboardScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const [
-          _ClientTodayTab(),
-          _ClientProgressTab(),
-          WorkoutsTab(),
-          ProfileTab(),
+        children: [
+          _ClientTodayTab(user: user),
+          const _ClientProgressTab(),
+          const WorkoutsTab(),
+          const ProfileTab(),
         ],
       ),
     );
@@ -89,73 +93,157 @@ class _ClientDashboardScreenState extends ConsumerState<ClientDashboardScreen>
 }
 
 /// Today tab - displays today's workout and meals
-class _ClientTodayTab extends StatelessWidget {
-  const _ClientTodayTab();
+class _ClientTodayTab extends ConsumerWidget {
+  final dynamic user;
+
+  const _ClientTodayTab({this.user});
+
+  /// Get current day name (e.g., "monday", "tuesday")
+  String _getCurrentDayName() {
+    final weekday = DateTime.now().weekday;
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    return days[weekday - 1];
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isClient = user is ClientModel;
+    final clientTrainerId = isClient ? (user as ClientModel).trainerId : null;
+
+    final workoutsAsync = ref.watch(assignedWorkoutsProvider);
+    final dietAsync = ref.watch(assignedDietProvider);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Trainer Info Card (for clients)
+          if (isClient && clientTrainerId != null && clientTrainerId.isNotEmpty) ...[
+            _TrainerInfoCard(trainerId: clientTrainerId),
+            const SizedBox(height: 24),
+          ],
+
           // Hero Workout Card
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.green[400]!, Colors.teal[600]!],
-              ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Today's Workout",
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
+          workoutsAsync.when(
+            data: (workouts) {
+              if (workouts.isEmpty) {
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Icon(Icons.fitness_center_outlined, size: 48, color: Colors.grey[400]),
+                          const SizedBox(height: 16),
                           Text(
-                            'Chest Day',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '5 exercises • 45 min',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.white70,
+                            'No workouts assigned yet',
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  color: Colors.grey[600],
                                 ),
                           ),
                         ],
                       ),
                     ),
-                    FilledButton(
-                      onPressed: () {},
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.green,
-                      ),
-                      child: const Text('Start'),
+                  ),
+                );
+              }
+
+              final todayWorkout = workouts.first;
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.green[400]!, Colors.teal[600]!],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Today's Workout",
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                todayWorkout.workoutName,
+                                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${todayWorkout.sets ?? 3} sets • ${todayWorkout.reps ?? 10} reps${todayWorkout.durationMinutes != null ? ' • ${todayWorkout.durationMinutes} min' : ''}',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.white70,
+                                    ),
+                              ),
+                              if (todayWorkout.notes != null) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  todayWorkout.notes!,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: Colors.white70,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        FilledButton(
+                          onPressed: () async {
+                            final result = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => WorkoutCompletionDialog(
+                                workout: todayWorkout,
+                              ),
+                            );
+
+                            // Refresh workouts list if progress was logged
+                            if (result == true) {
+                              ref.invalidate(assignedWorkoutsProvider);
+                            }
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.green,
+                          ),
+                          child: const Text('Start'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Card(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Center(
+                  child: Text(
+                    'Error loading workouts: $error',
+                    style: TextStyle(color: Colors.red[700]),
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 32),
@@ -168,13 +256,72 @@ class _ClientTodayTab extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 16),
-          ...[
-            ('Breakfast', '450 cal', true),
-            ('Lunch', '650 cal', false),
-            ('Dinner', '550 cal', false),
-            ('Snack', '150 cal', false),
-          ]
-              .map((meal) => Padding(
+          dietAsync.when(
+            data: (meals) {
+              if (meals.isEmpty) {
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          Icon(Icons.restaurant_outlined, size: 48, color: Colors.grey[400]),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No meal plan assigned yet',
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              // Filter meals for today
+              final currentDay = _getCurrentDayName();
+              final todayMeals = meals.where((meal) {
+                switch (currentDay) {
+                  case 'monday':
+                    return meal.monday == 1;
+                  case 'tuesday':
+                    return meal.tuesday == 1;
+                  case 'wednesday':
+                    return meal.wednesday == 1;
+                  case 'thursday':
+                    return meal.thursday == 1;
+                  case 'friday':
+                    return meal.friday == 1;
+                  case 'saturday':
+                    return meal.saturday == 1;
+                  case 'sunday':
+                    return meal.sunday == 1;
+                  default:
+                    return false;
+                }
+              }).toList();
+
+              if (todayMeals.isEmpty) {
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: Text(
+                        'No meals scheduled for today',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: Colors.grey[600],
+                            ),
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              return Column(
+                children: todayMeals.map((meal) {
+                  return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Card(
                       child: Padding(
@@ -182,8 +329,10 @@ class _ClientTodayTab extends StatelessWidget {
                         child: Row(
                           children: [
                             Checkbox(
-                              value: meal.$3,
-                              onChanged: (_) {},
+                              value: false, // TODO: Track meal completion state
+                              onChanged: (_) {
+                                // TODO: Implement meal completion tracking
+                              },
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -191,30 +340,57 @@ class _ClientTodayTab extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    meal.$1,
+                                    meal.mealName,
                                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                           fontWeight: FontWeight.w500,
                                         ),
                                   ),
-                                  Text(
-                                    meal.$2,
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: Colors.grey[600],
-                                        ),
-                                  ),
+                                  if (meal.caloriesApprox != null)
+                                    Text(
+                                      '${meal.caloriesApprox!.toStringAsFixed(0)} cal',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: Colors.grey[600],
+                                          ),
+                                    ),
+                                  if (meal.ingredients != null) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      meal.ingredients!,
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: Colors.grey[600],
+                                          ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),
                             Icon(
                               Icons.check_circle,
-                              color: meal.$3 ? Colors.green : Colors.grey,
+                              color: Colors.grey, // TODO: Update based on completion state
                             ),
                           ],
                         ),
                       ),
                     ),
-                  ))
-              .toList(),
+                  );
+                }).toList(),
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Card(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Center(
+                  child: Text(
+                    'Error loading meals: $error',
+                    style: TextStyle(color: Colors.red[700]),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -359,6 +535,112 @@ class _ProgressMetricCard extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Trainer Info Card - displays the client's assigned trainer information
+class _TrainerInfoCard extends StatelessWidget {
+  final String trainerId;
+
+  const _TrainerInfoCard({required this.trainerId});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      elevation: 3,
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.green[600]!,
+              Colors.teal[700]!,
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Colors.white.withOpacity(0.3),
+                    child: Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Your Trainer',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: Colors.white.withOpacity(0.9),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Trainer ID: $trainerId',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Linked to your account',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.verified,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.white, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Your trainer can assign workouts and meal plans to you.',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withOpacity(0.95),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/models/client_model.dart';
+import '../../data/models/trainer_model.dart';
 import '../providers/auth_state_provider.dart';
+import '../providers/auth_repository_provider.dart';
 
 /// Complete profile screen - user enters extended info after magic link verification.
 ///
@@ -33,8 +36,9 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
   late final TextEditingController _ageController;
   late final TextEditingController _weightController;
   late final TextEditingController _heightController;
+  late final TextEditingController _trainerCodeController;
 
-  String? _selectedGender;
+  String? _selectedFitnessLevel;
   bool _isLoading = false;
 
   @override
@@ -45,6 +49,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     _ageController = TextEditingController();
     _weightController = TextEditingController();
     _heightController = TextEditingController();
+    _trainerCodeController = TextEditingController();
   }
 
   @override
@@ -54,6 +59,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     _ageController.dispose();
     _weightController.dispose();
     _heightController.dispose();
+    _trainerCodeController.dispose();
     super.dispose();
   }
 
@@ -69,11 +75,94 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // TODO: Call API to update user profile
-      // For now, just navigate to dashboard
-      print('✅ Profile saved: $firstName $lastName');
+      final authRepository = ref.read(authRepositoryProvider);
+      dynamic user;
+
+      if (widget.userType == 'trainer') {
+        // Validate trainer fields
+        final specialty = _ageController.text.trim(); // Reusing age field for specialty
+        if (specialty.isEmpty) {
+          _showError('Please enter your specialty');
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        final bio = _weightController.text.trim(); // Reusing weight field for bio
+
+        // Register trainer
+        final result = await authRepository.registerTrainer(
+          email: widget.email,
+          firstName: firstName,
+          lastName: lastName,
+          specialty: specialty,
+          bio: bio.isNotEmpty ? bio : null,
+        );
+
+        result.fold(
+          (failure) => throw Exception(failure.message),
+          (trainer) => user = trainer,
+        );
+      } else if (widget.userType == 'client') {
+        // Validate client fields
+        final age = int.tryParse(_ageController.text.trim());
+        if (age == null || age <= 0) {
+          _showError('Please enter a valid age');
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        final weightKg = double.tryParse(_weightController.text.trim());
+        if (weightKg == null || weightKg <= 0) {
+          _showError('Please enter a valid weight');
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        final heightCm = double.tryParse(_heightController.text.trim());
+        if (heightCm == null || heightCm <= 0) {
+          _showError('Please enter a valid height');
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        final fitnessLevel = _selectedFitnessLevel ?? 'beginner';
+        final trainerCode = _trainerCodeController.text.trim();
+
+        if (trainerCode.isEmpty) {
+          _showError('Please enter your trainer code');
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        // Register client
+        final result = await authRepository.registerClient(
+          email: widget.email,
+          firstName: firstName,
+          lastName: lastName,
+          age: age,
+          weightKg: weightKg,
+          heightCm: heightCm,
+          fitnessLevel: fitnessLevel,
+          trainerCode: trainerCode,
+        );
+
+        result.fold(
+          (failure) => throw Exception(failure.message),
+          (client) => user = client,
+        );
+      }
 
       if (mounted) {
+        print('✅ Profile saved: $firstName $lastName');
+
+        // Update auth state with the new user
+        ref.read(authStateProvider.notifier).state = user;
+
+        // For trainers, show their unique code before navigating
+        if (widget.userType == 'trainer' && user is TrainerModel) {
+          await _showTrainerCodeDialog(user.trainerUniqueCode ?? 'N/A');
+        }
+
         // Navigate to appropriate dashboard based on user type
         if (widget.userType == 'trainer') {
           context.go('/trainer/dashboard');
@@ -85,7 +174,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showError('Failed to save profile: $e');
+        _showError('Failed to save profile: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -111,6 +200,81 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
         content: Text(message),
         backgroundColor: Colors.red,
       ),
+    );
+  }
+
+  Future<void> _showTrainerCodeDialog(String trainerCode) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        final theme = Theme.of(context);
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.celebration, color: theme.colorScheme.primary),
+              const SizedBox(width: 12),
+              const Text('Welcome, Trainer!'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Your account has been created successfully!',
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Your Unique Trainer Code:',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: theme.colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                child: SelectableText(
+                  trainerCode,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onPrimaryContainer,
+                    letterSpacing: 2,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Share this code with your clients so they can link to you during registration.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Got it!'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -177,76 +341,118 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Age
-              TextField(
-                controller: _ageController,
-                enabled: !_isLoading,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Age',
-                  hintText: '25',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  suffix: const Text('years'),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Weight
-              TextField(
-                controller: _weightController,
-                enabled: !_isLoading,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  labelText: 'Weight',
-                  hintText: '75',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  suffix: const Text('kg'),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Height
-              TextField(
-                controller: _heightController,
-                enabled: !_isLoading,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  labelText: 'Height',
-                  hintText: '180',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  suffix: const Text('cm'),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Gender dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedGender,
-                decoration: InputDecoration(
-                  labelText: 'Gender',
+              // Role-specific fields
+              if (widget.userType == 'trainer') ...[
+                // Trainer: Specialty field
+                TextField(
+                  controller: _ageController,
                   enabled: !_isLoading,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  decoration: InputDecoration(
+                    labelText: 'Specialization *',
+                    hintText: 'e.g., Strength Training, Cardio, Flexibility',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
-                items: const [
-                  DropdownMenuItem(value: 'male', child: Text('Male')),
-                  DropdownMenuItem(value: 'female', child: Text('Female')),
-                  DropdownMenuItem(value: 'other', child: Text('Other')),
-                  DropdownMenuItem(value: 'prefer_not', child: Text('Prefer not to say')),
-                ],
-                onChanged: _isLoading
-                    ? null
-                    : (value) {
-                        setState(() => _selectedGender = value);
-                      },
-              ),
+                const SizedBox(height: 16),
+
+                // Trainer: Bio field
+                TextField(
+                  controller: _weightController,
+                  enabled: !_isLoading,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: 'Bio (Optional)',
+                    hintText: 'Tell clients about your experience and approach...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ] else if (widget.userType == 'client') ...[
+                // Client: Age field
+                TextField(
+                  controller: _ageController,
+                  enabled: !_isLoading,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Age *',
+                    hintText: '25',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Client: Weight field
+                TextField(
+                  controller: _weightController,
+                  enabled: !_isLoading,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: 'Weight (kg) *',
+                    hintText: '75',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Client: Height field
+                TextField(
+                  controller: _heightController,
+                  enabled: !_isLoading,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: 'Height (cm) *',
+                    hintText: '180',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Client: Fitness level dropdown
+                DropdownButtonFormField<String>(
+                  value: _selectedFitnessLevel,
+                  decoration: InputDecoration(
+                    labelText: 'Fitness Level *',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'beginner', child: Text('Beginner')),
+                    DropdownMenuItem(value: 'intermediate', child: Text('Intermediate')),
+                    DropdownMenuItem(value: 'advanced', child: Text('Advanced')),
+                  ],
+                  onChanged: _isLoading
+                      ? null
+                      : (value) {
+                          setState(() => _selectedFitnessLevel = value);
+                        },
+                ),
+                const SizedBox(height: 16),
+
+                // Client: Trainer Code field
+                TextField(
+                  controller: _trainerCodeController,
+                  enabled: !_isLoading,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: InputDecoration(
+                    labelText: 'Trainer Code *',
+                    hintText: 'TRAINER-ABC123',
+                    helperText: 'Enter the unique code provided by your trainer',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 32),
 
               // Save button
