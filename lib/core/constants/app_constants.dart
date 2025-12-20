@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class AppConstants {
   // Initialize with sensible defaults
   static String baseUrl = 'http://localhost:8000';
-  static String stripePublishableKey = 'pk_test_51234567890abcdefghijklmnop';
+  static String stripePublishableKey = 'pk_test_EXAMPLE_KEY_12345';
   static String firebaseOptionsAndroid = '{}';
   static String firebaseOptionsIos = '{}';
 
@@ -20,13 +20,13 @@ class AppConstants {
       );
 
       baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
-      stripePublishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY'] ?? 'pk_test_51234567890abcdefghijklmnop';
+      stripePublishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY'] ?? 'pk_test_EXAMPLE_KEY_12345';
       firebaseOptionsAndroid = dotenv.env['FIREBASE_OPTIONS_ANDROID'] ?? '{}';
       firebaseOptionsIos = dotenv.env['FIREBASE_OPTIONS_IOS'] ?? '{}';
     } catch (e) {
       // Fallback to development defaults if .env file not found
       baseUrl = 'http://localhost:8000';
-      stripePublishableKey = 'pk_test_51234567890abcdefghijklmnop';
+      stripePublishableKey = 'pk_test_EXAMPLE_KEY_12345';
       firebaseOptionsAndroid = '{}';
       firebaseOptionsIos = '{}';
     }
