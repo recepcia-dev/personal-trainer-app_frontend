@@ -87,7 +87,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'verify',
         builder: (context, state) {
           final email = state.uri.queryParameters['email'] ?? '';
-          return MagicLinkVerificationScreen(email: email);
+          final userType = state.uri.queryParameters['userType'] ?? 'client';
+          return MagicLinkVerificationScreen(email: email, userType: userType);
         },
       ),
       GoRoute(

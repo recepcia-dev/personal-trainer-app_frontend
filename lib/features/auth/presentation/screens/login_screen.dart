@@ -62,7 +62,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     if (success) {
       // Navigate directly to verification screen
-      context.go('/verify?email=${Uri.encodeComponent(email)}');
+      context.go('/verify?email=${Uri.encodeComponent(email)}&userType=${widget.userType}');
     } else {
       setState(() => _errorMessage = 'Failed to send magic link. Please try again.');
     }

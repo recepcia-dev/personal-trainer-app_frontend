@@ -19,11 +19,13 @@ import '../providers/auth_state_provider.dart';
 class MagicLinkVerificationScreen extends ConsumerStatefulWidget {
   const MagicLinkVerificationScreen({
     required this.email,
+    required this.userType,
     this.code,
     super.key,
   });
 
   final String email;
+  final String userType;
   final String? code;
 
   @override
@@ -124,7 +126,7 @@ class _MagicLinkVerificationScreenState
   Future<void> _resendCode() async {
     if (_resendCountdown > 0) return;
 
-    final success = await ref.read(authStateProvider.notifier).sendMagicLink(widget.email);
+    final success = await ref.read(authStateProvider.notifier).sendMagicLink(widget.email, widget.userType);
 
     if (mounted) {
       _startResendCountdown();
