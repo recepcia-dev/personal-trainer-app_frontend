@@ -26,16 +26,17 @@ class ClientModel with _$ClientModel implements Client {
     @JsonKey(name: 'fitness_level') String? fitnessLevel,
     @JsonKey(name: 'health_data_json') String? healthDataJson,
     @JsonKey(name: 'created_at') DateTime? createdAt,
+    @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _ClientModel;
 
   // Add a getter for fullName
   const ClientModel._();
 
   String get fullName {
-    if (firstName != null && lastName != null) {
-      return '$firstName $lastName';
-    }
-    return name;
+    final first = firstName ?? '';
+    final last = lastName ?? '';
+    final combined = '$first $last'.trim();
+    return combined.isNotEmpty ? combined : name;
   }
 
   // Custom factory from API to compute name from first_name + last_name

@@ -49,7 +49,7 @@ void main() {
         when(() => mockGetCurrentUser.call()).thenAnswer(
           (_) async => const Left(ServerFailure(message: 'Not authenticated')),
         );
-        when(() => mockSendMagicLink.call(email: testEmail)).thenAnswer(
+        when(() => mockSendMagicLink.call(email: testEmail, userType: 'trainer')).thenAnswer(
           (_) async => const Right(null),
         );
 
@@ -63,7 +63,7 @@ void main() {
         await container.pump();
 
         final notifier = container.read(authStateProvider.notifier);
-        await notifier.sendMagicLink(email: testEmail);
+        await notifier.sendMagicLink(testEmail, 'trainer');
 
         final result = container.read(authStateProvider);
         expect(result, isA<AsyncData<dynamic>>());
@@ -76,7 +76,7 @@ void main() {
         when(() => mockGetCurrentUser.call()).thenAnswer(
           (_) async => const Left(ServerFailure(message: 'Not authenticated')),
         );
-        when(() => mockSendMagicLink.call(email: testEmail)).thenAnswer(
+        when(() => mockSendMagicLink.call(email: testEmail, userType: 'trainer')).thenAnswer(
           (_) async => const Left(
             ServerFailure(message: 'Invalid email'),
           ),
@@ -92,7 +92,7 @@ void main() {
         await container.pump();
 
         final notifier = container.read(authStateProvider.notifier);
-        await notifier.sendMagicLink(email: testEmail);
+        await notifier.sendMagicLink(testEmail, 'trainer');
 
         final result = container.read(authStateProvider);
         expect(result, isA<AsyncError<dynamic>>());
@@ -102,7 +102,7 @@ void main() {
         when(() => mockGetCurrentUser.call()).thenAnswer(
           (_) async => const Left(ServerFailure(message: 'Not authenticated')),
         );
-        when(() => mockSendMagicLink.call(email: testEmail)).thenAnswer(
+        when(() => mockSendMagicLink.call(email: testEmail, userType: 'trainer')).thenAnswer(
           (_) async => const Right(null),
         );
 
@@ -116,9 +116,9 @@ void main() {
         await container.pump();
 
         final notifier = container.read(authStateProvider.notifier);
-        await notifier.sendMagicLink(email: testEmail);
+        await notifier.sendMagicLink(testEmail, 'trainer');
 
-        verify(() => mockSendMagicLink.call(email: testEmail)).called(1);
+        verify(() => mockSendMagicLink.call(email: testEmail, userType: 'trainer')).called(1);
       });
     });
 
@@ -214,55 +214,6 @@ void main() {
       });
     });
 
-    group('authenticateWithBiometric', () {
-      test('throws UnimplementedError', () async {
-        when(() => mockGetCurrentUser.call()).thenAnswer(
-          (_) async => const Left(ServerFailure(message: 'Not authenticated')),
-        );
-
-        final container = ProviderContainer(
-          overrides: [
-            getCurrentUserUseCaseProvider.overrideWithValue(mockGetCurrentUser),
-          ],
-        );
-
-        await container.pump();
-
-        final notifier = container.read(authStateProvider.notifier);
-
-        expect(
-          () => notifier.authenticateWithBiometric(),
-          throwsA(isA<UnimplementedError>()),
-        );
-      });
-
-      test('UnimplementedError includes helpful message', () async {
-        when(() => mockGetCurrentUser.call()).thenAnswer(
-          (_) async => const Left(ServerFailure(message: 'Not authenticated')),
-        );
-
-        final container = ProviderContainer(
-          overrides: [
-            getCurrentUserUseCaseProvider.overrideWithValue(mockGetCurrentUser),
-          ],
-        );
-
-        await container.pump();
-
-        final notifier = container.read(authStateProvider.notifier);
-
-        expect(
-          () => notifier.authenticateWithBiometric(),
-          throwsA(
-            isA<UnimplementedError>().having(
-              (e) => e.message,
-              'message',
-              contains('F035'),
-            ),
-          ),
-        );
-      });
-    });
 
     group('logout', () {
       test('transitions to data with null on success', () async {
@@ -355,7 +306,7 @@ void main() {
         when(() => mockGetCurrentUser.call()).thenAnswer(
           (_) async => const Left(ServerFailure(message: 'Not authenticated')),
         );
-        when(() => mockSendMagicLink.call(email: testEmail)).thenAnswer(
+        when(() => mockSendMagicLink.call(email: testEmail, userType: 'trainer')).thenAnswer(
           (_) async => Future.delayed(
             const Duration(milliseconds: 100),
             () => const Right<Failure, void>(null),
@@ -372,9 +323,9 @@ void main() {
         await container.pump();
 
         final notifier = container.read(authStateProvider.notifier);
-        final future = notifier.sendMagicLink(email: testEmail);
+        final future = notifier.sendMagicLink(testEmail, 'trainer');
 
-        var state = container.read(authStateProvider);
+        final state = container.read(authStateProvider);
         expect(state, isA<AsyncLoading<dynamic>>());
 
         await future;
@@ -411,7 +362,7 @@ void main() {
           code: testCode,
         );
 
-        var state = container.read(authStateProvider);
+        final state = container.read(authStateProvider);
         expect(state, isA<AsyncLoading<dynamic>>());
 
         await future;

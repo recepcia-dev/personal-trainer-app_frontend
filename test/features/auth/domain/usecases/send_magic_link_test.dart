@@ -20,24 +20,24 @@ void main() {
     test('calls authRepository.sendMagicLink with email parameter', () async {
       // Arrange
       const email = 'test@example.com';
-      when(() => mockAuthRepository.sendMagicLink(email: email))
+      when(() => mockAuthRepository.sendMagicLink(email: email, userType: 'trainer'))
           .thenAnswer((_) async => const Right(null));
 
       // Act
-      await sendMagicLink(email: email);
+      await sendMagicLink(email: email, userType: 'trainer');
 
       // Assert
-      verify(() => mockAuthRepository.sendMagicLink(email: email)).called(1);
+      verify(() => mockAuthRepository.sendMagicLink(email: email, userType: 'trainer')).called(1);
     });
 
     test('returns Right(void) on successful magic link send', () async {
       // Arrange
       const email = 'test@example.com';
-      when(() => mockAuthRepository.sendMagicLink(email: email))
+      when(() => mockAuthRepository.sendMagicLink(email: email, userType: 'trainer'))
           .thenAnswer((_) async => const Right(null));
 
       // Act
-      final result = await sendMagicLink(email: email);
+      final result = await sendMagicLink(email: email, userType: 'trainer');
 
       // Assert
       expect(result, const Right<Failure, void>(null));
@@ -46,12 +46,12 @@ void main() {
     test('returns ServerFailure when email is invalid', () async {
       // Arrange
       const email = 'invalid-email';
-      when(() => mockAuthRepository.sendMagicLink(email: email)).thenAnswer(
+      when(() => mockAuthRepository.sendMagicLink(email: email, userType: 'trainer')).thenAnswer(
         (_) async => const Left(ServerFailure(message: 'Invalid email')),
       );
 
       // Act
-      final result = await sendMagicLink(email: email);
+      final result = await sendMagicLink(email: email, userType: 'trainer');
 
       // Assert
       expect(result.isLeft(), true);
@@ -64,12 +64,12 @@ void main() {
     test('returns NetworkFailure when network is unavailable', () async {
       // Arrange
       const email = 'test@example.com';
-      when(() => mockAuthRepository.sendMagicLink(email: email)).thenAnswer(
+      when(() => mockAuthRepository.sendMagicLink(email: email, userType: 'trainer')).thenAnswer(
         (_) async => const Left(NetworkFailure(message: 'No internet connection')),
       );
 
       // Act
-      final result = await sendMagicLink(email: email);
+      final result = await sendMagicLink(email: email, userType: 'trainer');
 
       // Assert
       expect(result.isLeft(), true);

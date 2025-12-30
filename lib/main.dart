@@ -84,8 +84,8 @@ class PersonalTrainerApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'Personal Trainer App',
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: router,
     );

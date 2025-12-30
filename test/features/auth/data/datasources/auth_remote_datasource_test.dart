@@ -36,25 +36,26 @@ void main() {
 
     group('sendMagicLink', () {
       const email = 'test@example.com';
+      const userType = 'trainer';
 
-      test('sends POST request with email to /api/v1/auth/magic-link endpoint',
+      test('sends POST request with email and userType to /api/v1/auth/magic-link endpoint',
           () async {
         // Arrange
         when(() => mockDio.post(
               '/api/v1/auth/magic-link',
-              data: {'email': email},
+              data: {'email': email, 'user_type': userType},
             )).thenAnswer((_) async => Response(
           requestOptions: RequestOptions(path: ''),
           statusCode: 200,
         ));
 
         // Act
-        await dataSource.sendMagicLink(email);
+        await dataSource.sendMagicLink(email, userType);
 
         // Assert
         verify(() => mockDio.post(
               '/api/v1/auth/magic-link',
-              data: {'email': email},
+              data: {'email': email, 'user_type': userType},
             )).called(1);
       });
 
@@ -62,7 +63,7 @@ void main() {
         // Arrange
         when(() => mockDio.post(
               '/api/v1/auth/magic-link',
-              data: {'email': email},
+              data: {'email': email, 'user_type': userType},
             )).thenAnswer((_) async => Response(
           requestOptions: RequestOptions(path: ''),
           statusCode: 200,
@@ -70,7 +71,7 @@ void main() {
 
         // Act & Assert
         expect(
-          dataSource.sendMagicLink(email),
+          dataSource.sendMagicLink(email, userType),
           completes,
         );
       });
@@ -90,12 +91,12 @@ void main() {
 
         when(() => mockDio.post(
               '/api/v1/auth/magic-link',
-              data: {'email': email},
+              data: {'email': email, 'user_type': userType},
             )).thenThrow(dioException);
 
         // Act & Assert
         expect(
-          () => dataSource.sendMagicLink(email),
+          () => dataSource.sendMagicLink(email, userType),
           throwsA(isA<ServerException>()),
         );
       });
@@ -115,12 +116,12 @@ void main() {
 
         when(() => mockDio.post(
               '/api/v1/auth/magic-link',
-              data: {'email': email},
+              data: {'email': email, 'user_type': userType},
             )).thenThrow(dioException);
 
         // Act & Assert
         expect(
-          () => dataSource.sendMagicLink(email),
+          () => dataSource.sendMagicLink(email, userType),
           throwsA(isA<ServerException>()),
         );
       });
@@ -135,12 +136,12 @@ void main() {
 
         when(() => mockDio.post(
               '/api/v1/auth/magic-link',
-              data: {'email': email},
+              data: {'email': email, 'user_type': userType},
             )).thenThrow(dioException);
 
         // Act & Assert
         expect(
-          () => dataSource.sendMagicLink(email),
+          () => dataSource.sendMagicLink(email, userType),
           throwsA(isA<ServerException>()),
         );
       });
@@ -155,12 +156,12 @@ void main() {
 
         when(() => mockDio.post(
               '/api/v1/auth/magic-link',
-              data: {'email': email},
+              data: {'email': email, 'user_type': userType},
             )).thenThrow(dioException);
 
         // Act & Assert
         expect(
-          () => dataSource.sendMagicLink(email),
+          () => dataSource.sendMagicLink(email, userType),
           throwsA(
             isA<ServerException>().having(
               (e) => e.message,
@@ -184,6 +185,7 @@ void main() {
           'refreshToken': 'refresh_token_123',
           'role': 'trainer',
           'user': {
+            'id': 'trainer_123',
             'email': email,
             'name': 'John Trainer',
             'photoUrl': null,
@@ -217,6 +219,7 @@ void main() {
           'refreshToken': 'refresh_token_123',
           'role': 'trainer',
           'user': {
+            'id': 'trainer_123',
             'email': email,
             'name': 'John Trainer',
             'photoUrl': null,
@@ -250,6 +253,7 @@ void main() {
           'refreshToken': 'refresh_token_123',
           'role': 'trainer',
           'user': {
+            'id': 'trainer_123',
             'email': email,
             'name': 'John Trainer',
             'photoUrl': null,
@@ -282,6 +286,7 @@ void main() {
           'refreshToken': 'refresh_token_123',
           'role': 'trainer',
           'user': {
+            'id': 'trainer_456',
             'email': email,
             'name': 'John Trainer',
             'photoUrl': 'https://example.com/photo.jpg',
@@ -313,9 +318,10 @@ void main() {
           'refreshToken': 'refresh_token_123',
           'role': 'client',
           'user': {
+            'id': 'client_789',
             'email': email,
             'name': 'Jane Client',
-            'trainerId': 42,
+            'trainer_id': 42,
           },
         };
 
@@ -493,14 +499,12 @@ void main() {
             .thenAnswer((_) async => token);
 
         final responseData = {
-          'accessToken': token,
-          'refreshToken': 'refresh_token_123',
-          'role': 'trainer',
-          'user': {
-            'email': 'trainer@example.com',
-            'name': 'John Trainer',
-            'photoUrl': null,
-          },
+          'id': 'trainer_123',
+          'email': 'trainer@example.com',
+          'first_name': 'John',
+          'last_name': 'Trainer',
+          'photoUrl': null,
+          'user_type': 'trainer',
         };
 
         when(() => mockDio.post(
@@ -530,14 +534,12 @@ void main() {
             .thenAnswer((_) async => token);
 
         final responseData = {
-          'accessToken': token,
-          'refreshToken': 'refresh_token_123',
-          'role': 'trainer',
-          'user': {
-            'email': email,
-            'name': 'John Trainer',
-            'photoUrl': 'https://example.com/photo.jpg',
-          },
+          'id': 'trainer_456',
+          'email': email,
+          'first_name': 'John',
+          'last_name': 'Trainer',
+          'photoUrl': 'https://example.com/photo.jpg',
+          'user_type': 'trainer',
         };
 
         when(() => mockDio.post(
@@ -566,14 +568,12 @@ void main() {
             .thenAnswer((_) async => token);
 
         final responseData = {
-          'accessToken': token,
-          'refreshToken': 'refresh_token_123',
-          'role': 'client',
-          'user': {
-            'email': email,
-            'name': 'Jane Client',
-            'trainerId': 42,
-          },
+          'id': 'client_789',
+          'email': email,
+          'first_name': 'Jane',
+          'last_name': 'Client',
+          'trainer_id': 42,
+          'user_type': 'client',
         };
 
         when(() => mockDio.post(
@@ -592,7 +592,7 @@ void main() {
         expect(result, isA<ClientModel>());
         expect((result as ClientModel).email, equals(email));
         expect(result.name, equals('Jane Client'));
-        expect(result.trainerId, equals(42));
+        expect(result.trainerId, isNull); // trainerId is not set in getCurrentUser response
       });
 
       test('throws ServerException when token is invalid (401 response)',

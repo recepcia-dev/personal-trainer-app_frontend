@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:local_auth/local_auth.dart';
 
 import '../../../../core/auth/biometric_auth_service.dart';
+import '../../../../core/constants/design_tokens.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../providers/auth_repository_provider.dart';
 
 /// Device-bound authentication screen using biometric (Face ID, Touch ID, Fingerprint).
@@ -214,7 +216,7 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red[600],
+        backgroundColor: AppTheme.errorColor,
         duration: const Duration(seconds: 4),
       ),
     );
@@ -227,7 +229,7 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.green[600],
+        backgroundColor: AppTheme.successColor,
         duration: const Duration(seconds: 2),
       ),
     );
@@ -238,79 +240,81 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
     return PopScope(
       canPop: !_isAuthenticating,
       child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: const Text('Verify Identity'),
-          elevation: 0,
+          centerTitle: true,
           automaticallyImplyLeading: !_isAuthenticating,
         ),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: DesignTokens.screenPadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 48),
+                  SizedBox(height: DesignTokens.space2xl),
 
                   // Icon
                   Container(
-                    width: 80,
-                    height: 80,
+                    width: DesignTokens.avatarXl,
+                    height: DesignTokens.avatarXl,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      color: Theme.of(context).primaryColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Icons.security,
-                      size: 40,
+                      Icons.fingerprint,
+                      size: DesignTokens.iconXl + 8,
                       color: Theme.of(context).primaryColor,
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: DesignTokens.spaceXl),
 
                   // Title
                   Text(
                     'One More Step',
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: Theme.of(context).textTheme.displaySmall,
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: DesignTokens.spaceSm),
 
                   // Message
                   Text(
-                    'Use biometric to complete login',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey[600],
+                    'Verify your identity to complete secure login',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.textSecondary,
                         ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 48),
+                  SizedBox(height: DesignTokens.space2xl),
 
                   // Biometric availability status
                   if (!_biometricAvailable)
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(DesignTokens.spaceMd),
                       decoration: BoxDecoration(
-                        color: Colors.orange[50],
-                        border: Border.all(color: Colors.orange[300]!),
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppTheme.warningColor.withValues(alpha: 0.1),
+                        border: Border.all(
+                          color: AppTheme.warningColor,
+                          width: DesignTokens.borderStandard,
+                        ),
+                        borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             Icons.info_outline,
-                            color: Colors.orange[700],
+                            color: AppTheme.warningColor,
+                            size: DesignTokens.iconMd,
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: DesignTokens.spaceSm),
                           Expanded(
                             child: Text(
-                              'Biometric not available. Please use PIN.',
-                              style: TextStyle(
-                                color: Colors.orange[700],
-                                fontSize: 14,
-                              ),
+                              'Biometric not available. Please use device PIN.',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: AppTheme.warningColor,
+                                  ),
                             ),
                           ),
                         ],
@@ -322,18 +326,19 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
                       Column(
                         children: [
                           Text(
-                            'Available methods:',
-                            style: Theme.of(context).textTheme.bodySmall,
+                            'Available authentication methods:',
+                            style: Theme.of(context).textTheme.labelMedium,
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: DesignTokens.spaceSm),
                           Wrap(
-                            spacing: 12,
-                            runSpacing: 12,
+                            spacing: DesignTokens.spaceSm,
+                            runSpacing: DesignTokens.spaceSm,
+                            alignment: WrapAlignment.center,
                             children: _availableBiometrics
                                 .map((biometric) => Chip(
                                       avatar: Icon(
                                         _getBiometricIcon(biometric),
-                                        size: 18,
+                                        size: DesignTokens.iconSm,
                                       ),
                                       label: Text(
                                         _getBiometricName(biometric),
@@ -341,53 +346,57 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
                                     ))
                                 .toList(),
                           ),
-                          const SizedBox(height: 32),
+                          SizedBox(height: DesignTokens.spaceXl),
                         ],
                       ),
 
                     // Error message if any
                     if (_errorMessage != null) ...[
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(DesignTokens.spaceMd),
                         decoration: BoxDecoration(
-                          color: Colors.red[50],
-                          border: Border.all(color: Colors.red[300]!),
-                          borderRadius: BorderRadius.circular(12),
+                          color: AppTheme.errorColor.withValues(alpha: 0.1),
+                          border: Border.all(
+                            color: AppTheme.errorColor,
+                            width: DesignTokens.borderStandard,
+                          ),
+                          borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Icon(
                               Icons.error_outline,
-                              color: Colors.red[700],
+                              color: AppTheme.errorColor,
+                              size: DesignTokens.iconMd,
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: DesignTokens.spaceSm),
                             Expanded(
                               child: Text(
                                 _errorMessage!,
-                                style: TextStyle(
-                                  color: Colors.red[700],
-                                  fontSize: 14,
-                                ),
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: AppTheme.errorColor,
+                                    ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: DesignTokens.spaceLg),
                     ],
 
                     // Retry counter
-                    if (_retryCount > 0)
+                    if (_retryCount > 0) ...[
                       Text(
-                        'Attempts: $_retryCount / $_maxRetries',
+                        'Attempt $_retryCount of $_maxRetries',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: _retryCount >= _maxRetries
-                                  ? Colors.red[600]
-                                  : Colors.grey[600],
+                                  ? AppTheme.errorColor
+                                  : AppTheme.textSecondary,
                             ),
                       ),
-                    const SizedBox(height: 32),
+                      SizedBox(height: DesignTokens.spaceMd),
+                    ],
 
                     // Authenticate button
                     ElevatedButton.icon(
@@ -396,41 +405,50 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
                           ? null
                           : _authenticateWithBiometric,
                       icon: _isAuthenticating
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
+                          ? SizedBox(
+                              width: DesignTokens.iconMd,
+                              height: DesignTokens.iconMd,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
+                                color: AppTheme.textPrimary,
                               ),
                             )
                           : const Icon(Icons.fingerprint),
                       label: Text(
                         _isAuthenticating
                             ? 'Authenticating...'
-                            : 'Authenticate',
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 16,
-                          horizontal: 24,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        minimumSize: const Size(double.infinity, 50),
+                            : 'Authenticate Now',
                       ),
                     ),
                   ],
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: DesignTokens.spaceXl),
 
-                  // Info text
-                  Text(
-                    'Your session is protected by device-bound authentication.\nYou can only use this session on this device.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[500],
+                  // Security info card
+                  Container(
+                    padding: EdgeInsets.all(DesignTokens.spaceMd),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.security,
+                          color: AppTheme.infoColor,
+                          size: DesignTokens.iconMd,
                         ),
-                    textAlign: TextAlign.center,
+                        SizedBox(width: DesignTokens.spaceSm),
+                        Expanded(
+                          child: Text(
+                            'Device-bound security. This session works only on this device.',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppTheme.textSecondary,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

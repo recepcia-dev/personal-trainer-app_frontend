@@ -47,15 +47,15 @@ void main() {
       test('returns Right(null) when online and remote succeeds', () async {
         // Arrange
         when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-        when(() => mockRemoteDataSource.sendMagicLink(testEmail))
+        when(() => mockRemoteDataSource.sendMagicLink(testEmail, 'trainer'))
             .thenAnswer((_) async {});
 
         // Act
-        final result = await repository.sendMagicLink(email: testEmail);
+        final result = await repository.sendMagicLink(email: testEmail, userType: 'trainer');
 
         // Assert
         expect(result, const Right<Failure, void>(null));
-        verify(() => mockRemoteDataSource.sendMagicLink(testEmail)).called(1);
+        verify(() => mockRemoteDataSource.sendMagicLink(testEmail, 'trainer')).called(1);
         verify(() => mockNetworkInfo.isConnected).called(1);
       });
 
@@ -63,7 +63,7 @@ void main() {
         // Arrange
         const exceptionMessage = 'Invalid email';
         when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-        when(() => mockRemoteDataSource.sendMagicLink(testEmail))
+        when(() => mockRemoteDataSource.sendMagicLink(testEmail, 'trainer'))
             .thenThrow(
           ServerException(
             message: exceptionMessage,
@@ -72,7 +72,7 @@ void main() {
         );
 
         // Act
-        final result = await repository.sendMagicLink(email: testEmail);
+        final result = await repository.sendMagicLink(email: testEmail, userType: 'trainer');
 
         // Assert
         expect(result, isA<Left<Failure, void>>());
@@ -93,11 +93,11 @@ void main() {
         // Arrange
         const exceptionMessage = 'Network timeout';
         when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-        when(() => mockRemoteDataSource.sendMagicLink(testEmail))
+        when(() => mockRemoteDataSource.sendMagicLink(testEmail, 'trainer'))
             .thenThrow(NetworkException(message: exceptionMessage));
 
         // Act
-        final result = await repository.sendMagicLink(email: testEmail);
+        final result = await repository.sendMagicLink(email: testEmail, userType: 'trainer');
 
         // Assert
         expect(result, isA<Left<Failure, void>>());
@@ -115,7 +115,7 @@ void main() {
         when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
 
         // Act
-        final result = await repository.sendMagicLink(email: testEmail);
+        final result = await repository.sendMagicLink(email: testEmail, userType: 'trainer');
 
         // Assert
         expect(result, isA<Left<Failure, void>>());
@@ -126,17 +126,17 @@ void main() {
           },
           (_) => fail('Should return Left'),
         );
-        verifyNever(() => mockRemoteDataSource.sendMagicLink(any()));
+        verifyNever(() => mockRemoteDataSource.sendMagicLink(any(), any()));
       });
 
       test('returns ServerFailure when unexpected exception occurs', () async {
         // Arrange
         when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-        when(() => mockRemoteDataSource.sendMagicLink(testEmail))
+        when(() => mockRemoteDataSource.sendMagicLink(testEmail, 'trainer'))
             .thenThrow(Exception('Unexpected error'));
 
         // Act
-        final result = await repository.sendMagicLink(email: testEmail);
+        final result = await repository.sendMagicLink(email: testEmail, userType: 'trainer');
 
         // Assert
         expect(result, isA<Left<Failure, void>>());
@@ -463,7 +463,7 @@ void main() {
       test('maps ServerException to ServerFailure with status code', () async {
         // Arrange
         when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-        when(() => mockRemoteDataSource.sendMagicLink(testEmail))
+        when(() => mockRemoteDataSource.sendMagicLink(testEmail, 'trainer'))
             .thenThrow(
           ServerException(
             message: 'Bad Request',
@@ -472,7 +472,7 @@ void main() {
         );
 
         // Act
-        final result = await repository.sendMagicLink(email: testEmail);
+        final result = await repository.sendMagicLink(email: testEmail, userType: 'trainer');
 
         // Assert
         result.fold(
@@ -489,11 +489,11 @@ void main() {
       test('maps NetworkException to NetworkFailure', () async {
         // Arrange
         when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-        when(() => mockRemoteDataSource.sendMagicLink(testEmail))
+        when(() => mockRemoteDataSource.sendMagicLink(testEmail, 'trainer'))
             .thenThrow(NetworkException(message: 'Timeout'));
 
         // Act
-        final result = await repository.sendMagicLink(email: testEmail);
+        final result = await repository.sendMagicLink(email: testEmail, userType: 'trainer');
 
         // Assert
         result.fold(

@@ -12,6 +12,7 @@ part 'trainer_model.g.dart';
 @freezed
 class TrainerModel with _$TrainerModel implements Trainer {
   const factory TrainerModel({
+    required String id,
     required String email,
     required String name,
     String? photoUrl,

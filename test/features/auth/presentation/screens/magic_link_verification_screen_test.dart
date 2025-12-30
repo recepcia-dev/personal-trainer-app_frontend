@@ -11,7 +11,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: MagicLinkVerificationScreen(email: testEmail),
+            home: MagicLinkVerificationScreen(email: testEmail, userType: 'trainer'),
           ),
         ),
       );
@@ -24,7 +24,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: MagicLinkVerificationScreen(email: testEmail),
+            home: MagicLinkVerificationScreen(email: testEmail, userType: 'trainer'),
           ),
         ),
       );
@@ -37,7 +37,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: MagicLinkVerificationScreen(email: testEmail),
+            home: MagicLinkVerificationScreen(email: testEmail, userType: 'trainer'),
           ),
         ),
       );
@@ -49,7 +49,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: MagicLinkVerificationScreen(email: testEmail),
+            home: MagicLinkVerificationScreen(email: testEmail, userType: 'trainer'),
           ),
         ),
       );
@@ -61,7 +61,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: MagicLinkVerificationScreen(email: testEmail),
+            home: MagicLinkVerificationScreen(email: testEmail, userType: 'trainer'),
           ),
         ),
       );
@@ -75,7 +75,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: MagicLinkVerificationScreen(email: testEmail),
+            home: MagicLinkVerificationScreen(email: testEmail, userType: 'trainer'),
           ),
         ),
       );
@@ -88,7 +88,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: MagicLinkVerificationScreen(email: testEmail),
+            home: MagicLinkVerificationScreen(email: testEmail, userType: 'trainer'),
           ),
         ),
       );
@@ -104,7 +104,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: MagicLinkVerificationScreen(email: testEmail),
+            home: MagicLinkVerificationScreen(email: testEmail, userType: 'trainer'),
           ),
         ),
       );
@@ -119,7 +119,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: MagicLinkVerificationScreen(email: testEmail),
+            home: MagicLinkVerificationScreen(email: testEmail, userType: 'trainer'),
           ),
         ),
       );
@@ -134,7 +134,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: MagicLinkVerificationScreen(email: testEmail),
+            home: MagicLinkVerificationScreen(email: testEmail, userType: 'trainer'),
           ),
         ),
       );
@@ -146,7 +146,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: MagicLinkVerificationScreen(email: testEmail),
+            home: MagicLinkVerificationScreen(email: testEmail, userType: 'trainer'),
           ),
         ),
       );
@@ -158,7 +158,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: MagicLinkVerificationScreen(email: testEmail),
+            home: MagicLinkVerificationScreen(email: testEmail, userType: 'trainer'),
           ),
         ),
       );

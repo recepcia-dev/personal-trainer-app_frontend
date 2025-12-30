@@ -9,7 +9,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: LoginScreen(),
+            home: LoginScreen(userType: 'trainer'),
           ),
         ),
       );
@@ -22,7 +22,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: LoginScreen(),
+            home: LoginScreen(userType: 'trainer'),
           ),
         ),
       );
@@ -35,7 +35,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: LoginScreen(),
+            home: LoginScreen(userType: 'trainer'),
           ),
         ),
       );
@@ -47,7 +47,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: LoginScreen(),
+            home: LoginScreen(userType: 'trainer'),
           ),
         ),
       );
@@ -62,7 +62,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: LoginScreen(),
+            home: LoginScreen(userType: 'trainer'),
           ),
         ),
       );
@@ -76,7 +76,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: LoginScreen(),
+            home: LoginScreen(userType: 'trainer'),
           ),
         ),
       );
@@ -88,7 +88,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: LoginScreen(),
+            home: LoginScreen(userType: 'trainer'),
           ),
         ),
       );
@@ -100,7 +100,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: LoginScreen(),
+            home: LoginScreen(userType: 'trainer'),
           ),
         ),
       );
@@ -118,7 +118,7 @@ void main() {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
-            home: LoginScreen(),
+            home: LoginScreen(userType: 'trainer'),
           ),
         ),
       );
