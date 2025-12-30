@@ -104,7 +104,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Header section with fade-in and slide-up animation
               FadeTransition(
@@ -133,7 +133,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                             description:
                                 'Transform lives. Build programs. Track client progress.',
                             onTap: () => context.go('/login?role=trainer'),
-                            accentPosition: _AccentPosition.right,
                           ),
                         ),
                       ),
@@ -153,7 +152,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                             description:
                                 'Achieve your goals. Follow expert guidance. Track your journey.',
                             onTap: () => context.go('/login?role=client'),
-                            accentPosition: _AccentPosition.left,
                           ),
                         ),
                       ),
@@ -175,7 +173,7 @@ class _HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Logo mark - minimal fitness icon
         Container(
@@ -196,6 +194,7 @@ class _HeaderSection extends StatelessWidget {
         // Title - Display Large (32px/700)
         const Text(
           'Welcome',
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.w700,
@@ -209,6 +208,7 @@ class _HeaderSection extends StatelessWidget {
         // Subtitle - Body Large (16px/400)
         const Text(
           'Choose your path to get started',
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w400,
@@ -221,22 +221,18 @@ class _HeaderSection extends StatelessWidget {
   }
 }
 
-enum _AccentPosition { left, right }
-
 class _RoleCard extends StatefulWidget {
   const _RoleCard({
     required this.imagePath,
     required this.role,
     required this.description,
     required this.onTap,
-    required this.accentPosition,
   });
 
   final String imagePath;
   final String role;
   final String description;
   final VoidCallback onTap;
-  final _AccentPosition accentPosition;
 
   @override
   State<_RoleCard> createState() => _RoleCardState();
@@ -359,6 +355,10 @@ class _RoleCardState extends State<_RoleCard> with TickerProviderStateMixin {
                 decoration: BoxDecoration(
                   color: const Color(0xFFF5F5F5), // surface-light
                   borderRadius: BorderRadius.circular(16), // radius-lg
+                  border: Border.all(
+                    color: const Color(0xFFE0E0E0), // Subtle neutral border
+                    width: 1.0,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(shadowOpacity),
@@ -481,41 +481,18 @@ class _RoleCardState extends State<_RoleCard> with TickerProviderStateMixin {
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 20),
-
-                              // CTA button
-                              Align(
-                                alignment: widget.accentPosition == _AccentPosition.right
-                                    ? Alignment.centerRight
-                                    : Alignment.centerLeft,
-                                child: _CTAButton(
-                                  label: 'Continue as ${widget.role}',
-                                  isPressed: _isPressed,
-                                ),
-                              ),
                             ],
                           ),
                         ),
                       ),
 
-                      // Accent bar - visual indicator
+                      // CTA button positioned at bottom right
                       Positioned(
-                        top: 0,
-                        left: widget.accentPosition == _AccentPosition.left ? 0 : null,
-                        right: widget.accentPosition == _AccentPosition.right ? 0 : null,
-                        child: Container(
-                          width: 4,
-                          height: 80,
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Color(0xFFFF66C4), // Primary Pink
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
+                        right: 24,
+                        bottom: 24,
+                        child: _CTAButton(
+                          label: 'Continue as ${widget.role}',
+                          isPressed: _isPressed,
                         ),
                       ),
                     ],
