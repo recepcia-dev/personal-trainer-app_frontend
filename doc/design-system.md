@@ -9,36 +9,15 @@
 ## 1. Color Palette
 
 ### Primary Colors (CSS Variables)
-```css
-:root {
-  --color-primary: #2d2c33;     /* Primary color - dark grayish blue */
-  --color-accent: #b10c0cff;    /* Accent color - bold red */
-  --color-bg: #ffffff;          /* Background - white */
-  --color-text: #2d2c33;        /* Text - matches primary */
-}
-```
 
-### Semantic Mapping
-- **Background Light**: `#ffffff` (var(--color-bg)) - Main app background
-- **Surface Light**: `#f5f5f5` - Cards, elevated surfaces
-- **Primary Accent Red**: `#b10c0c` (var(--color-accent)) - Call-to-action buttons, interactive elements
-- **Primary Accent Red Variant**: `#d41414` - Hover/pressed states
+**Reference Site Colors:**
+- Dark Text: `#2d2c33`
+- Lavender Accent: `#d0cfef`
+- Purple: `#9b51e0`
+- Green: `#10b981`
+- Primary Pink: `#FF66C4` (more vibrant/saturated)
+- Uses same dark color scheme
 
-### Text Colors
-- **Text Primary**: `#2d2c33` (var(--color-text)) - Headings, primary content
-- **Text Secondary**: `#6b6b6b` - Supporting text, labels, timestamps
-- **Text Tertiary**: `#9e9e9e` - Disabled text, placeholders
-
-### Semantic Colors
-- **Success Green**: `#4CAF50` - Ratings, positive feedback
-- **Warning Amber**: `#FFC107` - Important notices
-- **Error Red**: `#F44336` - Errors, destructive actions
-- **Info Blue**: `#2196F3` - Verification badges, informational
-
-### Neutral Colors
-- **Border Light**: `#e0e0e0` - Subtle borders, dividers
-- **Border Medium**: `#bdbdbd` - Prominent borders
-- **Overlay**: `rgba(0, 0, 0, 0.4)` - Modal overlays
 
 ---
 
