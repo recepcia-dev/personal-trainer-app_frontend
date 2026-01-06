@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/auth/data/models/admin_model.dart';
 import '../../features/auth/data/models/client_model.dart';
 import '../../features/auth/data/models/trainer_model.dart';
+import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import 'dev_config.dart';
 
 part 'mock_providers.g.dart';
@@ -99,14 +100,15 @@ class DevRole extends _$DevRole {
 }
 
 /// Get provider overrides for dev mode
-/// Note: Dev mode doesn't override providers - instead uses the dev toolbar
-/// to manually manage authentication state via devRoleProvider
+///
+/// Note: The router itself checks DevConfig.mockAuthEnabled and watches
+/// mockAuthStateProvider directly, so no overrides are needed here.
+/// The dev toolbar directly updates devRoleProvider, which drives state changes.
 List<dynamic> getDevProviderOverrides() {
   if (!DevConfig.mockAuthEnabled) {
     return [];
   }
-  // In dev mode, users can select roles via the dev toolbar
-  // The toolbar directly updates devRoleProvider, which drives the UI
+  // No overrides needed - router handles dev mode awareness
   return [];
 }
 

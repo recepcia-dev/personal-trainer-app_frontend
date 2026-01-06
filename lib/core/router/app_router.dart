@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -5,6 +6,8 @@ import '../../features/auth/data/models/admin_model.dart';
 import '../../features/auth/data/models/client_model.dart';
 import '../../features/auth/data/models/trainer_model.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
+import '../dev/dev_config.dart';
+import '../dev/mock_providers.dart';
 import '../../features/auth/presentation/screens/complete_profile_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/magic_link_verification_screen.dart';
@@ -34,7 +37,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/role-selection',
     debugLogDiagnostics: true,
     redirect: (context, state) {
-      final user = ref.watch(authStateProvider);
+      // In dev mode, watch mock auth state; in prod, watch real auth state
+      final user = kDebugMode && DevConfig.mockAuthEnabled
+          ? ref.watch(mockAuthStateProvider)
+          : ref.watch(authStateProvider);
       final location = state.uri.path;
 
       // Protected routes - require authentication
