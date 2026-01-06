@@ -89,25 +89,13 @@ class DevRole extends _$DevRole {
   @override
   DevRoleEnum build() => DevRoleEnum.notAuthenticated;
 
-  void selectTrainer() {
-    state = DevRoleEnum.trainer;
-    ref.refresh(mockAuthStateProvider);
-  }
+  void selectTrainer() => state = DevRoleEnum.trainer;
 
-  void selectClient() {
-    state = DevRoleEnum.client;
-    ref.refresh(mockAuthStateProvider);
-  }
+  void selectClient() => state = DevRoleEnum.client;
 
-  void selectAdmin() {
-    state = DevRoleEnum.admin;
-    ref.refresh(mockAuthStateProvider);
-  }
+  void selectAdmin() => state = DevRoleEnum.admin;
 
-  void selectNotAuthenticated() {
-    state = DevRoleEnum.notAuthenticated;
-    ref.refresh(mockAuthStateProvider);
-  }
+  void selectNotAuthenticated() => state = DevRoleEnum.notAuthenticated;
 }
 
 /// Get provider overrides for dev mode
