@@ -1,3 +1,4 @@
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -8,14 +9,86 @@ import 'dev_config.dart';
 
 part 'mock_providers.g.dart';
 
-/// Dummy tokens for dev mode API calls
+/// JWT tokens for dev mode API calls
 class _DevTokens {
-  static const String trainerAccessToken = 'dev-trainer-token-12345';
-  static const String trainerRefreshToken = 'dev-trainer-refresh-token-12345';
-  static const String clientAccessToken = 'dev-client-token-67890';
-  static const String clientRefreshToken = 'dev-client-refresh-token-67890';
-  static const String adminAccessToken = 'dev-admin-token-11111';
-  static const String adminRefreshToken = 'dev-admin-refresh-token-11111';
+  // Dev secret key for JWT signing (used only in development)
+  static const String _devSecret = 'dev-secret-key-for-testing-only';
+
+  // Cache generated tokens to ensure consistency across calls
+  static final Map<String, String> _tokenCache = {};
+
+  /// Generate a valid JWT token for the given role
+  static String _generateJwt({required String role, required String userId}) {
+    final cacheKey = '$role:access';
+    if (_tokenCache.containsKey(cacheKey)) {
+      return _tokenCache[cacheKey]!;
+    }
+
+    try {
+      final now = DateTime.now();
+      final exp = now.add(const Duration(days: 365)); // Valid for 1 year
+
+      final jwt = JWT({
+        'sub': userId,
+        'role': role,
+        'iat': (now.millisecondsSinceEpoch / 1000).floor(),
+        'exp': (exp.millisecondsSinceEpoch / 1000).floor(),
+      });
+
+      final token = jwt.sign(SecretKey(_devSecret));
+      _tokenCache[cacheKey] = token;
+      return token;
+    } catch (e) {
+      // Fallback to simple token if JWT generation fails
+      return 'dev-$role-token-invalid';
+    }
+  }
+
+  /// Generate a refresh token (also JWT format)
+  static String _generateRefreshJwt({required String role, required String userId}) {
+    final cacheKey = '$role:refresh';
+    if (_tokenCache.containsKey(cacheKey)) {
+      return _tokenCache[cacheKey]!;
+    }
+
+    try {
+      final now = DateTime.now();
+      final exp = now.add(const Duration(days: 30)); // Refresh valid for 30 days
+
+      final jwt = JWT({
+        'sub': userId,
+        'role': role,
+        'type': 'refresh',
+        'iat': (now.millisecondsSinceEpoch / 1000).floor(),
+        'exp': (exp.millisecondsSinceEpoch / 1000).floor(),
+      });
+
+      final token = jwt.sign(SecretKey(_devSecret));
+      _tokenCache[cacheKey] = token;
+      return token;
+    } catch (e) {
+      // Fallback to simple token if JWT generation fails
+      return 'dev-$role-refresh-token-invalid';
+    }
+  }
+
+  // Trainer tokens
+  static late final String trainerAccessToken =
+      _generateJwt(role: 'trainer', userId: 'dev-trainer-001');
+  static late final String trainerRefreshToken =
+      _generateRefreshJwt(role: 'trainer', userId: 'dev-trainer-001');
+
+  // Client tokens
+  static late final String clientAccessToken =
+      _generateJwt(role: 'client', userId: 'dev-client-001');
+  static late final String clientRefreshToken =
+      _generateRefreshJwt(role: 'client', userId: 'dev-client-001');
+
+  // Admin tokens
+  static late final String adminAccessToken =
+      _generateJwt(role: 'admin', userId: 'dev-admin-001');
+  static late final String adminRefreshToken =
+      _generateRefreshJwt(role: 'admin', userId: 'dev-admin-001');
 }
 
 /// Secure storage provider for dev mode

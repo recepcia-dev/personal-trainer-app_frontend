@@ -212,7 +212,6 @@ class _DevToolbarExpanded extends ConsumerWidget {
           children: [
             // Header
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   '🛠️ DEV',
@@ -222,6 +221,7 @@ class _DevToolbarExpanded extends ConsumerWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const Spacer(),
                 GestureDetector(
                   onTap: onToggle,
                   child: const Icon(
