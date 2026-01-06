@@ -1,12 +1,30 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/auth/data/models/admin_model.dart';
 import '../../features/auth/data/models/client_model.dart';
 import '../../features/auth/data/models/trainer_model.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
+import '../network/dio_client.dart';
 import 'dev_config.dart';
 
 part 'mock_providers.g.dart';
+
+/// Dummy tokens for dev mode API calls
+class _DevTokens {
+  static const String trainerAccessToken = 'dev-trainer-token-12345';
+  static const String trainerRefreshToken = 'dev-trainer-refresh-token-12345';
+  static const String clientAccessToken = 'dev-client-token-67890';
+  static const String clientRefreshToken = 'dev-client-refresh-token-67890';
+  static const String adminAccessToken = 'dev-admin-token-11111';
+  static const String adminRefreshToken = 'dev-admin-refresh-token-11111';
+}
+
+/// Secure storage provider for dev mode
+@riverpod
+FlutterSecureStorage secureStorage(SecureStorageRef ref) {
+  return const FlutterSecureStorage();
+}
 
 /// Mock authentication state provider for development
 /// Returns a pre-authenticated user based on selected role
@@ -90,13 +108,54 @@ class DevRole extends _$DevRole {
   @override
   DevRoleEnum build() => DevRoleEnum.notAuthenticated;
 
-  void selectTrainer() => state = DevRoleEnum.trainer;
+  Future<void> selectTrainer() async {
+    state = DevRoleEnum.trainer;
+    await _saveTokens(DevRoleEnum.trainer);
+  }
 
-  void selectClient() => state = DevRoleEnum.client;
+  Future<void> selectClient() async {
+    state = DevRoleEnum.client;
+    await _saveTokens(DevRoleEnum.client);
+  }
 
-  void selectAdmin() => state = DevRoleEnum.admin;
+  Future<void> selectAdmin() async {
+    state = DevRoleEnum.admin;
+    await _saveTokens(DevRoleEnum.admin);
+  }
 
-  void selectNotAuthenticated() => state = DevRoleEnum.notAuthenticated;
+  Future<void> selectNotAuthenticated() async {
+    state = DevRoleEnum.notAuthenticated;
+    await _clearTokens();
+  }
+
+  /// Save tokens to secure storage based on role
+  Future<void> _saveTokens(DevRoleEnum role) async {
+    final storage = ref.read(secureStorageProvider);
+    switch (role) {
+      case DevRoleEnum.trainer:
+        await storage.write(key: 'accessToken', value: _DevTokens.trainerAccessToken);
+        await storage.write(key: 'refreshToken', value: _DevTokens.trainerRefreshToken);
+        break;
+      case DevRoleEnum.client:
+        await storage.write(key: 'accessToken', value: _DevTokens.clientAccessToken);
+        await storage.write(key: 'refreshToken', value: _DevTokens.clientRefreshToken);
+        break;
+      case DevRoleEnum.admin:
+        await storage.write(key: 'accessToken', value: _DevTokens.adminAccessToken);
+        await storage.write(key: 'refreshToken', value: _DevTokens.adminRefreshToken);
+        break;
+      case DevRoleEnum.notAuthenticated:
+        await _clearTokens();
+        break;
+    }
+  }
+
+  /// Clear tokens from secure storage
+  Future<void> _clearTokens() async {
+    final storage = ref.read(secureStorageProvider);
+    await storage.delete(key: 'accessToken');
+    await storage.delete(key: 'refreshToken');
+  }
 }
 
 /// Get provider overrides for dev mode
