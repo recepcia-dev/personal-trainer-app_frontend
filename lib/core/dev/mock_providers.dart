@@ -4,8 +4,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/auth/data/models/admin_model.dart';
 import '../../features/auth/data/models/client_model.dart';
 import '../../features/auth/data/models/trainer_model.dart';
-import '../../features/auth/presentation/providers/auth_state_provider.dart';
-import '../network/dio_client.dart';
 import 'dev_config.dart';
 
 part 'mock_providers.g.dart';
