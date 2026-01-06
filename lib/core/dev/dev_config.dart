@@ -22,7 +22,7 @@ abstract class DevConfig {
   static const bool debugStateChangesEnabled = kDebugMode;
 
   /// Enable dev toolbar overlay (for quick page navigation)
-  static const bool devToolbarEnabled = kDebugMode && false; // Disabled by default
+  static const bool devToolbarEnabled = kDebugMode; // Disabled by default
 
   /// Enable debug API response printing
   static const bool debugApiResponsesEnabled = kDebugMode && false; // Disabled by default

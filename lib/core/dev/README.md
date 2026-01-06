@@ -6,7 +6,6 @@ This directory contains utilities for rapid development and design iteration wit
 
 ### Launch Dev Mode
 ```bash
-export PATH="$HOME/flutter/bin:$PATH" && \
 flutter pub run build_runner build --delete-conflicting-outputs && \
 flutter run -t lib/main_dev.dart
 ```
@@ -14,7 +13,6 @@ flutter run -t lib/main_dev.dart
 Or in one command:
 ```bash
 cd ~/Desktop/projects/game-changer/personal-trainer-app/frontend && \
-export PATH="$HOME/flutter/bin:$PATH" && \
 flutter pub run build_runner build --delete-conflicting-outputs && \
 flutter run -t lib/main_dev.dart
 ```
@@ -177,7 +175,6 @@ Future<void> seedWorkouts() async {
 ### Build Runner Errors
 ```bash
 # Regenerate all code
-export PATH="$HOME/flutter/bin:$PATH" && \
 flutter pub run build_runner build --delete-conflicting-outputs
 ```
 

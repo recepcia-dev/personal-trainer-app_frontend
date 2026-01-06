@@ -4,7 +4,7 @@
 
 Open terminal and run:
 ```bash
-export PATH="$HOME/flutter/bin:$PATH" && flutter run
+flutter run
 ```
 
 Keep terminal open. You're ready to edit!

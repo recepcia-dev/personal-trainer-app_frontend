@@ -17,20 +17,20 @@ Flutter mobile app for personal trainers and clients. Cross-platform (iOS/Androi
 ./init.sh
 
 # Install dependencies
-export PATH="$HOME/flutter/bin:$PATH" && flutter pub get
+flutter pub get
 ```
 
 ### 2. Running on Chrome
 
 ```bash
 # Run the app on Chrome with hot reload
-export PATH="$HOME/flutter/bin:$PATH" && flutter run -d chrome
+flutter run -d chrome
 
 # Or run in release mode (optimized, faster)
-export PATH="$HOME/flutter/bin:$PATH" && flutter run -d chrome --release
+flutter run -d chrome --release
 
 # Run on a custom port
-export PATH="$HOME/flutter/bin:$PATH" && flutter run -d chrome --web-port=8080
+flutter run -d chrome --web-port=8080
 ```
 
 ### 3. Backend Setup (Required)
@@ -57,33 +57,33 @@ After modifying Riverpod providers, Drift tables, Freezed classes, or JSON seria
 
 ```bash
 # Generate code once
-export PATH="$HOME/flutter/bin:$PATH" && flutter pub run build_runner build --delete-conflicting-outputs
+flutter pub run build_runner build --delete-conflicting-outputs
 
 # Watch mode (auto-regenerate during development)
-export PATH="$HOME/flutter/bin:$PATH" && flutter pub run build_runner watch --delete-conflicting-outputs
+flutter pub run build_runner watch --delete-conflicting-outputs
 ```
 
 ### Testing
 
 ```bash
 # Run all tests with coverage
-export PATH="$HOME/flutter/bin:$PATH" && flutter test --coverage
+flutter test --coverage
 
 # Run specific feature tests
-export PATH="$HOME/flutter/bin:$PATH" && flutter test test/features/auth/
+flutter test test/features/auth/
 
 # Run single test by name
-export PATH="$HOME/flutter/bin:$PATH" && flutter test --plain-name "LoginTrainer"
+flutter test --plain-name "LoginTrainer"
 ```
 
 ### Analysis & Linting
 
 ```bash
 # Run static analysis
-export PATH="$HOME/flutter/bin:$PATH" && flutter analyze
+flutter analyze
 
 # Combined: analyze + test + build
-export PATH="$HOME/flutter/bin:$PATH" && flutter analyze && flutter test && flutter pub run build_runner build --delete-conflicting-outputs
+flutter analyze && flutter test && flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 ### Clean Build
@@ -91,7 +91,7 @@ export PATH="$HOME/flutter/bin:$PATH" && flutter analyze && flutter test && flut
 If you encounter caching issues:
 
 ```bash
-export PATH="$HOME/flutter/bin:$PATH" && flutter clean && flutter pub get
+flutter clean && flutter pub get
 ```
 
 ## Troubleshooting
@@ -115,7 +115,7 @@ export PATH="$HOME/flutter/bin:$PATH" && flutter clean && flutter pub get
 
 **Solution:** Always prefix commands with PATH export:
 ```bash
-export PATH="$HOME/flutter/bin:$PATH" && flutter <command>
+flutter <command>
 ```
 
 ### Build Runner Conflicts
@@ -124,7 +124,7 @@ export PATH="$HOME/flutter/bin:$PATH" && flutter <command>
 
 **Solution:** Always use `--delete-conflicting-outputs` flag:
 ```bash
-export PATH="$HOME/flutter/bin:$PATH" && flutter pub run build_runner build --delete-conflicting-outputs
+flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 ### CORS Errors
@@ -172,7 +172,7 @@ Environment variables are loaded from `.env.development` or `.env.production`:
 Check available devices for running the app:
 
 ```bash
-export PATH="$HOME/flutter/bin:$PATH" && flutter devices
+flutter devices
 ```
 
 Example output:
