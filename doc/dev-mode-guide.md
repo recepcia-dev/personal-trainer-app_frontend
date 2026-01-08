@@ -5,8 +5,7 @@ Rapid UI/UX iteration without backend dependency. Test all user roles instantly 
 ## Quick Start
 
 ```bash
-export PATH="$HOME/flutter/bin:$PATH" && \
-flutter run -t lib/main_dev.dart
+export flutter run -t lib/main_dev.dart
 ```
 
 **What you get:**
@@ -139,8 +138,7 @@ Future<void> seedAll() async {
 
 Then rebuild with code generation:
 ```bash
-export PATH="$HOME/flutter/bin:$PATH" && \
-flutter pub run build_runner build --delete-conflicting-outputs
+export flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 ---
@@ -202,8 +200,7 @@ await seedWorkouts();
 await seedClients();
 
 # 3. Run code generation
-export PATH="$HOME/flutter/bin:$PATH" && \
-flutter pub run build_runner build --delete-conflicting-outputs
+export flutter pub run build_runner build --delete-conflicting-outputs
 
 # 4. Start dev mode
 flutter run -t lib/main_dev.dart
@@ -284,8 +281,7 @@ lib/main_dev.dart           ← Development entry point
 static const bool devToolbarEnabled = true;  // Must be true
 
 // Then rebuild:
-export PATH="$HOME/flutter/bin:$PATH" && \
-flutter pub run build_runner build --delete-conflicting-outputs
+export flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 ### Mock Auth Not Working

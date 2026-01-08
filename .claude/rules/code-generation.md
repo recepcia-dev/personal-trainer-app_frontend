@@ -17,9 +17,6 @@ dev_dependencies:
 
 ### Commands
 ```bash
-# Export PATH (Flutter not in default PATH)
-export PATH="$HOME/flutter/bin:$PATH"
-
 # Build once (clean output)
 flutter pub run build_runner build --delete-conflicting-outputs
 
@@ -104,8 +101,7 @@ String formatDate(FormatDateRef ref, DateTime date) {
 After adding `@riverpod` annotations:
 
 ```bash
-export PATH="$HOME/flutter/bin:$PATH" && \
-  flutter pub run build_runner build --delete-conflicting-outputs
+export   flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 This generates:
@@ -171,8 +167,7 @@ result.when(
 
 ### After Defining
 ```bash
-export PATH="$HOME/flutter/bin:$PATH" && \
-  flutter pub run build_runner build --delete-conflicting-outputs
+export   flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 Generates:
@@ -267,8 +262,7 @@ class AppDatabase extends _$AppDatabase {
 
 ### Code Generation
 ```bash
-export PATH="$HOME/flutter/bin:$PATH" && \
-  flutter pub run build_runner build --delete-conflicting-outputs
+export   flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 Generates:
@@ -287,8 +281,7 @@ Error: Multiple outputs for same file
 
 **Solution:** Always use `--delete-conflicting-outputs`:
 ```bash
-export PATH="$HOME/flutter/bin:$PATH" && \
-  flutter pub run build_runner build --delete-conflicting-outputs
+export   flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 ### Issue: Generated Files Not Updating
@@ -299,8 +292,7 @@ export PATH="$HOME/flutter/bin:$PATH" && \
 **Solution:** Restart watch mode or rebuild:
 ```bash
 # Stop existing watch (Ctrl+C)
-export PATH="$HOME/flutter/bin:$PATH" && \
-  flutter pub run build_runner watch --delete-conflicting-outputs
+export   flutter pub run build_runner watch --delete-conflicting-outputs
 ```
 
 ### Issue: Circular Dependencies
@@ -379,8 +371,7 @@ class UserState extends _$UserState {
 ### Development Workflow
 ```bash
 # 1. Start watch mode
-export PATH="$HOME/flutter/bin:$PATH" && \
-  flutter pub run build_runner watch --delete-conflicting-outputs
+export   flutter pub run build_runner watch --delete-conflicting-outputs
 
 # 2. Write code with @riverpod, @freezed, etc.
 # Build runner auto-generates in background
@@ -401,8 +392,7 @@ git commit -m "feat: add auth state management"
 # 1. Stop watch mode (Ctrl+C)
 
 # 2. Clean and rebuild
-export PATH="$HOME/flutter/bin:$PATH" && \
-  flutter pub run build_runner clean && \
+export   flutter pub run build_runner clean && \
   flutter pub run build_runner build --delete-conflicting-outputs
 
 # 3. Verify no conflicts

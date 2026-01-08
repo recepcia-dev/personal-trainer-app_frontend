@@ -156,12 +156,10 @@ export PATH="$HOME/flutter/bin:$PATH" && flutter <command>
 ### Code Generation
 ```bash
 # Build once
-export PATH="$HOME/flutter/bin:$PATH" && \
-  flutter pub run build_runner build --delete-conflicting-outputs
+export   flutter pub run build_runner build --delete-conflicting-outputs
 
 # Watch mode (recommended during development)
-export PATH="$HOME/flutter/bin:$PATH" && \
-  flutter pub run build_runner watch --delete-conflicting-outputs
+export   flutter pub run build_runner watch --delete-conflicting-outputs
 ```
 
 ### Testing
@@ -187,8 +185,7 @@ export PATH="$HOME/flutter/bin:$PATH" && flutter clean && flutter pub get
 
 ### Chaining Commands
 ```bash
-export PATH="$HOME/flutter/bin:$PATH" && \
-  flutter analyze && \
+export   flutter analyze && \
   flutter test && \
   flutter pub run build_runner build --delete-conflicting-outputs
 ```
