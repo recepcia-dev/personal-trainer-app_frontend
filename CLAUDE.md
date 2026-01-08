@@ -109,16 +109,43 @@ test: add integration tests for payments
 docs: update architecture guide
 ```
 
+### Session Start Checklist
+1. **Check Persistent Bugs**: Review `.claude/rules/bug.md` for "Active Bugs"
+   - If bug matches current issue, refer to notes for context
+   - Update bug status if working on a known issue
+2. Run tests to validate baseline: `export PATH="$HOME/flutter/bin:$PATH" && flutter test`
+
 ### Commit Checklist
 1. Run code analysis: `export PATH="$HOME/flutter/bin:$PATH" && flutter analyze`
 2. Run tests: `export PATH="$HOME/flutter/bin:$PATH" && flutter test --coverage`
-3. Update related docs (`doc/progress.md`, `doc/decision.md`, `doc/bug.md`)
+3. Update docs (`doc/progress.md`, `doc/decision.md`, `.claude/rules/bug.md`)
+   - Add new bugs to `.claude/rules/bug.md` (Active Bugs section)
+   - Move to Resolved Bugs when fixed
 4. Verify 80%+ domain layer coverage
 5. Push to branch, open PR to `develop`
 
 ---
 
 ## Common Commands
+
+### Backend Setup (Required for Development)
+The backend must be running for the frontend to connect to APIs. Start it from the backend directory:
+```bash
+# Start backend (first time or after changes)
+cd ~/Desktop/projects/game-changer/personal-trainer-app/backend
+docker-compose up
+
+# Or in background
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop backend
+docker-compose down
+```
+
+**Status Check**: Backend runs on `http://localhost:8000`
 
 ### ⚠️ Critical: Flutter PATH Setup
 All Flutter commands require PATH export (Flutter not in default PATH):
@@ -214,6 +241,7 @@ test_parse_job_offer_with_missing_skills_raises_value_error
 - **`doc/database_schema.md`** - Database schema reference
 
 ### Guidelines (`.claude/rules/`)
+- **`bug.md`** - 🔴 **PERSISTENT BUG TRACKER** - Check at session start (Active Bugs section)
 - **`architecture.md`** - Deep-dive into clean architecture patterns
 - **`security.md`** - Auth, token storage, data protection
 - **`database.md`** - Migrations, schema changes, Drift usage
@@ -225,12 +253,15 @@ test_parse_job_offer_with_missing_skills_raises_value_error
 
 ## Quick Troubleshooting
 
+**Before debugging**: Check `.claude/rules/bug.md` → "Active Bugs" section for known issues & workarounds.
+
 | Issue | Solution |
 |-------|----------|
 | Build runner conflicts | `flutter pub run build_runner build --delete-conflicting-outputs` |
 | Riverpod state not updating | Restart watch mode: `flutter pub run build_runner watch --delete-conflicting-outputs` |
 | Drift migration errors | Check `schemaVersion` + implement `onUpgrade`, test with `flutter test test/database/` |
 | iOS build fails | Install Xcode tools: `xcode-select --install` |
+| **Backend 401 Unauthorized** | Check `.claude/rules/bug.md` → `[BACKEND-001]` for dev JWT config |
 
 ---
 

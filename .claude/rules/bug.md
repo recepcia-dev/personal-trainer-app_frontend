@@ -1,5 +1,7 @@
 # Bug Tracker
 
+**⚠️ FORMAT RULE**: Keep bug reports COMPACT. Use minimal formatting, max 3-4 lines per section.
+
 ## Active Bugs
 
 *No bugs reported yet.*
@@ -8,78 +10,73 @@
 
 ## Resolved Bugs
 
-### [QUALITY-001] 30 Flutter Analyze Issues from F004-F005
+### [BACKEND-001] Dev JWT Auth Disabled
 
-**Status**: `Resolved`
-**Priority**: `High`
-**Reported**: 2025-12-10 (Session 8)
-**Assigned To**: Dev Team
+**Status**: `Resolved` | **Priority**: `Critical` | **Reported**: 2026-01-08
 
-**Description**:
-After completing F004 and F005, `flutter analyze` reported 30 code quality issues:
-- 6 unrecognized lint rules in analysis_options.yaml
-- 12 sort_constructors_first violations (fields before constructors)
-- 8 use_super_parameters violations (using `: super(...)` instead of `super.`)
-- 2 prefer_expression_function_bodies violations
-- 1 use_setters_to_change_properties violation
-- 2 sort_pub_dependencies violations in pubspec.yaml
+**Issue**: Dev tokens rejected with 401 "Signature verification failed"
 
-**Environment**:
-- Flutter version: 3.24.3
-- Build mode: Analysis
+**Root Cause**: Docker `APP_ENV=production` prevented dev JWT fallback (security.py:111)
 
-**Stack Trace**:
-```
-30 issues found. (ran in 16.3s)
+**Fix**: Set `APP_ENV: development`, `DEBUG: "True"`, added `ENABLE_DEV_JWT: "True"`
 
-warning • 'prefer_if_null_to_conditional_expressions' is not a recognized lint rule • analysis_options.yaml:65:7
-warning • 'prefer_null_coalescing_operators' is not a recognized lint rule • analysis_options.yaml:76:7
-warning • 'sized_box_for_spacer' is not a recognized lint rule • analysis_options.yaml:82:7
-... (27 more issues)
-```
+**Files**: `/backend/docker-compose.yml`
 
-**Potential Root Cause**:
-1. analysis_options.yaml included lint rules not available in current Flutter/Dart version
-2. Previous implementations (F004, F005) did not follow code style guidelines
-3. Dependency sorting was not alphabetical per very_good_analysis linter
+---
 
-**Resolution**:
-Resolved in F006 implementation:
-1. Removed 6 unrecognized lint rules from analysis_options.yaml:
-   - prefer_if_null_to_conditional_expressions
-   - prefer_null_coalescing_operators
-   - sized_box_for_spacer
-   - use_getters_to_define_property_names
-   - use_to_close_resource
-   - use_underscores_to_denote_unused_callback_parameters
+### [BACKEND-002] Foreign Key Type Mismatch
 
-2. Fixed sort_constructors_first violations:
-   - Moved all field declarations to AFTER constructors
-   - Affected: AppException, ServerException, Failure, ServerFailure, DioClient
+**Status**: `Resolved` | **Priority**: `Critical` | **Reported**: 2026-01-08
 
-3. Converted to super parameters:
-   - Changed `ServerException({...}) : super(message: message);`
-   - To: `ServerException({required super.message});`
-   - Applied to all 5 exception types and 5 failure types
+**Issue**: Backend startup failed - FK columns (String) incompatible with users.id (UUID)
 
-4. Used expression function bodies:
-   - Changed block bodies to arrow syntax (=>)
-   - Examples: `factory DioClient() => _instance;`
+**Root Cause**: 7 model files used `String` instead of `Uuid` for 18 foreign key columns
 
-5. Changed property vs method:
-   - Changed `static void setTokenProvider()` to `static set tokenProvider`
+**Fix**: Changed all FK columns to `Uuid` type with proper ForeignKey constraints
 
-6. Sorted dependencies alphabetically:
-   - Removed section comments between dependencies
-   - Sorted all 37 dependencies alphabetically
-   - Sorted all 16 dev_dependencies alphabetically
-   - Final result: "No issues found! (ran in 3.5s)"
+**Files**: meal_plan.py, meal_assignment.py, meal.py, payment.py, progress_tracking.py, diet_assignment.py, user.py
 
-**Impact**:
-- Code quality now excellent (0 linting issues)
-- Follows Flutter best practices and very_good_analysis standards
-- All tests still pass (5/5 for F006)
-- Project ready for further development with clean codebase
+---
+
+### [BACKEND-003] Dev User Missing Timestamps
+
+**Status**: `Resolved` | **Priority**: `High` | **Reported**: 2026-01-08
+
+**Issue**: `/api/v1/trainer/profile` returned 500 - `created_at` is None
+
+**Root Cause**: Mock User for dev tokens missing timestamp fields
+
+**Fix**: Added datetime.now(timezone.utc) for both created_at and updated_at
+
+**Files**: `/backend/app/api/dependencies.py`
+
+---
+
+### [BACKEND-004] Dictionary Access on User Object
+
+**Status**: `Resolved` | **Priority**: `Critical` | **Reported**: 2026-01-08
+
+**Issue**: 500 Internal Server Error when calling `/api/v1/auth/me/subscription` - `TypeError: 'User' object is not subscriptable`
+
+**Root Cause**: `get_current_user` dependency returns a `User` Pydantic model, but endpoints tried to access it as dict using `current_user["user_id"]`
+
+**Fix**: Changed all 14 occurrences across 5 files from dict subscript to attribute access: `current_user.id` instead of `current_user["user_id"]`, `current_user.user_type` instead of `current_user.get("user_type")`
+
+**Files**: /backend/app/api/v1/auth.py, clients.py, exercises.py, payments.py, progress.py, notifications.py
+
+---
+
+### [QUALITY-001] 30 Flutter Lint Issues
+
+**Status**: `Resolved` | **Priority**: `High` | **Reported**: 2025-12-10
+
+**Issue**: `flutter analyze` found 30 code quality violations (6 unrecognized rules, 12 constructor violations, 8 super parameter violations, etc.)
+
+**Root Cause**: analysis_options.yaml included unsupported lint rules; code didn't follow very_good_analysis standards
+
+**Fix**: Removed 6 unrecognized rules, fixed constructor ordering, converted to super parameters, sorted deps alphabetically
+
+**Result**: 0 linting issues ✅ | **Files**: analysis_options.yaml, 10+ model/exception files
 
 ---
 
