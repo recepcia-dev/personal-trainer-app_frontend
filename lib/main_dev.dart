@@ -34,6 +34,10 @@ void main() async {
   // Initialize token provider
   _initializeTokenProvider();
 
+  // Initialize theme provider to load saved theme preference
+  final themeNotifier = ThemeModeNotifier();
+  await themeNotifier.initialize();
+
   // Load environment constants
   if (!kIsWeb) {
     try {
@@ -49,9 +53,9 @@ void main() async {
   runApp(
     ProviderScope(
       overrides: [
-        // Theme provider
+        // Theme provider with initialized notifier
         themeModeProvider.overrideWith(
-          (ref) => ThemeModeNotifier(),
+          (ref) => themeNotifier,
         ),
         // Add mock auth provider override if enabled
         ...getDevProviderOverrides(),

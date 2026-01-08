@@ -15,6 +15,10 @@ void main() async {
   // Initialize token provider BEFORE anything else
   _initializeTokenProvider();
 
+  // Initialize theme provider to load saved theme preference
+  final themeNotifier = ThemeModeNotifier();
+  await themeNotifier.initialize();
+
   // Only load .env on native platforms (mobile/desktop)
   // Web uses hardcoded localhost:8000
   if (!kIsWeb) {
@@ -29,7 +33,7 @@ void main() async {
     ProviderScope(
       overrides: [
         themeModeProvider.overrideWith(
-          (ref) => ThemeModeNotifier(),
+          (ref) => themeNotifier,
         ),
       ],
       child: const PersonalTrainerApp(),

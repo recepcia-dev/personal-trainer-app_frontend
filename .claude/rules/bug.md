@@ -4,11 +4,39 @@
 
 ## Active Bugs
 
-*No bugs reported yet.*
+*No bugs currently active.*
 
 ---
 
 ## Resolved Bugs
+
+### [BACKEND-005] Trainer Stats Endpoint 500 Error
+
+**Status**: `Resolved` | **Priority**: `High` | **Reported**: 2026-01-08
+
+**Issue**: GET `/api/v1/trainer/stats` returned 500 "AttributeError: 'WorkoutAssignment' has no attribute 'trainer_id'"
+
+**Root Cause**: Query used wrong column name `WorkoutAssignment.trainer_id` but model uses `assigned_by` (FK to users.id for trainer/admin who assigned)
+
+**Fix**: Changed line 82 in `/backend/app/api/v1/trainer.py` from `WorkoutAssignment.trainer_id` to `WorkoutAssignment.assigned_by`
+
+**Files**: `/backend/app/api/v1/trainer.py`
+
+---
+
+### [THEME-001] Theme Preference Not Persisting Over Sessions
+
+**Status**: `Resolved` | **Priority**: `High` | **Reported**: 2026-01-08
+
+**Issue**: Theme preference reverted to Light after app restart (e.g., change to Dark → close app → restart → reverts to Light) in both `main.dart` and `main_dev.dart`
+
+**Root Cause**: `ThemeModeNotifier.initialize()` was called in `main.dart` but NOT in `main_dev.dart`. Dev entry point created new instance without loading saved preference.
+
+**Fix**: (1) `main.dart`: Call `themeNotifier.initialize()` before ProviderScope. (2) `main_dev.dart`: Added same initialization before DevDataSeeder to match production flow.
+
+**Files**: `/lib/main.dart`, `/lib/main_dev.dart`, `/test/core/theme/theme_provider_test.dart` (tests verified)
+
+---
 
 ### [BACKEND-001] Dev JWT Auth Disabled
 
