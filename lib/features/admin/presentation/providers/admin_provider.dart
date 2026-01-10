@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/datasources/admin_remote_datasource.dart';
 import '../../domain/entities/admin_stats.dart';
-import '../../../progress/presentation/providers/exercise_provider.dart';
+import '../../../../core/network/dio_provider.dart';
 
 /// Provider for admin remote datasource
 final adminDataSourceProvider = Provider<AdminRemoteDataSource>((ref) {

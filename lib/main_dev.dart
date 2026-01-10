@@ -31,8 +31,30 @@ void main() async {
   DevConfig.printDevConfig();
   printDevDataGuide();
 
-  // Initialize token provider
-  _initializeTokenProvider();
+  // Create single instance of secure storage to avoid sync issues
+  // Configure with proper iOS options to prevent silent keychain failures
+  const secureStorage = FlutterSecureStorage(
+    iOptions: IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock,
+    ),
+    aOptions: AndroidOptions(
+      encryptedSharedPreferences: true,
+    ),
+  );
+
+  debugPrint('');
+  debugPrint('═══════════════════════════════════════════════════════════════');
+  debugPrint('🔐 [main_dev.dart] INITIALIZING DEV MODE');
+  debugPrint('═══════════════════════════════════════════════════════════════');
+  debugPrint('📦 [main_dev.dart] Created FlutterSecureStorage instance');
+
+  // Initialize token provider with same storage instance
+  debugPrint('🔐 [main_dev.dart] Initializing token provider...');
+  _initializeTokenProvider(secureStorage);
+  debugPrint('✅ [main_dev.dart] Token provider initialized');
+  debugPrint('📍 [main_dev.dart] DioClient.isTokenProviderInitialized: ${DioClient.isTokenProviderInitialized}');
+  debugPrint('═══════════════════════════════════════════════════════════════');
+  debugPrint('');
 
   // Initialize theme provider to load saved theme preference
   final themeNotifier = ThemeModeNotifier();
@@ -47,8 +69,8 @@ void main() async {
     }
   }
 
-  // Seed dummy data if enabled
-  await DevDataSeeder.seedAll();
+  // Seed dummy data if enabled (use same storage instance)
+  await DevDataSeeder.seedAll(secureStorage);
 
   runApp(
     ProviderScope(
@@ -66,8 +88,9 @@ void main() async {
 }
 
 /// Initialize the token provider before the app runs
-void _initializeTokenProvider() {
-  DioClient.tokenProvider = _SimpleTokenProvider(const FlutterSecureStorage());
+/// Uses the same FlutterSecureStorage instance as DevDataSeeder to avoid sync issues
+void _initializeTokenProvider(FlutterSecureStorage storage) {
+  DioClient.tokenProvider = _SimpleTokenProvider(storage);
 }
 
 /// Simple implementation of TokenProvider that reads from secure storage
@@ -79,8 +102,20 @@ class _SimpleTokenProvider implements TokenProvider {
   @override
   Future<String?> getAccessToken() async {
     try {
-      return await _storage.read(key: 'accessToken');
-    } catch (_) {
+      debugPrint('🔐 [_SimpleTokenProvider] Reading accessToken from secure storage...');
+      final token = await _storage.read(key: 'accessToken');
+
+      if (token != null && token.isNotEmpty) {
+        debugPrint('✅ [_SimpleTokenProvider] accessToken found (${token.length} chars)');
+        debugPrint('   Preview: ${token.substring(0, 30)}...');
+      } else {
+        debugPrint('❌ [_SimpleTokenProvider] accessToken is NULL or EMPTY');
+        debugPrint('   Value: ${token == null ? "null" : "empty string"}');
+      }
+
+      return token;
+    } catch (e) {
+      debugPrint('❌ [_SimpleTokenProvider] Exception reading accessToken: $e');
       return null;
     }
   }
@@ -88,16 +123,35 @@ class _SimpleTokenProvider implements TokenProvider {
   @override
   Future<String?> getRefreshToken() async {
     try {
-      return await _storage.read(key: 'refreshToken');
-    } catch (_) {
+      debugPrint('🔐 [_SimpleTokenProvider] Reading refreshToken from secure storage...');
+      final token = await _storage.read(key: 'refreshToken');
+
+      if (token != null && token.isNotEmpty) {
+        debugPrint('✅ [_SimpleTokenProvider] refreshToken found (${token.length} chars)');
+      } else {
+        debugPrint('❌ [_SimpleTokenProvider] refreshToken is NULL or EMPTY');
+      }
+
+      return token;
+    } catch (e) {
+      debugPrint('❌ [_SimpleTokenProvider] Exception reading refreshToken: $e');
       return null;
     }
   }
 
   @override
   Future<void> saveTokens(String accessToken, String refreshToken) async {
-    await _storage.write(key: 'accessToken', value: accessToken);
-    await _storage.write(key: 'refreshToken', value: refreshToken);
+    debugPrint('🔐 [_SimpleTokenProvider] Saving tokens to secure storage...');
+    try {
+      await _storage.write(key: 'accessToken', value: accessToken);
+      debugPrint('✅ [_SimpleTokenProvider] accessToken saved (${accessToken.length} chars)');
+
+      await _storage.write(key: 'refreshToken', value: refreshToken);
+      debugPrint('✅ [_SimpleTokenProvider] refreshToken saved (${refreshToken.length} chars)');
+    } catch (e) {
+      debugPrint('❌ [_SimpleTokenProvider] Exception saving tokens: $e');
+      rethrow;
+    }
   }
 }
 

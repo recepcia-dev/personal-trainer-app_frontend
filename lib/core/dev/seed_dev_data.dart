@@ -1,18 +1,28 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'dev_config.dart';
+import 'mock_providers.dart';
 
 /// Development data seeding utilities
 /// Pre-populates app with dummy data for testing UI/UX
 abstract class DevDataSeeder {
   /// Seed all dummy data on app startup
-  static Future<void> seedAll() async {
+  /// Accepts FlutterSecureStorage instance to ensure consistent storage access
+  static Future<void> seedAll(FlutterSecureStorage storage) async {
     if (!DevConfig.seedDummyDataEnabled) {
       return;
     }
 
     try {
       DevLogger.info('Seeding development data...');
+
+      // In dev mode, auto-select trainer role and save tokens for immediate API calls
+      // This ensures the Authorization header is present on first API request
+      // before the user interacts with the dev toolbar
+      if (DevConfig.mockAuthEnabled) {
+        await _initializeDevAuthTokens(storage);
+      }
 
       // Add seeding operations here as you build features
       // Example:
@@ -24,6 +34,90 @@ abstract class DevDataSeeder {
       DevLogger.success('Development data seeded successfully');
     } catch (e) {
       DevLogger.error('Failed to seed dev data: $e');
+    }
+  }
+
+  /// Initialize dev auth tokens by auto-selecting trainer role
+  /// This ensures tokens are available for API calls without user interaction
+  /// before the user interacts with the dev toolbar
+  ///
+  /// CRITICAL: Use the same FlutterSecureStorage instance as TokenProvider
+  /// to avoid sync issues between writes and reads
+  static Future<void> _initializeDevAuthTokens(FlutterSecureStorage storage) async {
+    try {
+      DevLogger.info('');
+      DevLogger.info('═══════════════════════════════════════════════════════════════');
+      DevLogger.info('🔐 [DevDataSeeder] INITIALIZING DEV AUTH TOKENS');
+      DevLogger.info('═══════════════════════════════════════════════════════════════');
+
+      // Save trainer tokens as default for dev mode
+      // Use the generated dev JWT tokens from DevTokens
+      final accessTokenLength = DevTokens.trainerAccessToken.length;
+      final refreshTokenLength = DevTokens.trainerRefreshToken.length;
+
+      DevLogger.info('📝 [DevDataSeeder] Access token to save: $accessTokenLength characters');
+      DevLogger.info('   Preview: ${DevTokens.trainerAccessToken.substring(0, 30)}...');
+      DevLogger.info('🔐 [DevDataSeeder] Writing accessToken to secure storage...');
+
+      await storage.write(
+        key: 'accessToken',
+        value: DevTokens.trainerAccessToken,
+      );
+      DevLogger.success('✅ [DevDataSeeder] accessToken written successfully');
+
+      DevLogger.info('📝 [DevDataSeeder] Refresh token to save: $refreshTokenLength characters');
+      DevLogger.info('🔐 [DevDataSeeder] Writing refreshToken to secure storage...');
+
+      await storage.write(
+        key: 'refreshToken',
+        value: DevTokens.trainerRefreshToken,
+      );
+      DevLogger.success('✅ [DevDataSeeder] refreshToken written successfully');
+
+      // Verify tokens were saved
+      DevLogger.info('🔍 [DevDataSeeder] Verifying tokens were persisted...');
+      final savedAccessToken = await storage.read(key: 'accessToken');
+      final savedRefreshToken = await storage.read(key: 'refreshToken');
+
+      if (savedAccessToken != null && savedAccessToken.isNotEmpty) {
+        DevLogger.success(
+          '✅ [DevDataSeeder] accessToken verified (${savedAccessToken.length} chars)',
+        );
+      } else {
+        DevLogger.warning(
+          '❌ [DevDataSeeder] accessToken NOT found after write! This is a critical issue.',
+        );
+      }
+
+      if (savedRefreshToken != null && savedRefreshToken.isNotEmpty) {
+        DevLogger.success(
+          '✅ [DevDataSeeder] refreshToken verified (${savedRefreshToken.length} chars)',
+        );
+      } else {
+        DevLogger.warning(
+          '❌ [DevDataSeeder] refreshToken NOT found after write! This is a critical issue.',
+        );
+      }
+
+      if (savedAccessToken != null &&
+          savedAccessToken.isNotEmpty &&
+          savedRefreshToken != null &&
+          savedRefreshToken.isNotEmpty) {
+        DevLogger.success(
+          '✅ [DevDataSeeder] All dev auth tokens initialized successfully!',
+        );
+      } else {
+        DevLogger.error(
+          '❌ [DevDataSeeder] Token persistence failed - tokens cannot be read back!',
+        );
+      }
+
+      DevLogger.info('═══════════════════════════════════════════════════════════════');
+      DevLogger.info('');
+    } catch (e, stackTrace) {
+      DevLogger.error('❌ [DevDataSeeder] Exception during token initialization: $e');
+      DevLogger.error('   Stack trace: $stackTrace');
+      // Non-critical, app can still run without tokens
     }
   }
 
@@ -45,9 +139,19 @@ abstract class DevDataSeeder {
   }
 
   /// Reseed all data (clear then seed)
+  /// Uses properly configured storage instance to avoid keychain issues
   static Future<void> reseedAll() async {
     await clearAll();
-    await seedAll();
+    // Use properly configured storage instance (same as main_dev.dart)
+    const storage = FlutterSecureStorage(
+      iOptions: IOSOptions(
+        accessibility: KeychainAccessibility.first_unlock,
+      ),
+      aOptions: AndroidOptions(
+        encryptedSharedPreferences: true,
+      ),
+    );
+    await seedAll(storage);
   }
 }
 

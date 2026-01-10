@@ -43,8 +43,18 @@ void main() async {
 
 /// Initialize the token provider before the app runs
 /// This ensures DioClient has access to tokens from the very beginning
+/// Configure with proper iOS options to prevent silent keychain failures
 void _initializeTokenProvider() {
-  DioClient.tokenProvider = _SimpleTokenProvider(const FlutterSecureStorage());
+  DioClient.tokenProvider = _SimpleTokenProvider(
+    const FlutterSecureStorage(
+      iOptions: IOSOptions(
+        accessibility: KeychainAccessibility.first_unlock,
+      ),
+      aOptions: AndroidOptions(
+        encryptedSharedPreferences: true,
+      ),
+    ),
+  );
 }
 
 /// Simple implementation of TokenProvider that reads from secure storage

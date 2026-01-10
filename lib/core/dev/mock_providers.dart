@@ -1,4 +1,5 @@
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -10,7 +11,7 @@ import 'dev_config.dart';
 part 'mock_providers.g.dart';
 
 /// JWT tokens for dev mode API calls
-class _DevTokens {
+class DevTokens {
   // Dev secret key for JWT signing (used only in development)
   static const String _devSecret = 'dev-secret-key-for-testing-only';
 
@@ -182,6 +183,17 @@ class DevRole extends _$DevRole {
   Future<void> selectTrainer() async {
     state = DevRoleEnum.trainer;
     await _saveTokens(DevRoleEnum.trainer);
+    debugPrint('');
+    debugPrint('═══════════════════════════════════════════════════════════════');
+    debugPrint('🔐 TRAINER BEARER TOKEN FOR CURL REQUESTS');
+    debugPrint('═══════════════════════════════════════════════════════════════');
+    debugPrint('Token: ${DevTokens.trainerAccessToken}');
+    debugPrint('');
+    debugPrint('Use in curl:');
+    debugPrint('curl -H "Authorization: Bearer ${DevTokens.trainerAccessToken}" \\');
+    debugPrint('  https://api.personaltrainer.com/api/v1/trainer/profile');
+    debugPrint('═══════════════════════════════════════════════════════════════');
+    debugPrint('');
   }
 
   Future<void> selectClient() async {
@@ -204,16 +216,16 @@ class DevRole extends _$DevRole {
     final storage = ref.read(secureStorageProvider);
     switch (role) {
       case DevRoleEnum.trainer:
-        await storage.write(key: 'accessToken', value: _DevTokens.trainerAccessToken);
-        await storage.write(key: 'refreshToken', value: _DevTokens.trainerRefreshToken);
+        await storage.write(key: 'accessToken', value: DevTokens.trainerAccessToken);
+        await storage.write(key: 'refreshToken', value: DevTokens.trainerRefreshToken);
         break;
       case DevRoleEnum.client:
-        await storage.write(key: 'accessToken', value: _DevTokens.clientAccessToken);
-        await storage.write(key: 'refreshToken', value: _DevTokens.clientRefreshToken);
+        await storage.write(key: 'accessToken', value: DevTokens.clientAccessToken);
+        await storage.write(key: 'refreshToken', value: DevTokens.clientRefreshToken);
         break;
       case DevRoleEnum.admin:
-        await storage.write(key: 'accessToken', value: _DevTokens.adminAccessToken);
-        await storage.write(key: 'refreshToken', value: _DevTokens.adminRefreshToken);
+        await storage.write(key: 'accessToken', value: DevTokens.adminAccessToken);
+        await storage.write(key: 'refreshToken', value: DevTokens.adminRefreshToken);
         break;
       case DevRoleEnum.notAuthenticated:
         await _clearTokens();

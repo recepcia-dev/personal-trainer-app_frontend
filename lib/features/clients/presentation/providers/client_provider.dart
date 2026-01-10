@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/datasources/client_local_datasource.dart';
@@ -6,6 +7,7 @@ import '../../data/repositories/client_repository_impl.dart';
 import '../../domain/entities/client.dart';
 import '../../domain/repositories/client_repository.dart';
 import '../../../progress/presentation/providers/exercise_provider.dart';
+import '../../../../core/network/dio_provider.dart';
 
 /// Client remote data source provider
 final clientRemoteDataSourceProvider =
@@ -93,23 +95,69 @@ class CreateClientNotifier extends StateNotifier<AsyncValue<Client>> {
     String? goals,
     String? notes,
   }) async {
+    if (kDebugMode) {
+      debugPrint('🔵 [ClientCreate] Starting client creation for email: $email');
+    }
+
     state = const AsyncValue.loading();
 
-    final result = await _repository.createClient(
-      email: email,
-      firstName: firstName,
-      lastName: lastName,
-      phone: phone,
-      age: age,
-      fitnessLevel: fitnessLevel,
-      goals: goals,
-      notes: notes,
-    );
+    if (kDebugMode) {
+      debugPrint('🔵 [ClientCreate] State set to loading');
+    }
 
-    state = result.fold(
-      (failure) => AsyncValue.error(failure, StackTrace.current),
-      (client) => AsyncValue.data(client),
-    );
+    try {
+      if (kDebugMode) {
+        debugPrint('🔵 [ClientCreate] Calling repository.createClient()...');
+      }
+
+      final result = await _repository.createClient(
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+        age: age,
+        fitnessLevel: fitnessLevel,
+        goals: goals,
+        notes: notes,
+      );
+
+      if (kDebugMode) {
+        debugPrint('🔵 [ClientCreate] Repository returned result');
+      }
+
+      // Handle result
+      result.fold(
+        (failure) {
+          if (kDebugMode) {
+            debugPrint('❌ [ClientCreate] FAILURE: $failure');
+          }
+          state = AsyncValue.error(failure, StackTrace.current);
+        },
+        (client) {
+          if (kDebugMode) {
+            debugPrint('✅ [ClientCreate] SUCCESS: Client created with ID ${client.id}');
+          }
+          state = AsyncValue.data(client);
+        },
+      );
+
+      // Throw exception if creation failed so UI can handle it
+      result.fold(
+        (failure) {
+          if (kDebugMode) {
+            debugPrint('🔴 [ClientCreate] Throwing exception with failure: $failure');
+          }
+          throw Exception('Client creation failed: $failure');
+        },
+        (client) => null,
+      );
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('🔴 [ClientCreate] EXCEPTION CAUGHT: $e');
+        debugPrint('🔴 [ClientCreate] Stack trace: $stackTrace');
+      }
+      rethrow; // Re-throw so UI can catch it
+    }
   }
 }
 
@@ -165,6 +213,12 @@ class UpdateClientNotifier extends StateNotifier<AsyncValue<Client>> {
     state = result.fold(
       (failure) => AsyncValue.error(failure, StackTrace.current),
       (client) => AsyncValue.data(client),
+    );
+
+    // Throw exception if update failed so UI can handle it
+    result.fold(
+      (failure) => throw Exception(failure),
+      (client) => null,
     );
   }
 }

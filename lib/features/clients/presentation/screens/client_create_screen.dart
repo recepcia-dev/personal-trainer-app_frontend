@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -298,10 +299,18 @@ class _ClientCreateScreenState extends ConsumerState<ClientCreateScreen> {
         Navigator.pop(context);
         ref.refresh(allClientsProvider);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('🔴 [ClientCreateScreen] Exception caught in _submitForm: $e');
+        debugPrint('🔴 [ClientCreateScreen] Stack trace: $stackTrace');
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
         setState(() => _isSubmitting = false);
       }

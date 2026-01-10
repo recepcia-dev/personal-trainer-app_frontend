@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/network/api_error.dart';
 import '../models/client_model.dart';
 
 /// Remote data source for client data - handles API calls
@@ -67,7 +69,14 @@ class ClientRemoteDataSourceImpl implements ClientRemoteDataSource {
         throw Exception('Failed to fetch clients: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      throw Exception('Failed to fetch clients: ${e.message}');
+      final apiError = ApiError.fromResponse(
+        responseData: e.response?.data,
+        statusCode: e.response?.statusCode,
+      );
+      if (kDebugMode) {
+        debugPrint('Fetch clients failed: ${apiError.getDetailedMessage()}');
+      }
+      throw Exception('Failed to fetch clients: ${apiError.getDisplayMessage()}');
     }
   }
 
@@ -84,7 +93,14 @@ class ClientRemoteDataSourceImpl implements ClientRemoteDataSource {
         throw Exception('Failed to fetch client: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      throw Exception('Failed to fetch client: ${e.message}');
+      final apiError = ApiError.fromResponse(
+        responseData: e.response?.data,
+        statusCode: e.response?.statusCode,
+      );
+      if (kDebugMode) {
+        debugPrint('Get client by ID failed: ${apiError.getDetailedMessage()}');
+      }
+      throw Exception('Failed to fetch client: ${apiError.getDisplayMessage()}');
     }
   }
 
@@ -111,10 +127,29 @@ class ClientRemoteDataSourceImpl implements ClientRemoteDataSource {
         if (notes != null) 'notes': notes,
       };
 
+      if (kDebugMode) {
+        debugPrint('');
+        debugPrint('╔════════════════════════════════════════════════════════════════╗');
+        debugPrint('║              🚀 CREATING CLIENT - REQUEST DETAILS              ║');
+        debugPrint('╚════════════════════════════════════════════════════════════════╝');
+        debugPrint('📍 [ClientRemoteDataSource] Endpoint: ${ApiEndpoints.baseUrl}${ApiEndpoints.clients}');
+        debugPrint('📦 [ClientRemoteDataSource] Payload:');
+        payload.forEach((key, value) {
+          debugPrint('   • $key: $value');
+        });
+        debugPrint('⏳ [ClientRemoteDataSource] Sending POST request...');
+      }
+
       final response = await dio.post(
         '${ApiEndpoints.baseUrl}${ApiEndpoints.clients}',
         data: payload,
       );
+
+      if (kDebugMode) {
+        debugPrint('✅ [ClientRemoteDataSource] Response status: ${response.statusCode}');
+        debugPrint('╚════════════════════════════════════════════════════════════════╝');
+        debugPrint('');
+      }
 
       if (response.statusCode == 201) {
         return ClientModel.fromJson(response.data as Map<String, dynamic>);
@@ -122,7 +157,23 @@ class ClientRemoteDataSourceImpl implements ClientRemoteDataSource {
         throw Exception('Failed to create client: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      throw Exception('Failed to create client: ${e.message}');
+      // Extract detailed error from response
+      final apiError = ApiError.fromResponse(
+        responseData: e.response?.data,
+        statusCode: e.response?.statusCode,
+      );
+
+      // Log detailed error for debugging
+      if (kDebugMode) {
+        debugPrint('❌ [ClientRemoteDataSource] Request failed!');
+        debugPrint('   Status Code: ${e.response?.statusCode}');
+        debugPrint('   Error: ${apiError.getDetailedMessage()}');
+        debugPrint('╚════════════════════════════════════════════════════════════════╝');
+        debugPrint('');
+      }
+
+      // Throw exception with detailed error message
+      throw Exception('Failed to create client: ${apiError.getDisplayMessage()}');
     }
   }
 
@@ -159,7 +210,14 @@ class ClientRemoteDataSourceImpl implements ClientRemoteDataSource {
         throw Exception('Failed to update client: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      throw Exception('Failed to update client: ${e.message}');
+      final apiError = ApiError.fromResponse(
+        responseData: e.response?.data,
+        statusCode: e.response?.statusCode,
+      );
+      if (kDebugMode) {
+        debugPrint('Update client failed: ${apiError.getDetailedMessage()}');
+      }
+      throw Exception('Failed to update client: ${apiError.getDisplayMessage()}');
     }
   }
 
@@ -174,7 +232,14 @@ class ClientRemoteDataSourceImpl implements ClientRemoteDataSource {
         throw Exception('Failed to delete client: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      throw Exception('Failed to delete client: ${e.message}');
+      final apiError = ApiError.fromResponse(
+        responseData: e.response?.data,
+        statusCode: e.response?.statusCode,
+      );
+      if (kDebugMode) {
+        debugPrint('Delete client failed: ${apiError.getDetailedMessage()}');
+      }
+      throw Exception('Failed to delete client: ${apiError.getDisplayMessage()}');
     }
   }
 }

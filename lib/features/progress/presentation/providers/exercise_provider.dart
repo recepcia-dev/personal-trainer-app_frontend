@@ -1,18 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../../../../database/app_database.dart';
 import '../../../../core/network/network_info.dart';
+import '../../../../core/network/dio_provider.dart';
 import '../../data/datasources/exercise_local_datasource.dart';
 import '../../data/datasources/exercise_remote_datasource.dart';
 import '../../data/repositories/exercise_repository_impl.dart';
 import '../../domain/entities/exercise.dart';
 import '../../domain/repositories/exercise_repository.dart';
 import '../../domain/usecases/fetch_exercises_usecase.dart';
-
-/// Dio instance provider
-final dioProvider = Provider<Dio>((ref) => Dio());
 
 /// Database provider
 final databaseProvider = Provider<AppDatabase>((ref) => AppDatabase());
