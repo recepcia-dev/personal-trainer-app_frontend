@@ -53,7 +53,7 @@ lib/features/<feature>/
 - Enable foreign key constraints: `pragma foreign_keys = ON`
 - Mark unsynced records: `isSynced: false` flag for offline sync
 
-**See:** [`.claude/rules/database.md`](./.claude/rules/database.md)
+**See:** [`.claude/rules/database_schema.md`](./.claude/rules/database_schema.md)
 
 ### Code Generation
 - Run **after modifying** `@riverpod`, Drift tables, Freezed classes, JSON serialization
@@ -135,11 +135,8 @@ The backend must be running for the frontend to connect to APIs. Start it from t
 cd ~/Desktop/projects/game-changer/personal-trainer-app/backend
 docker-compose up
 
-# Or in background
-docker-compose up -d
-
 # View logs
-docker-compose logs -f
+docker-compose logs backend
 
 # Stop backend
 docker-compose down

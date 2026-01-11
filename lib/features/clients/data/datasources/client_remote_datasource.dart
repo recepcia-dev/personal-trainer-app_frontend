@@ -58,6 +58,7 @@ class ClientRemoteDataSourceImpl implements ClientRemoteDataSource {
       // Use the trainer-specific endpoint to get trainer's clients
       final response = await dio.get(
         '${ApiEndpoints.baseUrl}/api/v1/trainer/clients',
+        queryParameters: {'skip': skip, 'limit': limit},
       );
 
       if (response.statusCode == 200) {

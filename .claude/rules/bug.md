@@ -4,6 +4,20 @@
 
 ## Active Bugs
 
+### [BACKEND-009] Client List Empty After Creation with Dev Tokens
+
+**Status**: `Resolved` | **Priority**: `Critical` | **Reported**: 2026-01-10 | **Fixed**: 2026-01-10
+
+**Issue**: POST `/api/v1/clients` returned HTTP 201 with full client details, but subsequent GET `/api/v1/clients` returned empty list. Created clients were never visible in the list endpoint despite successful creation response.
+
+**Root Cause**: Dev token UUID v5 mismatch. Previous fix used deterministic UUID v5 IDs for dev tokens, but when a trainer email existed from previous test sessions, the code fell back to using the old trainer ID. This caused: clients created with old trainer ID (from DB), but GET listing used new UUID v5 ID, resulting in no matches.
+
+**Fix**: (1) Always use deterministic UUID v5 ID for dev tokens, never fall back. (2) If old trainer with same email exists, delete it and any associated clients (development cleanup). (3) Always create new trainer with the UUID v5 ID. This ensures consistency between create and list operations. (4) Commit: `0da337a` - fix: resolve client list being empty after creation with dev tokens.
+
+**Files Modified**: `/backend/app/api/v1/clients.py` (lines 188-222)
+
+---
+
 ### [FRONTEND-003] Conflicting dioProvider Instances Missing Authorization Header - FIXED
 
 **Status**: `Resolved` | **Priority**: `Critical` | **Reported**: 2026-01-09 | **Fixed**: 2026-01-09

@@ -270,7 +270,7 @@ class _ClientCreateScreenState extends ConsumerState<ClientCreateScreen> {
         return;
       }
 
-      await ref.read(createClientNotifierProvider.notifier).createClient(
+      await ref.read(createClientWithInvalidationProvider.notifier).createClient(
         email: _emailController.text,
         firstName: _firstNameController.text.isNotEmpty
             ? _firstNameController.text
@@ -297,7 +297,7 @@ class _ClientCreateScreenState extends ConsumerState<ClientCreateScreen> {
           ),
         );
         Navigator.pop(context);
-        ref.refresh(allClientsProvider);
+        // No manual refresh needed - list is auto-invalidated by the provider
       }
     } catch (e, stackTrace) {
       if (kDebugMode) {

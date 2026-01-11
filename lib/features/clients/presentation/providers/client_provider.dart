@@ -161,11 +161,128 @@ class CreateClientNotifier extends StateNotifier<AsyncValue<Client>> {
   }
 }
 
-/// Create client notifier provider
+/// Create client state notifier with auto-invalidation
+class CreateClientWithInvalidationNotifier
+    extends StateNotifier<AsyncValue<Client>> {
+  final ClientRepository _repository;
+  final Ref _ref;
+
+  CreateClientWithInvalidationNotifier({
+    required ClientRepository repository,
+    required Ref ref,
+  })  : _repository = repository,
+        _ref = ref,
+        super(AsyncValue.data(
+          Client(
+            id: '',
+            trainerId: '',
+            userId: '',
+            email: '',
+            isActive: false,
+            createdAt: DateTime(2000),
+            updatedAt: DateTime(2000),
+          ),
+        ));
+
+  Future<void> createClient({
+    required String email,
+    String? firstName,
+    String? lastName,
+    String? phone,
+    int? age,
+    String? fitnessLevel,
+    String? goals,
+    String? notes,
+  }) async {
+    if (kDebugMode) {
+      debugPrint('🔵 [CreateClientWithInvalidation] Starting client creation for email: $email');
+    }
+
+    state = const AsyncValue.loading();
+
+    try {
+      if (kDebugMode) {
+        debugPrint('🔵 [CreateClientWithInvalidation] Calling repository.createClient()...');
+      }
+
+      final result = await _repository.createClient(
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+        age: age,
+        fitnessLevel: fitnessLevel,
+        goals: goals,
+        notes: notes,
+      );
+
+      if (kDebugMode) {
+        debugPrint('🔵 [CreateClientWithInvalidation] Repository returned result');
+      }
+
+      // Handle result
+      result.fold(
+        (failure) {
+          if (kDebugMode) {
+            debugPrint('❌ [CreateClientWithInvalidation] FAILURE: $failure');
+          }
+          state = AsyncValue.error(failure, StackTrace.current);
+        },
+        (client) {
+          if (kDebugMode) {
+            debugPrint('✅ [CreateClientWithInvalidation] SUCCESS: Client created with ID ${client.id}');
+            debugPrint('🔄 [CreateClientWithInvalidation] Invalidating clientsProvider and allClientsProvider');
+          }
+          state = AsyncValue.data(client);
+
+          // Automatically invalidate the family provider with the same params used by allClientsProvider
+          _ref.invalidate(clientsProvider((skip: 0, limit: 100)));
+
+          // Then invalidate the wrapper provider
+          _ref.invalidate(allClientsProvider);
+
+          if (kDebugMode) {
+            debugPrint('✅ [CreateClientWithInvalidation] Both providers invalidated');
+          }
+        },
+      );
+
+      // Throw exception if creation failed so UI can handle it
+      result.fold(
+        (failure) {
+          if (kDebugMode) {
+            debugPrint('🔴 [CreateClientWithInvalidation] Throwing exception with failure: $failure');
+          }
+          throw Exception('Client creation failed: $failure');
+        },
+        (client) => null,
+      );
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('🔴 [CreateClientWithInvalidation] EXCEPTION CAUGHT: $e');
+        debugPrint('🔴 [CreateClientWithInvalidation] Stack trace: $stackTrace');
+      }
+      rethrow;
+    }
+  }
+}
+
+/// Create client notifier provider (original)
 final createClientNotifierProvider =
     StateNotifierProvider<CreateClientNotifier, AsyncValue<Client>>(
   (ref) {
     return CreateClientNotifier(repository: ref.watch(clientRepositoryProvider));
+  },
+);
+
+/// Create client with auto-invalidation provider
+final createClientWithInvalidationProvider =
+    StateNotifierProvider<CreateClientWithInvalidationNotifier, AsyncValue<Client>>(
+  (ref) {
+    return CreateClientWithInvalidationNotifier(
+      repository: ref.watch(clientRepositoryProvider),
+      ref: ref,
+    );
   },
 );
 
