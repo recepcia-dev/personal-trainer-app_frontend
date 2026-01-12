@@ -1,8 +1,11 @@
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/dio_provider.dart';
 import '../../data/datasources/progress_remote_datasource.dart';
 import '../../data/models/progress_request_model.dart';
+
+part 'progress_provider.g.dart';
 
 /// Provider for progress datasource
 final progressDataSourceProvider = Provider<ProgressRemoteDataSource>((ref) {
