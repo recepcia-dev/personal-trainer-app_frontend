@@ -4,6 +4,38 @@
 
 ## Active Bugs
 
+### [BACKEND-014] Client Profile Endpoint Returns 404 for Dev Token Clients - FIXED
+
+**Status**: `Resolved` | **Priority**: `Critical` | **Reported**: 2026-01-12 | **Fixed**: 2026-01-12
+
+**Issue**: Frontend error when loading client profile: `GET /api/v1/clients/{client_id}` endpoint returned HTTP 404 "Client with ID 478f7ffe-61c2-5038-8411-75ad04de5573 not found" when called with dev token. Frontend called this endpoint to fetch the client's own profile using their user_id, but endpoint only queried database for Client records by ID (not by user_id) and had no dev token handling.
+
+**Root Cause**: Endpoint had two issues: (1) **No client-role support**: Endpoint was designed for trainers to fetch their clients by client ID, but clients need to fetch their own profile by user_id. (2) **No dev token handling**: Unlike other endpoints (e.g., `/api/v1/auth/me`), no check for dev tokens that return in-memory mock objects without database persistence.
+
+**Fix**: Modified `GET /api/v1/clients/{client_id}` endpoint (`/backend/app/api/v1/clients.py` lines 104-183) to: (1) Check if user is a **client** role—if so, look up Client by `user_id` instead of `id`, allowing clients to fetch their own profile. (2) For dev tokens with no Client record, return a mock client object with deterministic UUID and mock trainer_id. (3) Added permission check so clients can only view their own profile. (4) For trainers/admins, preserve existing behavior of looking up by client ID.
+
+**Files Modified**: `/backend/app/api/v1/clients.py` (lines 104-183)
+
+**Test Results**: ✅ Client can fetch own profile with dev token (HTTP 200) | ✅ Response has all required fields (id, trainer_id, user_id, email, is_active, created_at, updated_at) | ✅ Client gets 403 when trying to access another user's profile | ✅ Trainer gets 404 for non-existent client | ✅ Backwards compatible with existing trainer/admin usage
+
+---
+
+### [BACKEND-013] Unknown User Type Error - GET /api/v1/auth/me Returns 404 for Dev Tokens - FIXED
+
+**Status**: `Resolved` | **Priority**: `Critical` | **Reported**: 2026-01-12 | **Fixed**: 2026-01-12
+
+**Issue**: Frontend error when restoring client session: `GET /api/v1/auth/me` endpoint returned HTTP 404 "User not found" when called with dev token credentials. Error message: "RESOURCE_NOT_FOUND: User 478f7ffe-61c2-5038-8411-75ad04de5573 not found". Occurred when switching to client role and trying to display Profile tab.
+
+**Root Cause**: `GET /api/v1/auth/me` endpoint unconditionally called `AuthService.get_user(current_user.id, db)` which queries the database. For dev tokens, `get_current_user` dependency creates a mock User object (not persisted to DB) with a deterministic UUID. The endpoint tried to fetch this non-existent user from the database, resulting in 404 error.
+
+**Fix**: Modified `GET /api/v1/auth/me` endpoint (`/backend/app/api/v1/auth.py` lines 194-208) to check if current_user is a dev token (by checking for `_dev_token_user_id` attribute set by `get_current_user` dependency). For dev tokens, return the mock User object directly without database query. For production tokens, continue fetching fresh data from database.
+
+**Files Modified**: `/backend/app/api/v1/auth.py` (lines 194-208)
+
+**Test Results**: ✅ GET /api/v1/auth/me returns 200 with dev client token | ✅ Response contains correct user_type, email, id fields | ✅ Frontend can now restore client session on app startup
+
+---
+
 ### [BACKEND-012] Client Deletion Not Deleting User Records - FIXED
 
 **Status**: `Resolved` | **Priority**: `Critical` | **Reported**: 2026-01-12 | **Fixed**: 2026-01-12

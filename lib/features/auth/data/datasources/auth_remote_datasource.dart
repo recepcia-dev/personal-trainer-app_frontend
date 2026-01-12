@@ -308,7 +308,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
 
       // Make request to /api/v1/auth/me endpoint
-      final response = await dioClient.dio.post(
+      final response = await dioClient.dio.get(
         '/api/v1/auth/me',
         options: Options(
           headers: {'Authorization': 'Bearer $accessToken'},
