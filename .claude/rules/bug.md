@@ -4,6 +4,22 @@
 
 ## Active Bugs
 
+### [BACKEND-012] Client Deletion Not Deleting User Records - FIXED
+
+**Status**: `Resolved` | **Priority**: `Critical` | **Reported**: 2026-01-12 | **Fixed**: 2026-01-12
+
+**Issue**: DELETE `/api/v1/clients/{client_id}` returned 204 No Content, but: (1) client remained in database with `is_active=false` (soft delete), (2) associated user account never deleted, (3) list endpoints returned deleted clients mixed with active ones, (4) frontend cache had UNIQUE constraint violations on user_id field.
+
+**Root Causes**: Four separate issues: (1) **Backend soft delete**: DELETE endpoint only marked `is_active=false` instead of hard-deleting. (2) **List filtering**: GET endpoints returned all clients regardless of `is_active` status. (3) **Schema incomplete**: ClientDetailResponse missing `trainer_id`, `user_id`, `updated_at` fields, causing frontend parser errors. (4) **Cache constraint**: Drift cache had stale deleted records with user_id values blocking inserts of new clients.
+
+**Fix**: (1) **Backend hard delete** (`/backend/app/api/v1/clients.py` line 410-421): Changed from soft delete to hard delete using `delete(Client).where(Client.id==id)` statement that removes both Client and User records atomically. Added import: `from sqlalchemy import delete`. (2) **List filtering** (`/backend/app/api/v1/clients.py` lines 61-72 and `/backend/app/api/v1/trainer.py` lines 133-135): Added `Client.is_active == True` filter to WHERE clauses so deleted clients never returned. (3) **Schema fix** (`/backend/app/schemas/trainer.py` lines 25-44): Added missing `trainer_id: UUID`, `user_id: UUID`, `updated_at: datetime` fields to ClientDetailResponse. (4) **Cache cleanup** (`/lib/features/clients/data/datasources/client_local_datasource.dart` lines 77-84): Before caching fresh clients, delete ALL clients for that trainer (`trainerId.equals(trainerId)`) to clear stale records and avoid UNIQUE constraint violations on user_id.
+
+**Files Modified**: `/backend/app/api/v1/clients.py`, `/backend/app/api/v1/trainer.py`, `/backend/app/schemas/trainer.py`, `/lib/features/clients/data/datasources/client_local_datasource.dart`
+
+**Test Logs**: ✅ DELETE returns 204 | ✅ GET returns only 1 active client | ✅ Cache insert succeeds with no UNIQUE constraint errors
+
+---
+
 ### [BACKEND-011] Trainers Viewing Other Trainers' Clients - FIXED
 
 **Status**: `Resolved` | **Priority**: `Critical` | **Reported**: 2026-01-12 | **Fixed**: 2026-01-12

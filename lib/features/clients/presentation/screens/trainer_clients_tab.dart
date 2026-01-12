@@ -215,13 +215,15 @@ class ClientListTile extends ConsumerWidget {
     try {
       Navigator.of(context).pop(); // Close the confirmation dialog
 
-      // Show loading indicator
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Deleting client...'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      // Only show SnackBar if context is still mounted
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Deleting client...'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
 
       // Delete the client
       await ref.read(deleteClientProvider(client.id).future);
@@ -230,19 +232,25 @@ class ClientListTile extends ConsumerWidget {
       ref.invalidate(clientsProvider((skip: 0, limit: 100)));
       ref.invalidate(allClientsProvider);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Client deleted successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      // Only show success SnackBar if context is still mounted
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Client deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error deleting client: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      // Only show error SnackBar if context is still mounted
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting client: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

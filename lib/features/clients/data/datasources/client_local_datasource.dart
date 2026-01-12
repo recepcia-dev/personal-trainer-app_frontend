@@ -69,6 +69,21 @@ class ClientLocalDataSourceImpl implements ClientLocalDataSource {
 
   @override
   Future<void> cacheClients(List<ClientModel> clients) async {
+    // Get trainer ID from first client (all should have same trainer)
+    if (clients.isEmpty) return;
+
+    final trainerId = clients.first.trainerId;
+
+    // CRITICAL: Delete ALL clients for this trainer first
+    // This clears both active and deleted clients from cache, avoiding UNIQUE constraint violations
+    // on userId field when backend hard-deletes clients.
+    // Example: If cache has Client A (user_id=X), and backend now has Client B (user_id=X from new user),
+    // we MUST clear all old clients so the new ones can be inserted.
+    await (database.delete(database.clientsTable)
+          ..where((c) => c.trainerId.equals(trainerId)))
+        .go();
+
+    // Now cache fresh clients
     await database.batch((batch) {
       batch.insertAllOnConflictUpdate(
         database.clientsTable,
