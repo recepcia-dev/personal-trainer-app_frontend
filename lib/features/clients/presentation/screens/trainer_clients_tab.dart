@@ -145,10 +145,104 @@ class ClientListTile extends ConsumerWidget {
                 ),
                 side: BorderSide(color: theme.colorScheme.outline),
               ),
-            Icon(Icons.chevron_right, color: theme.colorScheme.outline),
+            IconButton(
+              icon: Icon(Icons.more_vert, color: theme.colorScheme.outline),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+              onPressed: () => _showClientMenu(context, ref),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  void _showClientMenu(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Client Options'),
+        content: const Text('What would you like to do?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              onTap();
+            },
+            child: const Text('View Details'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _showDeleteConfirmation(context, ref);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red[700],
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Client'),
+        content: Text(
+          'Are you sure you want to delete ${client.fullName}? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => _deleteClient(context, ref),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red[700],
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteClient(BuildContext context, WidgetRef ref) async {
+    try {
+      Navigator.of(context).pop(); // Close the confirmation dialog
+
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Deleting client...'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Delete the client
+      await ref.read(deleteClientProvider(client.id).future);
+
+      // Invalidate providers to refresh the client list
+      ref.invalidate(clientsProvider((skip: 0, limit: 100)));
+      ref.invalidate(allClientsProvider);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Client deleted successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting client: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

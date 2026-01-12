@@ -262,19 +262,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           final userType = responseData['user_type'] as String?;
 
           if (userType == 'trainer') {
-            final trainer = TrainerModel.fromJson(responseData);
+            final trainer = TrainerModel.fromApi(responseData);
             print('✅ DEBUG Frontend: TrainerModel parsed: $trainer');
             return trainer;
           } else if (userType == 'client') {
-            // Map response fields to ClientModel expectations
-            final mappedResponse = {
-              'id': responseData['id'],
-              'email': responseData['email'],
-              'name': '${responseData['first_name'] ?? ''} ${responseData['last_name'] ?? ''}'.trim(),
-              'trainerId': 0, // Default - will be set by backend later
-              'user_type': responseData['user_type'],
-            };
-            final client = ClientModel.fromJson(mappedResponse);
+            final client = ClientModel.fromApi(responseData);
             print('✅ DEBUG Frontend: ClientModel parsed: $client');
             return client;
           }
@@ -337,7 +329,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         if (userType == 'trainer') {
           print('🔍 DEBUG Frontend: Parsing as TrainerModel');
           print('🔍 DEBUG Frontend: userResponse keys: ${userResponse.keys}');
-          final trainer = TrainerModel.fromJson(userResponse);
+          final trainer = TrainerModel.fromApi(userResponse);
           print('✅ DEBUG Frontend: TrainerModel parsed: $trainer');
           return trainer;
         } else if (userType == 'client') {
@@ -345,17 +337,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           print('🔍 DEBUG Frontend: userResponse keys: ${userResponse.keys}');
           print('🔍 DEBUG Frontend: userResponse values: ${userResponse.values}');
 
-          // Map the response to match ClientModel expectations
-          final mappedResponse = {
-            'id': userResponse['id'],
-            'email': userResponse['email'],
-            'name': '${userResponse['first_name'] ?? ''} ${userResponse['last_name'] ?? ''}'.trim(),
-            'trainerId': 0, // TODO: Get from API or user context
-            'user_type': userResponse['user_type'],
-          };
-          print('🔍 DEBUG Frontend: mappedResponse: $mappedResponse');
-
-          final client = ClientModel.fromJson(mappedResponse);
+          final client = ClientModel.fromApi(userResponse);
           print('✅ DEBUG Frontend: ClientModel parsed: $client');
           return client;
         } else {

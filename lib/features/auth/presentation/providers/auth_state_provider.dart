@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/crashlytics/crashlytics_service_provider.dart';
 import '../../../../core/error/failures.dart';
 import '../../data/models/admin_model.dart';
 import 'auth_repository_provider.dart';
+import '../../../clients/presentation/providers/client_provider.dart';
 
 part 'auth_state_provider.g.dart';
 
@@ -15,9 +17,45 @@ part 'auth_state_provider.g.dart';
 class AuthState extends _$AuthState {
   @override
   dynamic build() {
+    // Initialize by attempting to restore user from storage
+    _initializeAuth();
+
     // Start with no authenticated user
-    // User will be set after successful magic link verification
+    // User will be set after successful magic link verification or restoration
     return null;
+  }
+
+  /// Initialize authentication by restoring user from stored tokens
+  void _initializeAuth() {
+    // Schedule the restoration to happen after the provider is fully initialized
+    Future.microtask(() => _restoreUser());
+  }
+
+  /// Restore user from stored tokens
+  Future<void> _restoreUser() async {
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final result = await repository.getCurrentUser();
+
+      result.fold(
+        (failure) {
+          if (kDebugMode) {
+            debugPrint('⚠️ [AuthState] Failed to restore user: $failure');
+          }
+        },
+        (user) {
+          if (kDebugMode) {
+            debugPrint('✅ [AuthState] Restored user from storage: ${user.runtimeType}');
+          }
+          // Set the authenticated user
+          state = user;
+        },
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ [AuthState] Exception restoring user: $e');
+      }
+    }
   }
 
   /// Check if user is authenticated
@@ -77,11 +115,22 @@ class AuthState extends _$AuthState {
     );
   }
 
-  /// Logout - clear authenticated user
+  /// Logout - clear authenticated user and invalidate cached data
   Future<void> logout() async {
     final useCase = ref.read(logoutUseCaseProvider);
     await useCase.call();
     state = null;
+
+    // Clear all cached providers (best effort)
+    try {
+      // Invalidate clients providers
+      ref.invalidate(clientsProvider);
+      ref.invalidate(allClientsProvider);
+
+      if (kDebugMode) {
+        debugPrint('✅ [AuthState] Invalidated cached client data on logout');
+      }
+    } catch (_) {}
 
     // Clear crashlytics user (best effort)
     try {

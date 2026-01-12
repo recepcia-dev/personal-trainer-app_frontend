@@ -40,16 +40,29 @@ class ClientModel with _$ClientModel implements Client {
   }
 
   // Custom factory from API to compute name from first_name + last_name
+  // Falls back to name field if present, then email if no name fields provided
+  // Also handles trainer_id as either int or string
   factory ClientModel.fromApi(Map<String, dynamic> json) {
-    // Compute name from first_name and last_name if not provided
-    final firstName = json['first_name'] as String?;
-    final lastName = json['last_name'] as String?;
-    final computedName = (firstName != null && lastName != null)
-        ? '$firstName $lastName'
-        : json['email'] as String? ?? 'Unknown';
+    // First check if name field already exists (direct API response)
+    final name = json['name'] as String?;
 
-    // Add computed name to JSON before passing to generated fromJson
-    final modifiedJson = {...json, 'name': computedName};
+    // Create modified JSON with computed name if needed
+    final modifiedJson = {...json};
+
+    // Compute name from first_name and last_name only if name field doesn't exist
+    if (name == null || name.isEmpty) {
+      final firstName = json['first_name'] as String?;
+      final lastName = json['last_name'] as String?;
+      final computedName = (firstName != null && lastName != null)
+          ? '$firstName $lastName'
+          : json['email'] as String? ?? 'Unknown';
+      modifiedJson['name'] = computedName;
+    }
+
+    // Handle trainer_id as either int or string
+    if (modifiedJson['trainer_id'] is int) {
+      modifiedJson['trainer_id'] = modifiedJson['trainer_id'].toString();
+    }
 
     return _$ClientModelFromJson(modifiedJson);
   }

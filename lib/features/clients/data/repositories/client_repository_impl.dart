@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/failure.dart';
@@ -22,22 +23,52 @@ class ClientRepositoryImpl implements ClientRepository {
 
   @override
   Future<Either<Failure, List<Client>>> fetchClients({
+    required String trainerId,
     int skip = 0,
     int limit = 50,
   }) async {
     if (await networkInfo.isConnected) {
       try {
+        if (kDebugMode) {
+          debugPrint('🔵 [ClientRepositoryImpl] Fetching clients for trainer: $trainerId');
+        }
+
         final remoteClients = await remoteDataSource.fetchClients(
+          trainerId: trainerId,
           skip: skip,
           limit: limit,
         );
+
+        if (kDebugMode) {
+          debugPrint('✅ [ClientRepositoryImpl] Fetched ${remoteClients.length} remote clients');
+        }
+
         await localDataSource.cacheClients(remoteClients);
-        return Right(remoteClients.map((m) => m.toEntity()).toList());
+
+        // Convert to entities and filter by trainer (SECURITY: Additional client-side check)
+        final entities = remoteClients.map((m) => m.toEntity()).toList();
+        final filtered = entities.where((client) => client.trainerId == trainerId).toList();
+
+        if (kDebugMode && filtered.length != entities.length) {
+          debugPrint('⚠️ [ClientRepositoryImpl] SECURITY ALERT: Filtered out ${entities.length - filtered.length} clients not belonging to trainer $trainerId');
+          if (entities.length > filtered.length) {
+            for (var client in entities) {
+              if (client.trainerId != trainerId) {
+                debugPrint('   - Filtered client: ${client.email} (trainer_id: ${client.trainerId})');
+              }
+            }
+          }
+        }
+
+        return Right(filtered);
       } catch (e) {
-        return _getLocalClients(skip: skip, limit: limit);
+        if (kDebugMode) {
+          debugPrint('❌ [ClientRepositoryImpl] Error fetching remote clients: $e');
+        }
+        return _getLocalClients(trainerId: trainerId, skip: skip, limit: limit);
       }
     } else {
-      return _getLocalClients(skip: skip, limit: limit);
+      return _getLocalClients(trainerId: trainerId, skip: skip, limit: limit);
     }
   }
 
@@ -46,7 +77,9 @@ class ClientRepositoryImpl implements ClientRepository {
     int skip = 0,
     int limit = 50,
   }) async {
-    return _getLocalClients(skip: skip, limit: limit);
+    // This method is deprecated - use fetchClients instead
+    // Cannot call _getLocalClients without trainerId
+    return Left(CacheFailure('getLocalClients deprecated - trainerId required'));
   }
 
   @override
@@ -168,16 +201,30 @@ class ClientRepositoryImpl implements ClientRepository {
   }
 
   Future<Either<Failure, List<Client>>> _getLocalClients({
+    required String trainerId,
     int skip = 0,
     int limit = 50,
   }) async {
     try {
+      if (kDebugMode) {
+        debugPrint('🔵 [ClientRepositoryImpl] Fetching local clients for trainer: $trainerId');
+      }
+
       final localClients = await localDataSource.getClients(
+        trainerId: trainerId,
         skip: skip,
         limit: limit,
       );
+
+      if (kDebugMode) {
+        debugPrint('✅ [ClientRepositoryImpl] Fetched ${localClients.length} local clients');
+      }
+
       return Right(localClients.map((m) => m.toEntity()).toList());
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ [ClientRepositoryImpl] Error getting local clients: $e');
+      }
       return Left(CacheFailure('Failed to get local clients: $e'));
     }
   }

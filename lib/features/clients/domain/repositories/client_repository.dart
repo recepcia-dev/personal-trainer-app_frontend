@@ -5,8 +5,9 @@ import '../entities/client.dart';
 
 /// Client repository interface - defines contract for client data operations
 abstract class ClientRepository {
-  /// Fetch trainer's clients from remote
+  /// Fetch trainer's clients from remote, filtered by trainerId
   Future<Either<Failure, List<Client>>> fetchClients({
+    required String trainerId,
     int skip,
     int limit,
   });

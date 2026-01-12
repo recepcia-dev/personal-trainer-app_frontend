@@ -341,7 +341,7 @@ void main() {
         expect(result, isA<ClientModel>());
         expect((result as ClientModel).email, equals(email));
         expect(result.name, equals('Jane Client'));
-        expect(result.trainerId, equals(42));
+        expect(result.trainerId, equals('42')); // trainerId from API is converted to String
       });
 
       test('throws ServerException when code is invalid (400 response)',
@@ -592,7 +592,7 @@ void main() {
         expect(result, isA<ClientModel>());
         expect((result as ClientModel).email, equals(email));
         expect(result.name, equals('Jane Client'));
-        expect(result.trainerId, isNull); // trainerId is not set in getCurrentUser response
+        expect(result.trainerId, equals('42')); // trainerId from API is converted to String
       });
 
       test('throws ServerException when token is invalid (401 response)',

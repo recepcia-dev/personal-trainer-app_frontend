@@ -7,6 +7,8 @@ import '../../data/repositories/client_repository_impl.dart';
 import '../../domain/entities/client.dart';
 import '../../domain/repositories/client_repository.dart';
 import '../../../progress/presentation/providers/exercise_provider.dart';
+import '../../../auth/presentation/providers/auth_state_provider.dart';
+import '../../../auth/data/models/trainer_model.dart';
 import '../../../../core/network/dio_provider.dart';
 
 /// Client remote data source provider
@@ -31,21 +33,77 @@ final clientRepositoryProvider = Provider<ClientRepository>((ref) {
   );
 });
 
-/// Clients list provider with pagination
+/// Clients list provider with pagination - filters by current trainer
 final clientsProvider =
     FutureProvider.family<List<Client>, ({int skip, int limit})>(
   (ref, params) async {
+    // Get the current authenticated trainer
+    final authState = ref.watch(authStateProvider);
+
+    if (kDebugMode) {
+      debugPrint('🔵 [ClientsProvider] Auth state type: ${authState.runtimeType}, value: $authState');
+    }
+
+    // Handle null auth state (user not yet restored from storage on startup)
+    if (authState == null) {
+      if (kDebugMode) {
+        debugPrint('⏳ [ClientsProvider] Auth state is null, waiting for restoration...');
+      }
+      // Return empty list while auth is being restored
+      // The provider will be refreshed when auth state changes
+      return [];
+    }
+
+    // Extract trainer ID from the authenticated user
+    String? trainerId;
+    if (authState is TrainerModel) {
+      trainerId = authState.id;
+      if (kDebugMode) {
+        debugPrint('🔵 [ClientsProvider] Found TrainerModel with ID: $trainerId');
+      }
+    } else {
+      if (kDebugMode) {
+        debugPrint('⚠️ [ClientsProvider] Auth state is not TrainerModel: ${authState.runtimeType}');
+      }
+    }
+
+    if (trainerId == null || trainerId.isEmpty) {
+      final error = 'No authenticated trainer found (auth state: ${authState.runtimeType})';
+      if (kDebugMode) {
+        debugPrint('❌ [ClientsProvider] $error');
+      }
+      throw Exception(error);
+    }
+
+    if (kDebugMode) {
+      debugPrint('🔵 [ClientsProvider] Fetching clients for trainer: $trainerId');
+    }
+
     return ref
         .watch(clientRepositoryProvider)
-        .fetchClients(skip: params.skip, limit: params.limit)
+        .fetchClients(
+          trainerId: trainerId,
+          skip: params.skip,
+          limit: params.limit,
+        )
         .then((result) => result.fold(
-          (failure) => throw Exception(failure),
-          (clients) => clients,
+          (failure) {
+            if (kDebugMode) {
+              debugPrint('❌ [ClientsProvider] Failed to fetch clients: $failure');
+            }
+            throw Exception(failure);
+          },
+          (clients) {
+            if (kDebugMode) {
+              debugPrint('✅ [ClientsProvider] Fetched ${clients.length} clients for trainer: $trainerId');
+            }
+            return clients;
+          },
         ));
   },
 );
 
-/// All clients provider (no pagination)
+/// All clients provider (no pagination) - filters by current trainer
 final allClientsProvider = FutureProvider<List<Client>>((ref) async {
   return ref
       .watch(clientsProvider((skip: 0, limit: 100)))

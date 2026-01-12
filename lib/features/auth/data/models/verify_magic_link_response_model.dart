@@ -25,11 +25,12 @@ class VerifyMagicLinkResponseModel with _$VerifyMagicLinkResponseModel {
 /// Extension to parse user data based on role
 extension VerifyMagicLinkResponseParsing on VerifyMagicLinkResponseModel {
   /// Returns the user as either TrainerModel or ClientModel based on role
+  /// Uses fromApi factory to handle field mapping from API response format
   dynamic parseUser() {
     if (role == 'trainer') {
-      return TrainerModel.fromJson(user);
+      return TrainerModel.fromApi(user);
     } else if (role == 'client') {
-      return ClientModel.fromJson(user);
+      return ClientModel.fromApi(user);
     }
     throw ArgumentError('Unknown role: $role');
   }

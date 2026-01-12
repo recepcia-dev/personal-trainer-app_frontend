@@ -38,6 +38,11 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
             icon: Icon(_isEditMode ? Icons.close : Icons.edit),
             onPressed: () => setState(() => _isEditMode = !_isEditMode),
           ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () => _showDeleteConfirmation(context),
+            tooltip: 'Delete client',
+          ),
         ],
       ),
       floatingActionButton: clientAsync.when(
@@ -187,6 +192,76 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
       context: context,
       builder: (context) => _AssignMealDialog(clientId: widget.clientId),
     );
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Client'),
+        content: const Text(
+          'Are you sure you want to delete this client? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => _deleteClient(context),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red[700],
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteClient(BuildContext context) async {
+    try {
+      Navigator.of(context).pop(); // Close the confirmation dialog
+
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Deleting client...'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      // Delete the client
+      await ref.read(deleteClientProvider(widget.clientId).future);
+
+      // Invalidate providers to refresh the client list
+      if (mounted) {
+        ref.invalidate(clientsProvider((skip: 0, limit: 100)));
+        ref.invalidate(allClientsProvider);
+        ref.invalidate(clientProvider(widget.clientId));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Client deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Navigate back to clients list
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting client: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildStatCard(

@@ -4,6 +4,36 @@
 
 ## Active Bugs
 
+### [BACKEND-011] Trainers Viewing Other Trainers' Clients - FIXED
+
+**Status**: `Resolved` | **Priority**: `Critical` | **Reported**: 2026-01-12 | **Fixed**: 2026-01-12
+
+**Issue**: Frontend displayed clients from multiple trainers when authenticated as single trainer. GET `/api/v1/trainer/clients?trainer_id=...` returned correct filtered results from backend, but app UI showed mixed clients from different trainer IDs (e.g., trainer 1 saw trainer 2's clients).
+
+**Root Cause**: Three-layer failure: (1) Backend `/api/v1/trainer/clients` endpoint didn't support pagination parameters (`skip`, `limit`, `trainer_id`), ignoring all query params. (2) Frontend local cache in Drift database didn't filter by trainer_id—`getClients()` returned ALL clients from all trainers. (3) Riverpod state was not invalidated on logout/auth change, causing stale cached data to persist.
+
+**Fix**: (1) **Backend** (`/backend/app/api/v1/trainer.py` lines 102-148): Added `trainer_id`, `skip`, `limit` query parameters; added security validation that provided `trainer_id` must match authenticated user; implemented `.offset(skip).limit(limit)` pagination. (2) **Frontend Local Cache** (`/lib/features/clients/data/datasources/client_local_datasource.dart`): Made `trainerId` required parameter in `getClients()`; added `.where((c) => c.trainerId.equals(trainerId))` filter; added `clearClientsByTrainer(trainerId)` method for trainer-specific cache clearing. (3) **Frontend Repository** (`/lib/features/clients/data/repositories/client_repository_impl.dart`): Updated `_getLocalClients()` to require `trainerId` parameter; added client-side security filtering to detect data leakage with debug logging. (4) **Auth Provider** (`/lib/features/auth/presentation/providers/auth_state_provider.dart`): Added `ref.invalidate(clientsProvider)` and `ref.invalidate(allClientsProvider)` on logout.
+
+**Security Impact**: Dual-layer trainer_id filtering (backend + frontend). Backend rejects requests with mismatched trainer_id. Frontend filters cache by trainer_id and detects any leaked data.
+
+**Files Modified**: `/backend/app/api/v1/trainer.py`, `/lib/features/clients/data/datasources/client_local_datasource.dart`, `/lib/features/clients/data/repositories/client_repository_impl.dart`, `/lib/features/auth/presentation/providers/auth_state_provider.dart`
+
+---
+
+### [FRONTEND-004] Type Casting Error in getCurrentUser - Fixed
+
+**Status**: `Resolved` | **Priority**: `Critical` | **Reported**: 2026-01-12 | **Fixed**: 2026-01-12
+
+**Issue**: `_TypeError: type 'Null' is not a subtype of type 'String' in type cast` when calling `/api/v1/auth/me` endpoint. The API returns `first_name` and `last_name` fields, but TrainerModel.fromJson() expects a `name` field, causing null value to be cast to String.
+
+**Root Cause**: Field name mismatch between API response and model expectations. API returns `first_name`/`last_name` (e.g., "John"/"Trainer"), but models expected `name` field directly. `fromJson()` tried to cast null `name` field to String. Additionally, `trainer_id` could be int in API but model expected String, causing second type casting error.
+
+**Fix**: (1) Added `fromApi()` factory methods to TrainerModel and ClientModel that map API fields correctly. (2) TrainerModel.fromApi() checks if `name` exists; if not, concatenates `first_name` and `last_name`. (3) ClientModel.fromApi() same logic plus handles `trainer_id` as either int or String by converting int to String. (4) Updated getCurrentUser() and verifyMagicLink() datasource methods to use `fromApi()` instead of `fromJson()`. (5) Updated VerifyMagicLinkResponseModel.parseUser() extension to use `fromApi()` factory methods.
+
+**Files Modified**: `/lib/features/auth/data/models/trainer_model.dart` (added fromApi factory), `/lib/features/auth/data/models/client_model.dart` (added fromApi factory with int→String conversion), `/lib/features/auth/data/datasources/auth_remote_datasource.dart` (use fromApi in getCurrentUser and verifyMagicLink), `/lib/features/auth/data/models/verify_magic_link_response_model.dart` (parseUser extension uses fromApi), `/test/features/auth/data/datasources/auth_remote_datasource_test.dart` (updated test expectations for trainer_id as String)
+
+---
+
 ### [BACKEND-009] Client List Empty After Creation with Dev Tokens
 
 **Status**: `Resolved` | **Priority**: `Critical` | **Reported**: 2026-01-10 | **Fixed**: 2026-01-10

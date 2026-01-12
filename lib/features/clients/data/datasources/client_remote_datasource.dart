@@ -7,8 +7,9 @@ import '../models/client_model.dart';
 
 /// Remote data source for client data - handles API calls
 abstract class ClientRemoteDataSource {
-  /// Fetch clients from backend API
+  /// Fetch clients from backend API for a specific trainer
   Future<List<ClientModel>> fetchClients({
+    required String trainerId,
     int skip,
     int limit,
   });
@@ -51,18 +52,30 @@ class ClientRemoteDataSourceImpl implements ClientRemoteDataSource {
 
   @override
   Future<List<ClientModel>> fetchClients({
+    required String trainerId,
     int skip = 0,
     int limit = 50,
   }) async {
     try {
-      // Use the trainer-specific endpoint to get trainer's clients
+      if (kDebugMode) {
+        debugPrint('🔵 [ClientRemoteDataSource] Fetching clients for trainer: $trainerId');
+      }
+
+      // Use the trainer-specific endpoint to get trainer's clients, filtered by trainerId
       final response = await dio.get(
         '${ApiEndpoints.baseUrl}/api/v1/trainer/clients',
-        queryParameters: {'skip': skip, 'limit': limit},
+        queryParameters: {
+          'trainer_id': trainerId,
+          'skip': skip,
+          'limit': limit,
+        },
       );
 
       if (response.statusCode == 200) {
         final items = response.data as List<dynamic>;
+        if (kDebugMode) {
+          debugPrint('✅ [ClientRemoteDataSource] Fetched ${items.length} clients');
+        }
         return items
             .map((json) => ClientModel.fromApi(json as Map<String, dynamic>))
             .toList();
@@ -75,7 +88,7 @@ class ClientRemoteDataSourceImpl implements ClientRemoteDataSource {
         statusCode: e.response?.statusCode,
       );
       if (kDebugMode) {
-        debugPrint('Fetch clients failed: ${apiError.getDetailedMessage()}');
+        debugPrint('❌ [ClientRemoteDataSource] Fetch clients failed: ${apiError.getDetailedMessage()}');
       }
       throw Exception('Failed to fetch clients: ${apiError.getDisplayMessage()}');
     }

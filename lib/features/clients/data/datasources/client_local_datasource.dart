@@ -5,8 +5,9 @@ import '../models/client_model.dart';
 
 /// Local data source for client data - handles Drift database operations
 abstract class ClientLocalDataSource {
-  /// Get all clients from local database
+  /// Get all clients from local database, filtered by trainer
   Future<List<ClientModel>> getClients({
+    required String trainerId,
     int skip,
     int limit,
   });
@@ -26,6 +27,9 @@ abstract class ClientLocalDataSource {
   /// Clear all clients from cache
   Future<void> clearClients();
 
+  /// Clear clients for a specific trainer
+  Future<void> clearClientsByTrainer(String trainerId);
+
   /// Check if clients exist in cache
   Future<bool> hasClients();
 }
@@ -37,10 +41,13 @@ class ClientLocalDataSourceImpl implements ClientLocalDataSource {
 
   @override
   Future<List<ClientModel>> getClients({
+    required String trainerId,
     int skip = 0,
     int limit = 50,
   }) async {
+    // Filter by trainer_id to prevent cross-trainer data leakage
     final results = await (database.select(database.clientsTable)
+          ..where((c) => c.trainerId.equals(trainerId))
           ..limit(limit, offset: skip))
         .get();
 
@@ -132,6 +139,13 @@ class ClientLocalDataSourceImpl implements ClientLocalDataSource {
   @override
   Future<void> clearClients() async {
     await database.delete(database.clientsTable).go();
+  }
+
+  @override
+  Future<void> clearClientsByTrainer(String trainerId) async {
+    await (database.delete(database.clientsTable)
+          ..where((c) => c.trainerId.equals(trainerId)))
+        .go();
   }
 
   @override

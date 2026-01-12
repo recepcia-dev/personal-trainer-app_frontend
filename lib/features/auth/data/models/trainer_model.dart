@@ -28,6 +28,28 @@ class TrainerModel with _$TrainerModel implements Trainer {
     String? bio,                 // Trainer bio
   }) = _TrainerModel;
 
+  // Custom factory from API to compute name from first_name + last_name
+  // The API returns first_name and last_name, but the model expects a name field
+  // Falls back to name field if present, then email if no name fields provided
+  factory TrainerModel.fromApi(Map<String, dynamic> json) {
+    // First check if name field already exists (direct API response)
+    if (json.containsKey('name') && json['name'] != null) {
+      return _$TrainerModelFromJson(json);
+    }
+
+    // Otherwise compute name from first_name and last_name
+    final firstName = json['first_name'] as String?;
+    final lastName = json['last_name'] as String?;
+    final computedName = (firstName != null && lastName != null)
+        ? '$firstName $lastName'
+        : json['email'] as String? ?? 'Unknown';
+
+    // Add computed name to JSON before passing to generated fromJson
+    final modifiedJson = {...json, 'name': computedName};
+
+    return _$TrainerModelFromJson(modifiedJson);
+  }
+
   factory TrainerModel.fromJson(Map<String, dynamic> json) =>
       _$TrainerModelFromJson(json);
 }
