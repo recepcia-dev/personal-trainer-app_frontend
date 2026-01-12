@@ -206,6 +206,11 @@ class _ClientEditFormState extends ConsumerState<ClientEditForm> {
         notes: _notesController.text.isNotEmpty ? _notesController.text : null,
       );
 
+      // Invalidate providers to refresh UI with updated data
+      ref.invalidate(clientProvider(widget.client.id));
+      ref.invalidate(clientsProvider((skip: 0, limit: 100)));
+      ref.invalidate(allClientsProvider);
+
       // Success
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
