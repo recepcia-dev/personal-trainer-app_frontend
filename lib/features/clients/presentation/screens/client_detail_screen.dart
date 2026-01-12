@@ -32,7 +32,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Client Details'),
+        title: const Text('Detalles del Cliente'),
         actions: [
           IconButton(
             icon: Icon(_isEditMode ? Icons.close : Icons.edit),
@@ -41,7 +41,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () => _showDeleteConfirmation(context),
-            tooltip: 'Delete client',
+            tooltip: 'Eliminar cliente',
           ),
         ],
       ),
@@ -53,7 +53,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
               onPressed: () => _showAssignWorkoutDialog(),
               heroTag: 'assign_workout',
               icon: const Icon(Icons.fitness_center),
-              label: const Text('Assign Workout'),
+              label: const Text('Asignar Rutina'),
               backgroundColor: Colors.blue[700],
             ),
             const SizedBox(height: 12),
@@ -61,7 +61,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
               onPressed: () => _showAssignMealDialog(),
               heroTag: 'assign_meal',
               icon: const Icon(Icons.restaurant),
-              label: const Text('Assign Meal'),
+              label: const Text('Asignar Comida'),
               backgroundColor: Colors.green[700],
             ),
           ],
@@ -114,15 +114,15 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
                             spacing: 8,
                             children: [
                               if (client.age != null)
-                                Chip(label: Text('Age: ${client.age}')),
+                                Chip(label: Text('Edad: ${client.age}')),
                               if (client.fitnessLevel != null)
-                                Chip(label: Text('Level: ${client.fitnessLevel}')),
+                                Chip(label: Text('Nivel: ${client.fitnessLevel}')),
                             ],
                           ),
                           if (client.goals != null) ...[
                             const SizedBox(height: 16),
                             Text(
-                              'Goals',
+                              'Objetivos',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),
@@ -146,7 +146,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
                   if (!_isEditMode) ...[
                     // Progress section
                     Text(
-                      'Progress Overview',
+                      'Resumen de Progreso',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -158,7 +158,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
                         padding: const EdgeInsets.all(24),
                         child: Center(
                           child: Text(
-                            'Progress statistics coming soon',
+                            'Estadísticas de progreso próximamente',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: Colors.grey[600],
                             ),
@@ -174,7 +174,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(
-          child: Text('Error loading client: $error'),
+          child: Text('Error al cargar cliente: $error'),
         ),
       ),
     );
@@ -198,21 +198,21 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Client'),
+        title: const Text('Eliminar Cliente'),
         content: const Text(
-          'Are you sure you want to delete this client? This action cannot be undone.',
+          '¿Estás seguro de que quieres eliminar este cliente? Esta acción no se puede deshacer.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: const Text('Cancelar'),
           ),
           TextButton(
             onPressed: () => _deleteClient(context),
             style: TextButton.styleFrom(
               foregroundColor: Colors.red[700],
             ),
-            child: const Text('Delete'),
+            child: const Text('Eliminar'),
           ),
         ],
       ),
@@ -227,7 +227,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Deleting client...'),
+            content: Text('Eliminando cliente...'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -244,7 +244,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Client deleted successfully'),
+            content: Text('Cliente eliminado exitosamente'),
             backgroundColor: Colors.green,
           ),
         );
@@ -256,7 +256,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error deleting client: $e'),
+            content: Text('Error al eliminar cliente: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -354,7 +354,7 @@ class _AssignWorkoutDialogState extends ConsumerState<_AssignWorkoutDialog> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Workout assigned successfully!'),
+            content: Text('¡Rutina asignada exitosamente!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -378,7 +378,7 @@ class _AssignWorkoutDialogState extends ConsumerState<_AssignWorkoutDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Assign Workout'),
+      title: const Text('Asignar Rutina'),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -388,12 +388,12 @@ class _AssignWorkoutDialogState extends ConsumerState<_AssignWorkoutDialog> {
               TextFormField(
                 controller: _workoutNameController,
                 decoration: const InputDecoration(
-                  labelText: 'Workout Name',
-                  hintText: 'e.g., Chest Day',
+                  labelText: 'Nombre de Rutina',
+                  hintText: 'ej., Día de Pecho',
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter workout name';
+                    return 'Por favor ingresa el nombre de la rutina';
                   }
                   return null;
                 },
@@ -404,11 +404,11 @@ class _AssignWorkoutDialogState extends ConsumerState<_AssignWorkoutDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _setsController,
-                      decoration: const InputDecoration(labelText: 'Sets'),
+                      decoration: const InputDecoration(labelText: 'Series'),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Required';
+                          return 'Requerido';
                         }
                         return null;
                       },
@@ -418,11 +418,11 @@ class _AssignWorkoutDialogState extends ConsumerState<_AssignWorkoutDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _repsController,
-                      decoration: const InputDecoration(labelText: 'Reps'),
+                      decoration: const InputDecoration(labelText: 'Repeticiones'),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Required';
+                          return 'Requerido';
                         }
                         return null;
                       },
@@ -434,8 +434,8 @@ class _AssignWorkoutDialogState extends ConsumerState<_AssignWorkoutDialog> {
               TextFormField(
                 controller: _notesController,
                 decoration: const InputDecoration(
-                  labelText: 'Notes (Optional)',
-                  hintText: 'Additional instructions...',
+                  labelText: 'Notas (Opcional)',
+                  hintText: 'Instrucciones adicionales...',
                 ),
                 maxLines: 3,
               ),
@@ -446,7 +446,7 @@ class _AssignWorkoutDialogState extends ConsumerState<_AssignWorkoutDialog> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: const Text('Cancelar'),
         ),
         FilledButton(
           onPressed: _isLoading ? null : _assignWorkout,
@@ -456,7 +456,7 @@ class _AssignWorkoutDialogState extends ConsumerState<_AssignWorkoutDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Assign'),
+              : const Text('Asignar'),
         ),
       ],
     );
@@ -475,26 +475,28 @@ class _AssignMealDialog extends ConsumerStatefulWidget {
 
 class _AssignMealDialogState extends ConsumerState<_AssignMealDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _mealNameController = TextEditingController();
+  String? _selectedMealType;
   final _ingredientsController = TextEditingController();
   final _caloriesController = TextEditingController();
   final _notesController = TextEditingController();
   bool _isLoading = false;
 
+  // Available meal types
+  static const _mealTypes = ['Desayuno', 'Almuerzo', 'Merienda', 'Cena'];
+
   // Days of week selection
   final Map<String, bool> _selectedDays = {
-    'Monday': true,
-    'Tuesday': true,
-    'Wednesday': true,
-    'Thursday': true,
-    'Friday': true,
-    'Saturday': true,
-    'Sunday': true,
+    'Lunes': true,
+    'Martes': true,
+    'Miércoles': true,
+    'Jueves': true,
+    'Viernes': true,
+    'Sábado': true,
+    'Domingo': true,
   };
 
   @override
   void dispose() {
-    _mealNameController.dispose();
     _ingredientsController.dispose();
     _caloriesController.dispose();
     _notesController.dispose();
@@ -515,18 +517,18 @@ class _AssignMealDialogState extends ConsumerState<_AssignMealDialog> {
       // Call backend API to assign meal
       final params = AssignDietParams(
         clientId: widget.clientId,
-        mealName: _mealNameController.text,
+        mealName: _selectedMealType!,
         ingredients: _ingredientsController.text.isNotEmpty
             ? _ingredientsController.text
             : null,
         caloriesApprox: calories,
-        monday: _selectedDays['Monday']!,
-        tuesday: _selectedDays['Tuesday']!,
-        wednesday: _selectedDays['Wednesday']!,
-        thursday: _selectedDays['Thursday']!,
-        friday: _selectedDays['Friday']!,
-        saturday: _selectedDays['Saturday']!,
-        sunday: _selectedDays['Sunday']!,
+        monday: _selectedDays['Lunes']!,
+        tuesday: _selectedDays['Martes']!,
+        wednesday: _selectedDays['Miércoles']!,
+        thursday: _selectedDays['Jueves']!,
+        friday: _selectedDays['Viernes']!,
+        saturday: _selectedDays['Sábado']!,
+        sunday: _selectedDays['Domingo']!,
         startDate: DateTime.now(),
         notes: _notesController.text.isNotEmpty ? _notesController.text : null,
       );
@@ -537,7 +539,7 @@ class _AssignMealDialogState extends ConsumerState<_AssignMealDialog> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Meal plan assigned successfully!'),
+            content: Text('¡Plan de comida asignado exitosamente!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -561,7 +563,7 @@ class _AssignMealDialogState extends ConsumerState<_AssignMealDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Assign Meal Plan'),
+      title: const Text('Asignar Plan de Comida'),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -569,15 +571,24 @@ class _AssignMealDialogState extends ConsumerState<_AssignMealDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
-                controller: _mealNameController,
+              DropdownButtonFormField<String>(
+                value: _selectedMealType,
                 decoration: const InputDecoration(
-                  labelText: 'Meal Name',
-                  hintText: 'e.g., Breakfast',
+                  labelText: 'Tipo de Comida',
+                  hintText: 'Seleccionar tipo de comida',
                 ),
+                items: _mealTypes.map((mealType) {
+                  return DropdownMenuItem(
+                    value: mealType,
+                    child: Text(mealType),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() => _selectedMealType = value);
+                },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter meal name';
+                    return 'Por favor selecciona un tipo de comida';
                   }
                   return null;
                 },
@@ -586,8 +597,8 @@ class _AssignMealDialogState extends ConsumerState<_AssignMealDialog> {
               TextFormField(
                 controller: _ingredientsController,
                 decoration: const InputDecoration(
-                  labelText: 'Ingredients',
-                  hintText: 'e.g., Oats, banana, protein powder',
+                  labelText: 'Ingredientes',
+                  hintText: 'ej., Avena, plátano, proteína en polvo',
                 ),
                 maxLines: 2,
               ),
@@ -595,13 +606,13 @@ class _AssignMealDialogState extends ConsumerState<_AssignMealDialog> {
               TextFormField(
                 controller: _caloriesController,
                 decoration: const InputDecoration(
-                  labelText: 'Calories (approx)',
+                  labelText: 'Calorías (aprox)',
                   suffixText: 'kcal',
                 ),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 16),
-              const Text('Days:', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text('Días:', style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -619,8 +630,8 @@ class _AssignMealDialogState extends ConsumerState<_AssignMealDialog> {
               TextFormField(
                 controller: _notesController,
                 decoration: const InputDecoration(
-                  labelText: 'Notes (Optional)',
-                  hintText: 'Additional instructions...',
+                  labelText: 'Notas (Opcional)',
+                  hintText: 'Instrucciones adicionales...',
                 ),
                 maxLines: 2,
               ),
@@ -631,7 +642,7 @@ class _AssignMealDialogState extends ConsumerState<_AssignMealDialog> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: const Text('Cancelar'),
         ),
         FilledButton(
           onPressed: _isLoading ? null : _assignMeal,
@@ -641,7 +652,7 @@ class _AssignMealDialogState extends ConsumerState<_AssignMealDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Assign'),
+              : const Text('Asignar'),
         ),
       ],
     );
