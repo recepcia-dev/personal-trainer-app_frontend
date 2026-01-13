@@ -1,0 +1,755 @@
+{
+  "project": "Personal Trainer App - Client Feature Tests",
+  "description": "Comprehensive test suite for client-facing features using devtool devbar with client role",
+  "test_environment": {
+    "platform": "iOS/Android",
+    "build_mode": "Debug (main_dev.dart)",
+    "devtool": "DevDataSeeder in devbar",
+    "client_role_token": "Dev token with user_type='client'"
+  },
+  "test_suites": [
+    {
+      "suite_id": "TC001",
+      "category": "Client Authentication - Magic Link",
+      "description": "Test client login flow using magic link (without biometric)",
+      "tests": [
+        {
+          "test_id": "TC001.1",
+          "title": "Access login screen as unauthenticated client",
+          "steps": [
+            "1. Kill app or logout to unauthenticated state",
+            "2. App should redirect to /login screen",
+            "3. Verify LoginScreen displays 'Send Magic Link' button",
+            "4. Email TextField should be empty and focused"
+          ],
+          "expected_result": "LoginScreen renders with email input ready for entry",
+          "passes": false
+        },
+        {
+          "test_id": "TC001.2",
+          "title": "Send magic link with client email",
+          "steps": [
+            "1. Enter valid client email in TextField",
+            "2. Tap 'Send Magic Link' button",
+            "3. Observe loading spinner while request is in flight",
+            "4. Wait for response from backend"
+          ],
+          "expected_result": "Screen transitions to MagicLinkVerificationScreen, showing success message 'Check your email'",
+          "passes": false
+        },
+        {
+          "test_id": "TC001.3",
+          "title": "Verify magic link code input",
+          "steps": [
+            "1. MagicLinkVerificationScreen should display email used",
+            "2. Code input field should show 6 placeholder slots",
+            "3. Keyboard should auto-open on screen load",
+            "4. Input 123456 (test code for dev mode)"
+          ],
+          "expected_result": "Code field accepts input, auto-advances after 6 digits entered",
+          "passes": false
+        },
+        {
+          "test_id": "TC001.4",
+          "title": "Verify biometric auth after code verification",
+          "steps": [
+            "1. After code verification succeeds, BiometricAuthScreen displays",
+            "2. Show 'Use Face ID/Touch ID to complete login' message",
+            "3. Verify biometric options available on device",
+            "4. Tap biometric auth button (or use device biometric)"
+          ],
+          "expected_result": "Biometric prompt appears; on success navigates to /dashboard",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TC002",
+      "category": "Client Authentication - Dev Token Direct",
+      "description": "Test client login using dev token directly from devtool devbar",
+      "tests": [
+        {
+          "test_id": "TC002.1",
+          "title": "Access devtool devbar with client role",
+          "steps": [
+            "1. Shake device to open dev menu (or long-press home on simulator)",
+            "2. Find 'DevDataSeeder' or 'Dev Tools' section in devbar",
+            "3. Locate 'Switch Role' option",
+            "4. Select 'client' from dropdown"
+          ],
+          "expected_result": "Dev bar shows 'Current Role: client' with client dev token displayed",
+          "passes": false
+        },
+        {
+          "test_id": "TC002.2",
+          "title": "Dev token automatically sets client session",
+          "steps": [
+            "1. After selecting client role in devbar, tap 'Apply' or 'Save'",
+            "2. App should automatically navigate away from login screen",
+            "3. AuthStateProvider should emit authenticated state with client user",
+            "4. Observe network logs showing authorization header with dev token"
+          ],
+          "expected_result": "App navigates to /dashboard (client version), authStateProvider shows non-null client user",
+          "passes": false
+        },
+        {
+          "test_id": "TC002.3",
+          "title": "Verify client profile endpoint returns user data",
+          "steps": [
+            "1. After authenticated as client, open DevTools network tab",
+            "2. Make request to GET /api/v1/auth/me",
+            "3. Verify response contains user_type='client'",
+            "4. Verify response contains client fields (email, name, trainer_id)"
+          ],
+          "expected_result": "HTTP 200 response with user data: {user_type: 'client', email: '...', name: '...', trainer_id: '...'}",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TC003",
+      "category": "Client Profile",
+      "description": "Test client profile display and updates",
+      "tests": [
+        {
+          "test_id": "TC003.1",
+          "title": "Display client own profile",
+          "steps": [
+            "1. Authenticate as client via devtool",
+            "2. Navigate to Profile tab/screen",
+            "3. Verify profile displays: avatar, name, email, trainer name",
+            "4. Verify trainer_id is displayed as link to trainer profile"
+          ],
+          "expected_result": "Client profile screen shows all user information, trainer assigned correctly",
+          "passes": false
+        },
+        {
+          "test_id": "TC003.2",
+          "title": "Client cannot access other clients' profiles",
+          "steps": [
+            "1. While logged in as client 1, attempt to navigate to /clients/{other_client_id}",
+            "2. Send GET request via network tab: /api/v1/clients/{other_client_id}",
+            "3. Observe response status code"
+          ],
+          "expected_result": "HTTP 403 Forbidden response, client blocked from viewing other clients",
+          "passes": false
+        },
+        {
+          "test_id": "TC003.3",
+          "title": "Client can view assigned trainer profile",
+          "steps": [
+            "1. From client profile, tap on trainer name/photo",
+            "2. Navigate to trainer profile screen",
+            "3. Verify trainer information displays: name, bio, experience, photos",
+            "4. Verify contact button available (call/message)"
+          ],
+          "expected_result": "Trainer profile screen loads and displays trainer data",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TC004",
+      "category": "Client Workouts",
+      "description": "Test client viewing and interacting with assigned workouts",
+      "tests": [
+        {
+          "test_id": "TC004.1",
+          "title": "View assigned workouts list",
+          "steps": [
+            "1. Authenticate as client via devtool",
+            "2. Navigate to Workouts tab",
+            "3. Observe GET /api/v1/clients/{client_id}/workouts request",
+            "4. Verify list displays assigned workouts with trainer name"
+          ],
+          "expected_result": "Workouts list loads and displays all workouts assigned by trainer",
+          "passes": false
+        },
+        {
+          "test_id": "TC004.2",
+          "title": "View workout details (exercises, instructions)",
+          "steps": [
+            "1. Tap on workout from list",
+            "2. Workout detail screen opens",
+            "3. Verify displays: name, description, exercises, sets/reps, instructions",
+            "4. Verify 'Mark as Complete' button available at bottom"
+          ],
+          "expected_result": "Workout detail screen loads with all exercise information",
+          "passes": false
+        },
+        {
+          "test_id": "TC004.3",
+          "title": "Client can mark workout complete (offline-first)",
+          "steps": [
+            "1. Open workout detail screen",
+            "2. Tap 'Mark as Complete' button",
+            "3. App should save locally first (verify in Drift database)",
+            "4. If online: POST to /api/v1/workouts/{id}/complete",
+            "5. If offline: Mark with isSynced=false, show 'Syncing...' indicator"
+          ],
+          "expected_result": "Workout marked as complete locally, sync status shown in UI",
+          "passes": false
+        },
+        {
+          "test_id": "TC004.4",
+          "title": "View workout completion history",
+          "steps": [
+            "1. Navigate to Progress or History tab",
+            "2. Verify list shows completed workouts with dates",
+            "3. Tap on completed workout to view completion details",
+            "4. Verify shows completion date, duration, notes from trainer"
+          ],
+          "expected_result": "History/Progress screen displays all completed workouts chronologically",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TC005",
+      "category": "Client Progress Tracking",
+      "description": "Test client progress visualization and metrics",
+      "tests": [
+        {
+          "test_id": "TC005.1",
+          "title": "View progress dashboard",
+          "steps": [
+            "1. Authenticate as client with completed workouts",
+            "2. Navigate to Progress or Dashboard tab",
+            "3. Verify displays metrics cards: workouts completed, progress streak, etc.",
+            "4. Verify GET /api/v1/clients/{id}/progress loads data"
+          ],
+          "expected_result": "Progress dashboard displays with all tracked metrics",
+          "passes": false
+        },
+        {
+          "test_id": "TC005.2",
+          "title": "View progress charts (if implemented)",
+          "steps": [
+            "1. On progress screen, verify charts render correctly",
+            "2. Charts should show: workout frequency, completion rate, consistency",
+            "3. Tap on chart to view detailed breakdown"
+          ],
+          "expected_result": "Charts display workout progress trends, no crashes",
+          "passes": false
+        },
+        {
+          "test_id": "TC005.3",
+          "title": "Log custom measurements (weight, photos)",
+          "steps": [
+            "1. Locate 'Log Measurement' or 'Update Progress' button",
+            "2. Enter measurement value (e.g., weight in lbs/kg)",
+            "3. Optionally attach photo from camera/gallery",
+            "4. Tap 'Save' to submit"
+          ],
+          "expected_result": "Measurement saved locally, synced to server when online",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TC006",
+      "category": "Client Communications",
+      "description": "Test client messaging and notifications",
+      "tests": [
+        {
+          "test_id": "TC006.1",
+          "title": "View messages from trainer",
+          "steps": [
+            "1. Navigate to Messages tab",
+            "2. Verify conversation list shows trainer name",
+            "3. Tap conversation to open chat",
+            "4. Verify messages display with timestamps and read receipts"
+          ],
+          "expected_result": "Messages screen loads with conversation history",
+          "passes": false
+        },
+        {
+          "test_id": "TC006.2",
+          "title": "Send message to trainer",
+          "steps": [
+            "1. Open trainer conversation",
+            "2. Type message in text input field",
+            "3. Tap Send button",
+            "4. Verify message appears in conversation locally (optimistic update)",
+            "5. Verify POST request sent to /api/v1/messages"
+          ],
+          "expected_result": "Message sent and appears in conversation, sync status updated",
+          "passes": false
+        },
+        {
+          "test_id": "TC006.3",
+          "title": "Receive push notifications (FCM)",
+          "steps": [
+            "1. Have trainer send message in separate session",
+            "2. Verify push notification appears on client device",
+            "3. Tap notification to navigate to message thread",
+            "4. Verify new message is fetched and displayed"
+          ],
+          "expected_result": "Push notification received and in-app navigation works",
+          "passes": false
+        },
+        {
+          "test_id": "TC006.4",
+          "title": "Message persistence (offline sync)",
+          "steps": [
+            "1. Disable internet (airplane mode or dev tools network throttle)",
+            "2. Send message to trainer",
+            "3. Verify message saved locally with isSynced=false",
+            "4. Re-enable internet, observe sync",
+            "5. Verify message delivered after sync"
+          ],
+          "expected_result": "Message persists offline, syncs when online restored",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TC007",
+      "category": "Client Payments & Subscriptions",
+      "description": "Test client payment and subscription functionality",
+      "tests": [
+        {
+          "test_id": "TC007.1",
+          "title": "View subscription status",
+          "steps": [
+            "1. Navigate to Subscription or Billing tab",
+            "2. Verify subscription status displays (active, trialing, cancelled)",
+            "3. Verify displays: plan name, price, renewal date",
+            "4. Verify GET /api/v1/clients/{id}/subscription returns data"
+          ],
+          "expected_result": "Subscription screen shows current status and plan details",
+          "passes": false
+        },
+        {
+          "test_id": "TC007.2",
+          "title": "Purchase premium workout pack",
+          "steps": [
+            "1. Navigate to Store or Available Workouts",
+            "2. Find premium workout package with price",
+            "3. Tap 'Buy' or 'Add to Cart' button",
+            "4. Stripe payment sheet should open"
+          ],
+          "expected_result": "Stripe payment sheet initializes with purchase details",
+          "passes": false
+        },
+        {
+          "test_id": "TC007.3",
+          "title": "Complete payment with test card (Stripe)",
+          "steps": [
+            "1. In Stripe payment sheet, enter test card: 4242 4242 4242 4242",
+            "2. Enter expiry 12/34 and CVC 123",
+            "3. Tap 'Pay' button",
+            "4. Verify loading state and payment processing"
+          ],
+          "expected_result": "Payment succeeds, navigates back to app, workout unlocked",
+          "passes": false
+        },
+        {
+          "test_id": "TC007.4",
+          "title": "Handle payment failure gracefully",
+          "steps": [
+            "1. Attempt purchase with declined test card: 4000 0000 0000 0002",
+            "2. Observe error message in Stripe sheet",
+            "3. Verify error is logged with payment intent ID",
+            "4. Verify 'Retry' button available to user"
+          ],
+          "expected_result": "Payment error handled gracefully, user can retry",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TC008",
+      "category": "Client Settings & Preferences",
+      "description": "Test client app settings and preferences",
+      "tests": [
+        {
+          "test_id": "TC008.1",
+          "title": "Access settings screen",
+          "steps": [
+            "1. Navigate to Settings or Profile menu",
+            "2. Verify Settings screen displays",
+            "3. Verify sections: Account, Notifications, Privacy, About"
+          ],
+          "expected_result": "Settings screen loads with all configuration options",
+          "passes": false
+        },
+        {
+          "test_id": "TC008.2",
+          "title": "Toggle notification preferences",
+          "steps": [
+            "1. In Settings, find Notifications section",
+            "2. Toggle 'Workout Reminders' switch",
+            "3. Toggle 'Messages' switch",
+            "4. Observe changes saved to backend"
+          ],
+          "expected_result": "Notification preferences saved, verified in GET /api/v1/clients/{id}",
+          "passes": false
+        },
+        {
+          "test_id": "TC008.3",
+          "title": "Change theme (light/dark/system)",
+          "steps": [
+            "1. In Settings, find Theme option",
+            "2. Tap theme selector",
+            "3. Choose 'Dark' theme",
+            "4. Verify UI immediately updates to dark colors"
+          ],
+          "expected_result": "Theme changes immediately, persists in SharedPreferences",
+          "passes": false
+        },
+        {
+          "test_id": "TC008.4",
+          "title": "Export personal data",
+          "steps": [
+            "1. In Settings, find 'Export Data' option",
+            "2. Tap 'Download My Data'",
+            "3. Verify GET /api/v1/clients/{id}/export endpoint called",
+            "4. Data file downloaded (JSON with profile, workouts, payments)"
+          ],
+          "expected_result": "Data exported successfully as JSON file",
+          "passes": false
+        },
+        {
+          "test_id": "TC008.5",
+          "title": "Logout client session",
+          "steps": [
+            "1. In Settings, tap 'Logout' button",
+            "2. Confirm logout in dialog",
+            "3. Verify tokens cleared from flutter_secure_storage",
+            "4. Verify app redirects to /login screen"
+          ],
+          "expected_result": "Session cleared, app returns to login screen",
+          "passes": false
+        },
+        {
+          "test_id": "TC008.6",
+          "title": "Delete account (with confirmation)",
+          "steps": [
+            "1. In Settings, find 'Delete Account' option",
+            "2. Tap and confirm deletion dialog",
+            "3. Verify DELETE /api/v1/clients/{id} request sent",
+            "4. Observe app redirects to login after deletion"
+          ],
+          "expected_result": "Account deletion confirmed, user logged out",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TC009",
+      "category": "Offline Functionality",
+      "description": "Test offline-first sync and local persistence",
+      "tests": [
+        {
+          "test_id": "TC009.1",
+          "title": "App works in airplane mode",
+          "steps": [
+            "1. Enable Airplane Mode or disable WiFi/cellular",
+            "2. Attempt to navigate between screens",
+            "3. View locally cached workouts",
+            "4. Mark workout complete (saves locally with isSynced=false)"
+          ],
+          "expected_result": "App functions normally, no crashes, local actions persist",
+          "passes": false
+        },
+        {
+          "test_id": "TC009.2",
+          "title": "Sync queue tracks pending changes",
+          "steps": [
+            "1. While offline, complete workout and send message",
+            "2. Use DevTools to inspect Drift database",
+            "3. Verify both actions have isSynced=false",
+            "4. Check sync_queue table has entries for both"
+          ],
+          "expected_result": "Pending changes tracked in Drift, ready to sync when online",
+          "passes": false
+        },
+        {
+          "test_id": "TC009.3",
+          "title": "Automatic sync when connectivity restored",
+          "steps": [
+            "1. While offline, complete 2-3 workouts",
+            "2. Disable Airplane Mode to restore connectivity",
+            "3. Observe SyncService triggers sync (should happen in 5 min max)",
+            "4. Verify in network tab: POST requests for each pending action"
+          ],
+          "expected_result": "All pending changes synced automatically, isSynced set to true",
+          "passes": false
+        },
+        {
+          "test_id": "TC009.4",
+          "title": "Handle sync conflicts gracefully",
+          "steps": [
+            "1. Offline: Mark workout as complete",
+            "2. Meanwhile, trainer cancels workout on server",
+            "3. Restore connectivity and trigger sync",
+            "4. Observe conflict resolution (last-write-wins or manual resolution)"
+          ],
+          "expected_result": "Sync completes, conflict resolved without data loss",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TC010",
+      "category": "Performance & Error Handling",
+      "description": "Test app performance, error handling, and edge cases",
+      "tests": [
+        {
+          "test_id": "TC010.1",
+          "title": "Handle network errors gracefully",
+          "steps": [
+            "1. While loading workout list, kill backend or simulate 500 error",
+            "2. Observe error message displayed in UI",
+            "3. Verify 'Retry' button available",
+            "4. Restore backend and tap Retry"
+          ],
+          "expected_result": "Error shown in UI, retry succeeds after fix",
+          "passes": false
+        },
+        {
+          "test_id": "TC010.2",
+          "title": "Handle 401 unauthorized (token expired)",
+          "steps": [
+            "1. Revoke/expire client token on backend",
+            "2. Make any request (e.g., fetch workouts)",
+            "3. App should detect 401 and redirect to login",
+            "4. Verify AuthStateProvider invalidated"
+          ],
+          "expected_result": "App redirects to login, session cleared",
+          "passes": false
+        },
+        {
+          "test_id": "TC010.3",
+          "title": "Image caching performance",
+          "steps": [
+            "1. Load workout list with trainer avatar images",
+            "2. Scroll up and down multiple times",
+            "3. Monitor memory and network usage in DevTools",
+            "4. Verify images use CachedNetworkImage with size limits"
+          ],
+          "expected_result": "Images load fast on second scroll, no excessive network requests",
+          "passes": false
+        },
+        {
+          "test_id": "TC010.4",
+          "title": "List pagination (if workouts > 20)",
+          "steps": [
+            "1. With many workouts assigned, load workout list",
+            "2. Verify only 20 items load initially",
+            "3. Scroll to bottom to trigger pagination",
+            "4. Verify next 20 items load without full refresh"
+          ],
+          "expected_result": "Pagination works smoothly, no loading freezes",
+          "passes": false
+        },
+        {
+          "test_id": "TC010.5",
+          "title": "Handle large data sets (100+ workouts)",
+          "steps": [
+            "1. Via backend, assign 100+ workouts to test client",
+            "2. Load app and navigate to Workouts list",
+            "3. Verify app doesn't crash or become unresponsive",
+            "4. Search/filter workouts by name"
+          ],
+          "expected_result": "App handles large datasets, remains performant",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TC011",
+      "category": "Security & Authorization",
+      "description": "Test client security and authorization controls",
+      "tests": [
+        {
+          "test_id": "TC011.1",
+          "title": "Client cannot access trainer endpoints",
+          "steps": [
+            "1. Authenticate as client with dev token",
+            "2. Attempt GET /api/v1/trainer/clients (trainer-only endpoint)",
+            "3. Verify 403 Forbidden response"
+          ],
+          "expected_result": "Backend rejects trainer-only endpoint for client role",
+          "passes": false
+        },
+        {
+          "test_id": "TC011.2",
+          "title": "Client tokens stored securely",
+          "steps": [
+            "1. After login, verify token stored in flutter_secure_storage",
+            "2. Use DevTools to inspect Dart code, verify SecureStorage import",
+            "3. Verify NO token in SharedPreferences (grep for token)",
+            "4. Token should NOT appear in console logs"
+          ],
+          "expected_result": "Tokens stored in secure storage, not visible in logs/prefs",
+          "passes": false
+        },
+        {
+          "test_id": "TC011.3",
+          "title": "Authorization header present in all requests",
+          "steps": [
+            "1. Authenticate as client",
+            "2. Make any API request (fetch workouts, send message, etc.)",
+            "3. In network tab, verify request has: Authorization: Bearer <token>",
+            "4. Check AuthInterceptor is working (add debug log)"
+          ],
+          "expected_result": "All requests include valid Authorization header",
+          "passes": false
+        },
+        {
+          "test_id": "TC011.4",
+          "title": "Biometric auth enforced on login",
+          "steps": [
+            "1. Verify biometric is MANDATORY in flow (not optional)",
+            "2. After code verification, BiometricAuthScreen must appear",
+            "3. Attempt to bypass by navigating directly to dashboard (should fail)",
+            "4. Verify token only issued after biometric success"
+          ],
+          "expected_result": "Biometric is enforced, cannot skip or bypass",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TC012",
+      "category": "UI/UX & Navigation",
+      "description": "Test client UI, navigation flow, and user experience",
+      "tests": [
+        {
+          "test_id": "TC012.1",
+          "title": "Navigation between main tabs works smoothly",
+          "steps": [
+            "1. From dashboard, tap each main tab: Workouts, Progress, Messages, Profile",
+            "2. Verify each screen loads without errors",
+            "3. Tap back button, verify navigation history respected",
+            "4. Verify current tab indicator highlighted"
+          ],
+          "expected_result": "Tab navigation fluid, no crashes, correct tab highlighted",
+          "passes": false
+        },
+        {
+          "test_id": "TC012.2",
+          "title": "Loading states show spinners/skeletons",
+          "steps": [
+            "1. Load workout list, observe loading state",
+            "2. Use network throttle in DevTools to simulate slow network",
+            "3. Verify loading indicator appears while fetching",
+            "4. Once loaded, loading indicator disappears"
+          ],
+          "expected_result": "Loading states visible to user, no blank screens",
+          "passes": false
+        },
+        {
+          "test_id": "TC012.3",
+          "title": "App follows design system (colors, typography, spacing)",
+          "steps": [
+            "1. Navigate through app screens",
+            "2. Verify colors match design-system.md (lavender, purple, green)",
+            "3. Verify typography: Headlines 24px bold, Body 16px regular",
+            "4. Verify spacing consistent (8px grid system)"
+          ],
+          "expected_result": "App matches design system specifications",
+          "passes": false
+        },
+        {
+          "test_id": "TC012.4",
+          "title": "App responsive on different screen sizes",
+          "steps": [
+            "1. Test on small phone (320px width)",
+            "2. Test on large tablet (1024px width)",
+            "3. Verify layout adapts without overflow",
+            "4. Verify buttons/text still readable on all sizes"
+          ],
+          "expected_result": "App responsive, works on all device sizes",
+          "passes": false
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_test_suites": 12,
+    "total_tests": 62,
+    "passing": 0,
+    "failing": 62,
+    "suites": [
+      "Client Authentication - Magic Link",
+      "Client Authentication - Dev Token Direct",
+      "Client Profile",
+      "Client Workouts",
+      "Client Progress Tracking",
+      "Client Communications",
+      "Client Payments & Subscriptions",
+      "Client Settings & Preferences",
+      "Offline Functionality",
+      "Performance & Error Handling",
+      "Security & Authorization",
+      "UI/UX & Navigation"
+    ]
+  },
+  "devtool_instructions": {
+    "accessing_devbar": [
+      "iOS Simulator: Shake device or Cmd+Ctrl+Z",
+      "Android Emulator: Shake emulator or Ctrl+M (Mac) / Ctrl+Shift+M (Windows/Linux)",
+      "Physical Device: Shake device twice"
+    ],
+    "switching_to_client_role": [
+      "1. Open devbar",
+      "2. Find 'DevDataSeeder' section",
+      "3. Tap 'Role Selection' or 'Switch Role'",
+      "4. Select 'client' from dropdown",
+      "5. Tap 'Apply' - app auto-logs in with dev client token"
+    ],
+    "dev_token_details": {
+      "user_type": "client",
+      "email": "dev.client@example.com",
+      "id": "478f7ffe-61c2-5038-8411-75ad04de5573 (deterministic UUID v5)",
+      "trainer_id": "mock trainer assigned"
+    },
+    "network_inspection": [
+      "Use Flutter DevTools Network tab to inspect requests",
+      "Verify Authorization header present in all requests",
+      "Check response status codes (200, 401, 403, 404, 500)",
+      "Log request/response bodies for debugging"
+    ],
+    "database_inspection": [
+      "Use Flutter DevTools Storage tab to inspect Drift database",
+      "Look for tables: users, clients, workouts, sync_queue, messages",
+      "Verify isSynced flag on offline changes",
+      "Inspect sync_queue for pending syncs"
+    ]
+  },
+  "test_execution_notes": [
+    "Run tests in debug mode using main_dev.dart (automatically loads DevDataSeeder)",
+    "Each test should be independent; can be run in any order",
+    "Mark test as 'passes': true only after MANUALLY executing all steps and verifying result",
+    "Screenshots/videos recommended for UI tests",
+    "Network logs essential for API tests",
+    "Database inspection critical for offline sync tests",
+    "Always test both online and offline modes",
+    "Test on iOS and Android for comprehensive coverage"
+  ],
+  "common_issues": [
+    {
+      "issue": "Dev token not working after role switch",
+      "solution": "Kill and restart app, ensure main_dev.dart is running, check DevDataSeeder in devbar"
+    },
+    {
+      "issue": "Authorization header missing in requests",
+      "solution": "Verify AuthInterceptor is added to Dio, check flutter_secure_storage has token, restart app"
+    },
+    {
+      "issue": "Offline sync not triggering",
+      "solution": "Check SyncService is running (background worker), verify isSynced flag on local changes, manually trigger sync or wait 5 minutes"
+    },
+    {
+      "issue": "Biometric prompt not appearing after code verification",
+      "solution": "Check BiometricAuthScreen is in navigation flow, verify local_auth package permissions granted, check iOS entitlements"
+    },
+    {
+      "issue": "Images not caching properly",
+      "solution": "Verify CachedNetworkImage used instead of Image.network, check memCacheWidth/maxWidthDiskCache set, clear cache with app restart"
+    }
+  ]
+}

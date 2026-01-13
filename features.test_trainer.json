@@ -1,0 +1,1102 @@
+{
+  "project": "Personal Trainer App - Trainer Feature Tests",
+  "description": "Comprehensive test suite for trainer-facing features using devtool devbar with trainer role",
+  "test_environment": {
+    "platform": "iOS/Android",
+    "build_mode": "Debug (main_dev.dart)",
+    "devtool": "DevDataSeeder in devbar",
+    "trainer_role_token": "Dev token with user_type='trainer'"
+  },
+  "test_suites": [
+    {
+      "suite_id": "TT001",
+      "category": "Trainer Authentication - Email/Password",
+      "description": "Test trainer login flow using email and password (traditional auth)",
+      "tests": [
+        {
+          "test_id": "TT001.1",
+          "title": "Access login screen as unauthenticated trainer",
+          "steps": [
+            "1. Kill app or logout to unauthenticated state",
+            "2. App should redirect to /login screen",
+            "3. Verify LoginScreen displays 'Email' and 'Password' fields",
+            "4. Both fields should be empty and focused on email field"
+          ],
+          "expected_result": "LoginScreen renders with email and password inputs ready for entry",
+          "passes": false
+        },
+        {
+          "test_id": "TT001.2",
+          "title": "Send magic link (trainer uses magic link too)",
+          "steps": [
+            "1. Enter valid trainer email in TextField",
+            "2. Tap 'Send Magic Link' button (note: trainers also use magic link)",
+            "3. Observe loading spinner while request is in flight",
+            "4. Wait for response from backend"
+          ],
+          "expected_result": "Screen transitions to MagicLinkVerificationScreen showing success message",
+          "passes": false
+        },
+        {
+          "test_id": "TT001.3",
+          "title": "Verify magic link code input (trainer version)",
+          "steps": [
+            "1. MagicLinkVerificationScreen should display trainer email used",
+            "2. Code input field should show 6 placeholder slots",
+            "3. Keyboard should auto-open on screen load",
+            "4. Input 123456 (test code for dev mode)"
+          ],
+          "expected_result": "Code field accepts input, auto-advances after 6 digits entered",
+          "passes": false
+        },
+        {
+          "test_id": "TT001.4",
+          "title": "Verify biometric auth after code verification",
+          "steps": [
+            "1. After code verification succeeds, BiometricAuthScreen displays",
+            "2. Show 'Use Face ID/Touch ID to complete login' message",
+            "3. Verify biometric options available on device",
+            "4. Tap biometric auth button (or use device biometric)"
+          ],
+          "expected_result": "Biometric prompt appears; on success navigates to trainer /dashboard",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT002",
+      "category": "Trainer Authentication - Dev Token Direct",
+      "description": "Test trainer login using dev token directly from devtool devbar",
+      "tests": [
+        {
+          "test_id": "TT002.1",
+          "title": "Access devtool devbar with trainer role",
+          "steps": [
+            "1. Shake device to open dev menu (or long-press home on simulator)",
+            "2. Find 'DevDataSeeder' or 'Dev Tools' section in devbar",
+            "3. Locate 'Switch Role' option",
+            "4. Select 'trainer' from dropdown"
+          ],
+          "expected_result": "Dev bar shows 'Current Role: trainer' with trainer dev token displayed",
+          "passes": false
+        },
+        {
+          "test_id": "TT002.2",
+          "title": "Dev token automatically sets trainer session",
+          "steps": [
+            "1. After selecting trainer role in devbar, tap 'Apply' or 'Save'",
+            "2. App should automatically navigate away from login screen",
+            "3. AuthStateProvider should emit authenticated state with trainer user",
+            "4. Observe network logs showing authorization header with dev token"
+          ],
+          "expected_result": "App navigates to trainer /dashboard, authStateProvider shows non-null trainer user",
+          "passes": false
+        },
+        {
+          "test_id": "TT002.3",
+          "title": "Verify trainer profile endpoint returns user data",
+          "steps": [
+            "1. After authenticated as trainer, open DevTools network tab",
+            "2. Make request to GET /api/v1/auth/me",
+            "3. Verify response contains user_type='trainer'",
+            "4. Verify response contains trainer fields (email, name, id)"
+          ],
+          "expected_result": "HTTP 200 response with user data: {user_type: 'trainer', email: '...', name: '...', id: '...'}",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT003",
+      "category": "Trainer Profile",
+      "description": "Test trainer profile display, customization, and verification",
+      "tests": [
+        {
+          "test_id": "TT003.1",
+          "title": "Display trainer own profile",
+          "steps": [
+            "1. Authenticate as trainer via devtool",
+            "2. Navigate to Profile tab/screen",
+            "3. Verify profile displays: avatar, name, email, bio, experience years",
+            "4. Verify displays stats: total clients, total workouts created, rating"
+          ],
+          "expected_result": "Trainer profile screen shows all user information and stats",
+          "passes": false
+        },
+        {
+          "test_id": "TT003.2",
+          "title": "Edit trainer profile information",
+          "steps": [
+            "1. From trainer profile, tap 'Edit Profile' button",
+            "2. Modify fields: bio, experience, profile photo",
+            "3. Tap 'Save' button",
+            "4. Verify PATCH /api/v1/trainer/profile called with updated data"
+          ],
+          "expected_result": "Profile updated successfully, changes persist across restarts",
+          "passes": false
+        },
+        {
+          "test_id": "TT003.3",
+          "title": "Upload trainer profile photo",
+          "steps": [
+            "1. From Edit Profile, tap on profile photo",
+            "2. Select 'Camera' or 'Gallery'",
+            "3. Choose/take photo and confirm",
+            "4. Verify image compressed and uploaded to server",
+            "5. Verify profile photo updates immediately"
+          ],
+          "expected_result": "Photo uploaded and displays in profile",
+          "passes": false
+        },
+        {
+          "test_id": "TT003.4",
+          "title": "View trainer verification badge status",
+          "steps": [
+            "1. On profile screen, check if verification badge displays",
+            "2. If not verified, show 'Pending Verification' or 'Get Verified' button",
+            "3. Tap to view verification status details",
+            "4. Show requirements or progress toward verification"
+          ],
+          "expected_result": "Verification status clearly displayed on profile",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT004",
+      "category": "Trainer Client Management",
+      "description": "Test trainer managing clients (view, add, remove)",
+      "tests": [
+        {
+          "test_id": "TT004.1",
+          "title": "View all assigned clients",
+          "steps": [
+            "1. Authenticate as trainer via devtool",
+            "2. Navigate to Clients tab",
+            "3. Verify GET /api/v1/trainer/clients called with trainer_id",
+            "4. Observe list displays: client name, email, photo, status (active/inactive)",
+            "5. Verify list is paginated (shows ~20 clients per page)"
+          ],
+          "expected_result": "Clients list loads and displays all assigned clients with pagination",
+          "passes": false
+        },
+        {
+          "test_id": "TT004.2",
+          "title": "Search for specific client",
+          "steps": [
+            "1. On Clients list, tap search input field",
+            "2. Type client name or email",
+            "3. Observe list filters by search term (debounced 300ms)",
+            "4. Verify GET /api/v1/trainer/clients?search=query called"
+          ],
+          "expected_result": "Client search works smoothly, results update as typing",
+          "passes": false
+        },
+        {
+          "test_id": "TT004.3",
+          "title": "View client details",
+          "steps": [
+            "1. Tap on client from list to open client detail screen",
+            "2. Verify displays: full profile, assigned workouts, completion stats",
+            "3. Verify GET /api/v1/clients/{client_id} called",
+            "4. Shows progress metrics: workouts completed, consistency streak"
+          ],
+          "expected_result": "Client detail screen loads with comprehensive client info",
+          "passes": false
+        },
+        {
+          "test_id": "TT004.4",
+          "title": "Add new client to trainer account",
+          "steps": [
+            "1. On Clients list, tap 'Add Client' or '+' button",
+            "2. Enter client email address",
+            "3. Tap 'Send Invitation'",
+            "4. Verify POST /api/v1/trainer/invite endpoint called",
+            "5. Show status 'Invitation Sent' with countdown to expiry"
+          ],
+          "expected_result": "Client invitation sent, status tracked in UI",
+          "passes": false
+        },
+        {
+          "test_id": "TT004.5",
+          "title": "Remove client from trainer account",
+          "steps": [
+            "1. From client detail screen, tap 'Remove Client' button",
+            "2. Confirm removal in dialog",
+            "3. Verify DELETE /api/v1/clients/{client_id} called",
+            "4. App navigates back to clients list",
+            "5. Verify client removed from list"
+          ],
+          "expected_result": "Client removed successfully, list refreshed",
+          "passes": false
+        },
+        {
+          "test_id": "TT004.6",
+          "title": "Filter clients by status (active/inactive)",
+          "steps": [
+            "1. On Clients list, tap filter icon",
+            "2. Select 'Active' or 'Inactive'",
+            "3. Verify list updates to show only selected status",
+            "4. Verify GET request includes status filter"
+          ],
+          "expected_result": "Client list filters correctly by status",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT005",
+      "category": "Trainer Workout Management",
+      "description": "Test trainer creating, editing, and managing workouts",
+      "tests": [
+        {
+          "test_id": "TT005.1",
+          "title": "View all trainer workouts",
+          "steps": [
+            "1. Authenticate as trainer via devtool",
+            "2. Navigate to Workouts tab",
+            "3. Verify GET /api/v1/trainer/workouts called",
+            "4. Observe list displays: workout name, # of assigned clients, creation date",
+            "5. Verify sorting options: by name, date, usage"
+          ],
+          "expected_result": "Workouts list loads with all trainer-created workouts",
+          "passes": false
+        },
+        {
+          "test_id": "TT005.2",
+          "title": "Create new workout",
+          "steps": [
+            "1. On Workouts list, tap 'Create Workout' button",
+            "2. Enter workout details: name, description, duration estimate",
+            "3. Add exercises section with set/rep inputs",
+            "4. Tap 'Save Draft' to save without publishing"
+          ],
+          "expected_result": "Workout saved as draft, can be edited or published later",
+          "passes": false
+        },
+        {
+          "test_id": "TT005.3",
+          "title": "Add exercises to workout",
+          "steps": [
+            "1. While creating/editing workout, tap 'Add Exercise'",
+            "2. Search for exercise by name or select from library",
+            "3. Set: sets, reps, weight, rest time, notes for client",
+            "4. Tap 'Add' to add exercise to workout",
+            "5. Repeat for multiple exercises"
+          ],
+          "expected_result": "Exercises added to workout with all details configured",
+          "passes": false
+        },
+        {
+          "test_id": "TT005.4",
+          "title": "Edit existing workout",
+          "steps": [
+            "1. From Workouts list, tap on workout",
+            "2. Tap 'Edit' button to enter edit mode",
+            "3. Modify workout details and exercises",
+            "4. Tap 'Save' to apply changes",
+            "5. Verify PATCH /api/v1/workouts/{id} called"
+          ],
+          "expected_result": "Workout updated successfully, changes visible immediately",
+          "passes": false
+        },
+        {
+          "test_id": "TT005.5",
+          "title": "Delete workout",
+          "steps": [
+            "1. From workout detail, tap 'Delete' button",
+            "2. Confirm deletion in dialog",
+            "3. Verify DELETE /api/v1/workouts/{id} called",
+            "4. Verify workout removed from list"
+          ],
+          "expected_result": "Workout deleted successfully, removed from list",
+          "passes": false
+        },
+        {
+          "test_id": "TT005.6",
+          "title": "Publish workout to clients",
+          "steps": [
+            "1. From workout detail, tap 'Publish' button",
+            "2. Select which clients to assign (single/multiple)",
+            "3. Set due date (optional)",
+            "4. Tap 'Assign' to publish",
+            "5. Verify POST /api/v1/workout-assignments called"
+          ],
+          "expected_result": "Workout assigned to selected clients",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT006",
+      "category": "Trainer Client Progress Monitoring",
+      "description": "Test trainer monitoring client progress and completion",
+      "tests": [
+        {
+          "test_id": "TT006.1",
+          "title": "View client workout completion history",
+          "steps": [
+            "1. From client detail screen, navigate to 'Workouts' section",
+            "2. Verify list shows all assigned workouts with completion status",
+            "3. Completed workouts show: completion date, duration, performance notes",
+            "4. Incomplete workouts show: due date, days overdue if applicable"
+          ],
+          "expected_result": "Workout history displays with completion tracking",
+          "passes": false
+        },
+        {
+          "test_id": "TT006.2",
+          "title": "View client progress metrics",
+          "steps": [
+            "1. From client detail screen, navigate to 'Progress' tab",
+            "2. Verify displays: total workouts assigned, completed, compliance %",
+            "3. Show progress trend chart (completion rate over time)",
+            "4. Verify GET /api/v1/clients/{id}/progress called"
+          ],
+          "expected_result": "Client progress metrics display with visualizations",
+          "passes": false
+        },
+        {
+          "test_id": "TT006.3",
+          "title": "View client custom measurements (photos, weight)",
+          "steps": [
+            "1. From client detail, navigate to 'Measurements' section",
+            "2. Verify displays: timeline of measurements and photos",
+            "3. Each entry shows: date, value, progress change from previous",
+            "4. Tap on photo to view full-size image"
+          ],
+          "expected_result": "Client measurements and progress photos visible",
+          "passes": false
+        },
+        {
+          "test_id": "TT006.4",
+          "title": "Add notes to client workout completion",
+          "steps": [
+            "1. View completed workout in client history",
+            "2. Tap workout to open detail",
+            "3. Tap 'Add Notes' or 'Trainer Feedback'",
+            "4. Enter feedback on client performance",
+            "5. Tap 'Save' to send feedback to client"
+          ],
+          "expected_result": "Trainer notes saved and visible to client",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT007",
+      "category": "Trainer Analytics & Dashboard",
+      "description": "Test trainer analytics and dashboard metrics",
+      "tests": [
+        {
+          "test_id": "TT007.1",
+          "title": "View trainer dashboard summary",
+          "steps": [
+            "1. Navigate to Dashboard tab (main view after login)",
+            "2. Verify displays: # active clients, total workouts, this week's completion rate",
+            "3. Show recent activity: client completions, new clients, messages",
+            "4. Verify GET /api/v1/trainer/stats called"
+          ],
+          "expected_result": "Dashboard displays key metrics and recent activity",
+          "passes": false
+        },
+        {
+          "test_id": "TT007.2",
+          "title": "View analytics for all clients",
+          "steps": [
+            "1. Navigate to Analytics tab",
+            "2. Verify displays: average completion rate, top performing clients, trends",
+            "3. Show chart: workouts assigned vs completed over time",
+            "4. Filter by time period: this week, this month, all time"
+          ],
+          "expected_result": "Analytics screen shows comprehensive trainer metrics",
+          "passes": false
+        },
+        {
+          "test_id": "TT007.3",
+          "title": "View individual client performance ranking",
+          "steps": [
+            "1. On Analytics screen, find client ranking/leaderboard section",
+            "2. Verify displays: client name, completion rate, streak",
+            "3. Tap on client to view detailed performance breakdown",
+            "4. Sort by: completion rate, consistency, recent activity"
+          ],
+          "expected_result": "Client performance rankings visible and sortable",
+          "passes": false
+        },
+        {
+          "test_id": "TT007.4",
+          "title": "Export analytics report",
+          "steps": [
+            "1. On Analytics screen, tap 'Export' button",
+            "2. Select format: PDF or CSV",
+            "3. Verify GET /api/v1/trainer/analytics/export called",
+            "4. File downloads to device"
+          ],
+          "expected_result": "Analytics report exported successfully",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT008",
+      "category": "Trainer Communications",
+      "description": "Test trainer messaging and client communication",
+      "tests": [
+        {
+          "test_id": "TT008.1",
+          "title": "View messages from all clients",
+          "steps": [
+            "1. Navigate to Messages tab",
+            "2. Verify conversation list shows all clients with active threads",
+            "3. Show latest message preview and timestamp",
+            "4. Sort by: recent, unread, client name"
+          ],
+          "expected_result": "Messages screen displays all client conversations",
+          "passes": false
+        },
+        {
+          "test_id": "TT008.2",
+          "title": "Send message to client",
+          "steps": [
+            "1. Open conversation with client",
+            "2. Type message in text input field",
+            "3. Tap Send button",
+            "4. Verify message appears locally (optimistic update)",
+            "5. Verify POST /api/v1/messages called"
+          ],
+          "expected_result": "Message sent and appears in conversation, sync status updated",
+          "passes": false
+        },
+        {
+          "test_id": "TT008.3",
+          "title": "Broadcast message to multiple clients",
+          "steps": [
+            "1. On Messages tab, tap 'Broadcast' or 'Send to Group'",
+            "2. Select multiple clients from list",
+            "3. Compose message",
+            "4. Tap 'Send to All' to broadcast",
+            "5. Verify POST /api/v1/messages/broadcast called"
+          ],
+          "expected_result": "Message sent to all selected clients",
+          "passes": false
+        },
+        {
+          "test_id": "TT008.4",
+          "title": "Receive and respond to client messages",
+          "steps": [
+            "1. Receive message from client (in test, use second instance)",
+            "2. Push notification appears (if app backgrounded)",
+            "3. Tap notification to navigate to conversation",
+            "4. Compose response and send"
+          ],
+          "expected_result": "Messages received and responses sent successfully",
+          "passes": false
+        },
+        {
+          "test_id": "TT008.5",
+          "title": "Message persistence and offline sync",
+          "steps": [
+            "1. Disable internet (airplane mode)",
+            "2. Send message to client",
+            "3. Verify message saved locally with isSynced=false",
+            "4. Re-enable internet, observe sync",
+            "5. Verify message delivered after sync"
+          ],
+          "expected_result": "Messages persist offline and sync when online",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT009",
+      "category": "Trainer Payments & Subscriptions",
+      "description": "Test trainer payment management and subscription features",
+      "tests": [
+        {
+          "test_id": "TT009.1",
+          "title": "View trainer subscription status",
+          "steps": [
+            "1. Navigate to Subscription or Billing tab",
+            "2. Verify subscription status displays (active, trial, cancelled)",
+            "3. Verify displays: plan name, price, renewal date",
+            "4. Verify GET /api/v1/trainer/subscription returns data"
+          ],
+          "expected_result": "Subscription screen shows current plan and status",
+          "passes": false
+        },
+        {
+          "test_id": "TT009.2",
+          "title": "Upgrade subscription plan",
+          "steps": [
+            "1. On Subscription screen, view available plans",
+            "2. Select higher tier plan (e.g., Professional)",
+            "3. Tap 'Upgrade' button",
+            "4. Stripe payment sheet opens with upgrade price"
+          ],
+          "expected_result": "Payment sheet initializes for plan upgrade",
+          "passes": false
+        },
+        {
+          "test_id": "TT009.3",
+          "title": "Complete subscription payment with test card",
+          "steps": [
+            "1. In Stripe payment sheet, enter test card: 4242 4242 4242 4242",
+            "2. Enter expiry 12/34 and CVC 123",
+            "3. Tap 'Pay' button",
+            "4. Verify loading state and payment processing"
+          ],
+          "expected_result": "Payment succeeds, subscription upgraded, access to premium features",
+          "passes": false
+        },
+        {
+          "test_id": "TT009.4",
+          "title": "View payment history and invoices",
+          "steps": [
+            "1. On Billing screen, navigate to 'Invoices' or 'Payment History'",
+            "2. Verify list shows all past payments with dates and amounts",
+            "3. Tap invoice to view PDF or details",
+            "4. Option to download invoice"
+          ],
+          "expected_result": "Payment history and invoices accessible",
+          "passes": false
+        },
+        {
+          "test_id": "TT009.5",
+          "title": "Cancel subscription",
+          "steps": [
+            "1. On Subscription screen, tap 'Cancel Plan' button",
+            "2. Show confirmation dialog with cancellation details",
+            "3. Tap 'Confirm Cancellation'",
+            "4. Verify subscription remains active until period end",
+            "5. Show 'Reactivate' option available"
+          ],
+          "expected_result": "Subscription cancelled, pending end of billing period",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT010",
+      "category": "Trainer Settings & Preferences",
+      "description": "Test trainer app settings and account management",
+      "tests": [
+        {
+          "test_id": "TT010.1",
+          "title": "Access trainer settings screen",
+          "steps": [
+            "1. Navigate to Settings or Profile menu",
+            "2. Verify Settings screen displays",
+            "3. Verify sections: Account, Notifications, Business Settings, Privacy, About"
+          ],
+          "expected_result": "Settings screen loads with all configuration options",
+          "passes": false
+        },
+        {
+          "test_id": "TT010.2",
+          "title": "Configure notification preferences",
+          "steps": [
+            "1. In Settings, find Notifications section",
+            "2. Toggle: 'New Client Messages', 'Workout Completions', 'Client Sign-ups'",
+            "3. Observe changes saved to backend (PATCH /api/v1/trainer/settings)",
+            "4. Verify FCM token updated with new preferences"
+          ],
+          "expected_result": "Notification preferences saved and applied",
+          "passes": false
+        },
+        {
+          "test_id": "TT010.3",
+          "title": "Configure business settings",
+          "steps": [
+            "1. In Settings, find 'Business Settings' section",
+            "2. Configure: hourly rate, availability calendar, service area",
+            "3. Set client capacity limits (max clients per plan)",
+            "4. Tap 'Save' to persist"
+          ],
+          "expected_result": "Business settings updated successfully",
+          "passes": false
+        },
+        {
+          "test_id": "TT010.4",
+          "title": "Change theme (light/dark/system)",
+          "steps": [
+            "1. In Settings, find Theme option",
+            "2. Tap theme selector",
+            "3. Choose 'Dark' theme",
+            "4. Verify UI immediately updates to dark colors"
+          ],
+          "expected_result": "Theme changes immediately, persists in SharedPreferences",
+          "passes": false
+        },
+        {
+          "test_id": "TT010.5",
+          "title": "Connect social media profiles",
+          "steps": [
+            "1. In Settings, find 'Social Profiles' section",
+            "2. Tap 'Connect Instagram' or 'Connect Facebook'",
+            "3. OAuth flow initiates",
+            "4. After authorization, profile linked and visible"
+          ],
+          "expected_result": "Social profiles connected and displayed on trainer public profile",
+          "passes": false
+        },
+        {
+          "test_id": "TT010.6",
+          "title": "Export business data",
+          "steps": [
+            "1. In Settings, find 'Export Data' option",
+            "2. Tap 'Download My Business Data'",
+            "3. Verify GET /api/v1/trainer/export endpoint called",
+            "4. Data file downloaded (JSON with clients, workouts, payments, messages)"
+          ],
+          "expected_result": "Business data exported successfully as JSON file",
+          "passes": false
+        },
+        {
+          "test_id": "TT010.7",
+          "title": "Logout trainer session",
+          "steps": [
+            "1. In Settings, tap 'Logout' button",
+            "2. Confirm logout in dialog",
+            "3. Verify tokens cleared from flutter_secure_storage",
+            "4. Verify app redirects to /login screen"
+          ],
+          "expected_result": "Session cleared, app returns to login screen",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT011",
+      "category": "Trainer Offline Functionality",
+      "description": "Test offline-first sync for trainer operations",
+      "tests": [
+        {
+          "test_id": "TT011.1",
+          "title": "App works in airplane mode",
+          "steps": [
+            "1. Enable Airplane Mode or disable WiFi/cellular",
+            "2. Attempt to navigate between screens",
+            "3. View locally cached clients and workouts",
+            "4. Create draft workout (saves locally with isSynced=false)"
+          ],
+          "expected_result": "App functions normally, no crashes, local actions persist",
+          "passes": false
+        },
+        {
+          "test_id": "TT011.2",
+          "title": "Sync queue tracks pending trainer changes",
+          "steps": [
+            "1. While offline, create workout and send message",
+            "2. Use DevTools to inspect Drift database",
+            "3. Verify workout and message have isSynced=false",
+            "4. Check sync_queue table has entries for both"
+          ],
+          "expected_result": "Pending changes tracked in Drift, ready to sync when online",
+          "passes": false
+        },
+        {
+          "test_id": "TT011.3",
+          "title": "Automatic sync when connectivity restored",
+          "steps": [
+            "1. While offline, create 2-3 workouts and send messages",
+            "2. Disable Airplane Mode to restore connectivity",
+            "3. Observe SyncService triggers sync (should happen in 5 min max)",
+            "4. Verify in network tab: POST requests for each pending action"
+          ],
+          "expected_result": "All pending changes synced automatically, isSynced set to true",
+          "passes": false
+        },
+        {
+          "test_id": "TT011.4",
+          "title": "Offline workout editing",
+          "steps": [
+            "1. Disable internet",
+            "2. Open draft workout and modify it",
+            "3. Save changes locally",
+            "4. Re-enable internet and trigger sync",
+            "5. Verify changes synced to server"
+          ],
+          "expected_result": "Offline edits persist and sync when online",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT012",
+      "category": "Performance & Error Handling",
+      "description": "Test trainer app performance, error handling, and edge cases",
+      "tests": [
+        {
+          "test_id": "TT012.1",
+          "title": "Handle network errors gracefully",
+          "steps": [
+            "1. While loading client list, kill backend or simulate 500 error",
+            "2. Observe error message displayed in UI",
+            "3. Verify 'Retry' button available",
+            "4. Restore backend and tap Retry"
+          ],
+          "expected_result": "Error shown in UI, retry succeeds after fix",
+          "passes": false
+        },
+        {
+          "test_id": "TT012.2",
+          "title": "Handle 401 unauthorized (token expired)",
+          "steps": [
+            "1. Revoke/expire trainer token on backend",
+            "2. Make any request (e.g., fetch clients)",
+            "3. App should detect 401 and redirect to login",
+            "4. Verify AuthStateProvider invalidated"
+          ],
+          "expected_result": "App redirects to login, session cleared",
+          "passes": false
+        },
+        {
+          "test_id": "TT012.3",
+          "title": "Handle 403 forbidden (insufficient permissions)",
+          "steps": [
+            "1. Attempt to access client from different trainer",
+            "2. Backend returns 403 Forbidden",
+            "3. App shows error: 'You don't have access to this client'",
+            "4. Verify redirect back to clients list"
+          ],
+          "expected_result": "Permission error handled gracefully",
+          "passes": false
+        },
+        {
+          "test_id": "TT012.4",
+          "title": "Image caching performance for trainer photos",
+          "steps": [
+            "1. Load client list with client avatar images",
+            "2. Scroll up and down multiple times",
+            "3. Monitor memory and network usage in DevTools",
+            "4. Verify images use CachedNetworkImage with size limits"
+          ],
+          "expected_result": "Images load fast on second scroll, no excessive network requests",
+          "passes": false
+        },
+        {
+          "test_id": "TT012.5",
+          "title": "List pagination (100+ clients)",
+          "steps": [
+            "1. With many clients assigned, load clients list",
+            "2. Verify only 20 items load initially",
+            "3. Scroll to bottom to trigger pagination",
+            "4. Verify next 20 items load without full refresh"
+          ],
+          "expected_result": "Pagination works smoothly, no loading freezes",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT013",
+      "category": "Security & Authorization",
+      "description": "Test trainer security and authorization controls",
+      "tests": [
+        {
+          "test_id": "TT013.1",
+          "title": "Trainer cannot access client-only endpoints",
+          "steps": [
+            "1. Authenticate as trainer with dev token",
+            "2. Attempt GET /api/v1/clients/{client_id}/my-workouts (client-only)",
+            "3. Verify 403 Forbidden response"
+          ],
+          "expected_result": "Backend rejects client-only endpoint for trainer role",
+          "passes": false
+        },
+        {
+          "test_id": "TT013.2",
+          "title": "Trainer can only access own clients",
+          "steps": [
+            "1. Authenticate as trainer A",
+            "2. Attempt GET /api/v1/clients/{client_id_from_trainer_b}",
+            "3. Verify 403 Forbidden response",
+            "4. Verify trainer_id filter enforced on backend"
+          ],
+          "expected_result": "Trainer blocked from accessing other trainer's clients",
+          "passes": false
+        },
+        {
+          "test_id": "TT013.3",
+          "title": "Trainer tokens stored securely",
+          "steps": [
+            "1. After login, verify token stored in flutter_secure_storage",
+            "2. Use DevTools to inspect Dart code, verify SecureStorage import",
+            "3. Verify NO token in SharedPreferences (grep for token)",
+            "4. Token should NOT appear in console logs"
+          ],
+          "expected_result": "Tokens stored in secure storage, not visible in logs/prefs",
+          "passes": false
+        },
+        {
+          "test_id": "TT013.4",
+          "title": "Authorization header present in all requests",
+          "steps": [
+            "1. Authenticate as trainer",
+            "2. Make any API request (fetch clients, send message, etc.)",
+            "3. In network tab, verify request has: Authorization: Bearer <token>",
+            "4. Check AuthInterceptor is working (add debug log)"
+          ],
+          "expected_result": "All requests include valid Authorization header",
+          "passes": false
+        },
+        {
+          "test_id": "TT013.5",
+          "title": "Biometric auth enforced on login",
+          "steps": [
+            "1. Verify biometric is MANDATORY in flow (not optional)",
+            "2. After code verification, BiometricAuthScreen must appear",
+            "3. Attempt to bypass by navigating directly to dashboard (should fail)",
+            "4. Verify token only issued after biometric success"
+          ],
+          "expected_result": "Biometric is enforced, cannot skip or bypass",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT014",
+      "category": "UI/UX & Navigation",
+      "description": "Test trainer UI, navigation flow, and user experience",
+      "tests": [
+        {
+          "test_id": "TT014.1",
+          "title": "Navigation between main tabs works smoothly",
+          "steps": [
+            "1. From dashboard, tap each main tab: Clients, Workouts, Messages, Analytics, Profile",
+            "2. Verify each screen loads without errors",
+            "3. Tap back button, verify navigation history respected",
+            "4. Verify current tab indicator highlighted"
+          ],
+          "expected_result": "Tab navigation fluid, no crashes, correct tab highlighted",
+          "passes": false
+        },
+        {
+          "test_id": "TT014.2",
+          "title": "Loading states show spinners/skeletons",
+          "steps": [
+            "1. Load client list, observe loading state",
+            "2. Use network throttle in DevTools to simulate slow network",
+            "3. Verify loading indicator appears while fetching",
+            "4. Once loaded, loading indicator disappears"
+          ],
+          "expected_result": "Loading states visible to user, no blank screens",
+          "passes": false
+        },
+        {
+          "test_id": "TT014.3",
+          "title": "App follows design system (colors, typography, spacing)",
+          "steps": [
+            "1. Navigate through app screens",
+            "2. Verify colors match design-system.md (lavender, purple, green)",
+            "3. Verify typography: Headlines 24px bold, Body 16px regular",
+            "4. Verify spacing consistent (8px grid system)"
+          ],
+          "expected_result": "App matches design system specifications",
+          "passes": false
+        },
+        {
+          "test_id": "TT014.4",
+          "title": "App responsive on different screen sizes",
+          "steps": [
+            "1. Test on small phone (320px width)",
+            "2. Test on large tablet (1024px width)",
+            "3. Verify layout adapts without overflow",
+            "4. Verify buttons/text still readable on all sizes"
+          ],
+          "expected_result": "App responsive, works on all device sizes",
+          "passes": false
+        },
+        {
+          "test_id": "TT014.5",
+          "title": "Quick action buttons accessible",
+          "steps": [
+            "1. On dashboard, verify 'Create Workout' button visible and accessible",
+            "2. Verify 'Add Client' button visible and accessible",
+            "3. Verify floating action buttons (FAB) positioned correctly",
+            "4. Tap FAB to verify quick action menu opens"
+          ],
+          "expected_result": "Quick actions easily accessible from main screens",
+          "passes": false
+        }
+      ]
+    },
+    {
+      "suite_id": "TT015",
+      "category": "Trainer Public Profile & Booking",
+      "description": "Test trainer public profile discovery and booking features",
+      "tests": [
+        {
+          "test_id": "TT015.1",
+          "title": "Trainer public profile displays correctly",
+          "steps": [
+            "1. Logout trainer account",
+            "2. From login screen, search for trainer by name",
+            "3. Tap trainer to view public profile",
+            "4. Verify displays: bio, experience, ratings, hourly rate, availability"
+          ],
+          "expected_result": "Trainer public profile visible to unauthenticated users",
+          "passes": false
+        },
+        {
+          "test_id": "TT015.2",
+          "title": "Request session with trainer (client booking)",
+          "steps": [
+            "1. From trainer public profile, tap 'Book Session' or 'Hire Trainer'",
+            "2. Select date/time from trainer's availability calendar",
+            "3. Add special requests/notes",
+            "4. Tap 'Request Session' to send booking request"
+          ],
+          "expected_result": "Booking request sent to trainer",
+          "passes": false
+        },
+        {
+          "test_id": "TT015.3",
+          "title": "Trainer receives booking requests",
+          "steps": [
+            "1. While logged in as trainer, navigate to Requests or Bookings tab",
+            "2. Verify new session requests display with client info",
+            "3. Request shows: client name, requested date/time, special requests",
+            "4. Tap to view full request details"
+          ],
+          "expected_result": "Booking requests visible and actionable",
+          "passes": false
+        },
+        {
+          "test_id": "TT015.4",
+          "title": "Trainer accepts/rejects booking request",
+          "steps": [
+            "1. From booking request, tap 'Accept' or 'Decline'",
+            "2. If accepting, confirm in dialog",
+            "3. Verify PUT /api/v1/bookings/{id}/accept endpoint called",
+            "4. Client receives notification of acceptance"
+          ],
+          "expected_result": "Booking request accepted, session added to trainer calendar",
+          "passes": false
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_test_suites": 15,
+    "total_tests": 86,
+    "passing": 0,
+    "failing": 86,
+    "suites": [
+      "Trainer Authentication - Email/Password",
+      "Trainer Authentication - Dev Token Direct",
+      "Trainer Profile",
+      "Trainer Client Management",
+      "Trainer Workout Management",
+      "Trainer Client Progress Monitoring",
+      "Trainer Analytics & Dashboard",
+      "Trainer Communications",
+      "Trainer Payments & Subscriptions",
+      "Trainer Settings & Preferences",
+      "Trainer Offline Functionality",
+      "Performance & Error Handling",
+      "Security & Authorization",
+      "UI/UX & Navigation",
+      "Trainer Public Profile & Booking"
+    ]
+  },
+  "devtool_instructions": {
+    "accessing_devbar": [
+      "iOS Simulator: Shake device or Cmd+Ctrl+Z",
+      "Android Emulator: Shake emulator or Ctrl+M (Mac) / Ctrl+Shift+M (Windows/Linux)",
+      "Physical Device: Shake device twice"
+    ],
+    "switching_to_trainer_role": [
+      "1. Open devbar",
+      "2. Find 'DevDataSeeder' section",
+      "3. Tap 'Role Selection' or 'Switch Role'",
+      "4. Select 'trainer' from dropdown",
+      "5. Tap 'Apply' - app auto-logs in with dev trainer token"
+    ],
+    "dev_token_details": {
+      "user_type": "trainer",
+      "email": "dev.trainer@example.com",
+      "id": "trainer-uuid-v5-deterministic (different from client)",
+      "sample_clients": "Pre-seeded with 2-5 test clients",
+      "sample_workouts": "Pre-seeded with 5-10 test workouts"
+    },
+    "network_inspection": [
+      "Use Flutter DevTools Network tab to inspect requests",
+      "Verify Authorization header present in all requests",
+      "Check response status codes (200, 401, 403, 404, 500)",
+      "Log request/response bodies for debugging",
+      "Monitor trainer-specific endpoints: /api/v1/trainer/*, /api/v1/clients/*"
+    ],
+    "database_inspection": [
+      "Use Flutter DevTools Storage tab to inspect Drift database",
+      "Look for tables: users, trainers, clients, workouts, workout_assignments, sync_queue, messages",
+      "Verify isSynced flag on offline changes",
+      "Inspect sync_queue for pending trainer operations"
+    ]
+  },
+  "test_execution_notes": [
+    "Run tests in debug mode using main_dev.dart (automatically loads DevDataSeeder)",
+    "Each test should be independent; can be run in any order",
+    "Mark test as 'passes': true only after MANUALLY executing all steps and verifying result",
+    "Screenshots/videos recommended for UI tests",
+    "Network logs essential for API tests",
+    "Database inspection critical for offline sync tests",
+    "Always test both online and offline modes",
+    "Test on iOS and Android for comprehensive coverage",
+    "Compare trainer and client UI differences (different dashboard, tabs, features)"
+  ],
+  "common_issues": [
+    {
+      "issue": "Dev token not working after role switch",
+      "solution": "Kill and restart app, ensure main_dev.dart is running, check DevDataSeeder creates trainer user with correct role"
+    },
+    {
+      "issue": "Authorization header missing in requests",
+      "solution": "Verify AuthInterceptor is added to Dio, check flutter_secure_storage has token, restart app"
+    },
+    {
+      "issue": "Trainer clients not loading",
+      "solution": "Verify DevDataSeeder creates test clients with trainer_id matching authenticated trainer, check filter on GET /api/v1/trainer/clients"
+    },
+    {
+      "issue": "Offline sync not triggering",
+      "solution": "Check SyncService is running (background worker), verify isSynced flag on local changes, manually trigger sync or wait 5 minutes"
+    },
+    {
+      "issue": "Permission denied errors accessing client data",
+      "solution": "Verify client belongs to authenticated trainer, check backend enforces trainer_id filter, verify trainer_id in all requests"
+    },
+    {
+      "issue": "Workout assignment not visible to client",
+      "solution": "Verify POST /api/v1/workout-assignments succeeded, check client's workout list makes GET request with correct trainer_id filter"
+    }
+  ],
+  "trainer_vs_client_differences": {
+    "authentication": {
+      "trainer": "Magic link only (passwordless)",
+      "client": "Magic link only (passwordless)",
+      "note": "Both use same magic link flow"
+    },
+    "dashboard": {
+      "trainer": "Shows: active clients, workouts, completion stats, analytics",
+      "client": "Shows: assigned workouts, progress metrics, completion rate"
+    },
+    "main_tabs": {
+      "trainer": "Clients, Workouts, Messages, Analytics, Profile",
+      "client": "Workouts, Progress, Messages, Profile"
+    },
+    "client_management": {
+      "trainer": "View all clients, add/remove clients, view progress, send messages",
+      "client": "Cannot manage clients (N/A - they are the client)"
+    },
+    "workout_management": {
+      "trainer": "Create, edit, delete, assign workouts to clients",
+      "client": "View assigned workouts, mark complete, view feedback"
+    },
+    "payments": {
+      "trainer": "Manage subscription plan, view invoice history",
+      "client": "Purchase workout packs, manage subscriptions"
+    }
+  }
+}
