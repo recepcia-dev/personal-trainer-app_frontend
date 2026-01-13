@@ -5,6 +5,7 @@ import '../../data/datasources/workout_local_datasource.dart';
 import '../../data/datasources/workout_remote_datasource.dart';
 import '../../data/repositories/workout_repository_impl.dart';
 import '../../../progress/presentation/providers/exercise_provider.dart';
+import '../../../../core/network/dio_provider.dart';
 
 /// Provider for workout repository
 final workoutRepositoryProvider = Provider<WorkoutRepository>((ref) {

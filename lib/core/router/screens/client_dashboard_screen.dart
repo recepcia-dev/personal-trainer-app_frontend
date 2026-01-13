@@ -6,10 +6,8 @@ import '../../../features/auth/data/models/client_model.dart';
 import '../../../features/workouts/presentation/providers/client_workout_provider.dart';
 import '../../../features/meals/presentation/providers/client_diet_provider.dart';
 import '../../../features/progress/presentation/widgets/workout_completion_dialog.dart';
-import 'dashboard_tabs/home_tab.dart';
 import 'dashboard_tabs/workouts_tab.dart';
 import 'dashboard_tabs/profile_tab.dart';
-import 'dashboard_tabs/settings_tab.dart';
 
 /// Professional Client Dashboard with card-based layout and green theme
 ///
