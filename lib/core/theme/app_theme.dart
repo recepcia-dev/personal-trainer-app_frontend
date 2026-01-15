@@ -85,7 +85,7 @@ abstract class AppTheme {
       outline: _borderLight,
       outlineVariant: _borderMedium,
       shadow: Colors.black,
-      scrim: Colors.black.withValues(alpha: 0.6),
+      scrim: Colors.black.withOpacity(0.6),
     );
 
     return ThemeData(
@@ -122,10 +122,10 @@ abstract class AppTheme {
       // ========================================================================
       // CARD THEME
       // ========================================================================
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: _surfaceDark,
         elevation: DesignTokens.elevationSm,
-        shadowColor: Colors.black.withValues(alpha: 0.3),
+        shadowColor: Colors.black.withOpacity(0.3),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(DesignTokens.radiusLg),
         ),
@@ -142,7 +142,7 @@ abstract class AppTheme {
           backgroundColor: _primaryOrange,
           foregroundColor: _textPrimary,
           elevation: DesignTokens.elevationMd,
-          shadowColor: _primaryOrange.withValues(alpha: 0.4),
+          shadowColor: _primaryOrange.withOpacity(0.4),
           padding: DesignTokens.buttonPadding,
           minimumSize: const Size(
             double.minPositive,
@@ -207,7 +207,7 @@ abstract class AppTheme {
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
           foregroundColor: _textPrimary,
-          backgroundColor: Colors.white.withValues(alpha: DesignTokens.opacitySubtle),
+          backgroundColor: Colors.white.withOpacity(DesignTokens.opacitySubtle),
           minimumSize: const Size(
             DesignTokens.buttonIconSize,
             DesignTokens.buttonIconSize,
@@ -317,7 +317,7 @@ abstract class AppTheme {
       // ========================================================================
       // DIALOG THEME
       // ========================================================================
-      dialogTheme: DialogThemeData(
+      dialogTheme: DialogTheme(
         backgroundColor: _surfaceDark,
         elevation: DesignTokens.elevationXl,
         shape: RoundedRectangleBorder(

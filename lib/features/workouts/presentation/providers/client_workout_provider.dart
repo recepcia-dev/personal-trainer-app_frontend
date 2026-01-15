@@ -15,3 +15,21 @@ final assignedWorkoutsProvider = FutureProvider.autoDispose<List<AssignedWorkout
   final datasource = ref.watch(clientWorkoutDataSourceProvider);
   return await datasource.getAssignedWorkouts();
 });
+
+/// Provider for fetching a specific workout detail
+final workoutDetailProvider = FutureProvider.autoDispose.family<AssignedWorkoutModel, String>((ref, assignmentId) async {
+  final datasource = ref.watch(clientWorkoutDataSourceProvider);
+  return await datasource.getWorkoutDetail(assignmentId);
+});
+
+/// Provider for fetching completed workout history
+final completedWorkoutsProvider = FutureProvider.autoDispose<List<AssignedWorkoutModel>>((ref) async {
+  final datasource = ref.watch(clientWorkoutDataSourceProvider);
+  return await datasource.getCompletedWorkouts();
+});
+
+/// Provider for marking a workout complete
+final markWorkoutCompleteProvider = FutureProvider.autoDispose.family<AssignedWorkoutModel, String>((ref, assignmentId) async {
+  final datasource = ref.watch(clientWorkoutDataSourceProvider);
+  return await datasource.markWorkoutComplete(assignmentId);
+});

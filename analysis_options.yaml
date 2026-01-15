@@ -1,0 +1,15 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  errors:
+    # JsonKey on constructor parameters is valid with freezed, but json_annotation 4.8.1+
+    # added @Target restriction that doesn't account for freezed's code generation pattern.
+    # This will be resolved when upgrading to freezed 3.x.
+    invalid_annotation_target: ignore
+
+linter:
+  rules:
+    # Allow print statements in development
+    avoid_print: false
+    # Allow public member API docs to be optional
+    public_member_api_docs: false

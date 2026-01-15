@@ -199,11 +199,33 @@ class DevRole extends _$DevRole {
   Future<void> selectClient() async {
     state = DevRoleEnum.client;
     await _saveTokens(DevRoleEnum.client);
+    debugPrint('');
+    debugPrint('═══════════════════════════════════════════════════════════════');
+    debugPrint('🔐 CLIENT BEARER TOKEN FOR CURL REQUESTS');
+    debugPrint('═══════════════════════════════════════════════════════════════');
+    debugPrint('Token: ${DevTokens.clientAccessToken}');
+    debugPrint('');
+    debugPrint('Use in curl:');
+    debugPrint('curl -H "Authorization: Bearer ${DevTokens.clientAccessToken}" \\');
+    debugPrint('  http://localhost:8000/api/v1/auth/me');
+    debugPrint('═══════════════════════════════════════════════════════════════');
+    debugPrint('');
   }
 
   Future<void> selectAdmin() async {
     state = DevRoleEnum.admin;
     await _saveTokens(DevRoleEnum.admin);
+    debugPrint('');
+    debugPrint('═══════════════════════════════════════════════════════════════');
+    debugPrint('🔐 ADMIN BEARER TOKEN FOR CURL REQUESTS');
+    debugPrint('═══════════════════════════════════════════════════════════════');
+    debugPrint('Token: ${DevTokens.adminAccessToken}');
+    debugPrint('');
+    debugPrint('Use in curl:');
+    debugPrint('curl -H "Authorization: Bearer ${DevTokens.adminAccessToken}" \\');
+    debugPrint('  http://localhost:8000/api/v1/auth/me');
+    debugPrint('═══════════════════════════════════════════════════════════════');
+    debugPrint('');
   }
 
   Future<void> selectNotAuthenticated() async {

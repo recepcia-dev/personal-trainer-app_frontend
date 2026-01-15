@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 import '../../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../../features/auth/data/models/client_model.dart';
 import '../../../features/workouts/presentation/providers/client_workout_provider.dart';
 import '../../../features/meals/presentation/providers/client_diet_provider.dart';
 import '../../../features/progress/presentation/widgets/workout_completion_dialog.dart';
+import '../../../features/progress/presentation/providers/progress_provider.dart';
 import 'dashboard_tabs/workouts_tab.dart';
 import 'dashboard_tabs/profile_tab.dart';
 
@@ -395,104 +397,723 @@ class _ClientTodayTab extends ConsumerWidget {
   }
 }
 
-/// Progress tab - displays performance metrics and charts
-class _ClientProgressTab extends StatelessWidget {
+/// Progress tab - displays performance metrics, charts, and completed workout history
+class _ClientProgressTab extends ConsumerWidget {
   const _ClientProgressTab();
 
+  String _formatTimeAgo(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays > 0) {
+      if (difference.inDays == 1) return 'Yesterday';
+      return '${difference.inDays} days ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} hours ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} min ago';
+    }
+    return 'Just now';
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final progressStatsAsync = ref.watch(clientProgressStatsProvider);
+    final completedWorkoutsAsync = ref.watch(completedWorkoutsProvider);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Progress Summary Cards
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _ProgressMetricCard(
-                value: '7',
-                label: 'Day Streak',
-                icon: Icons.local_fire_department,
-              ),
-              _ProgressMetricCard(
-                value: '24',
-                label: 'Completed',
-                icon: Icons.check_circle,
-              ),
-              _ProgressMetricCard(
-                value: '75 kg',
-                label: 'Current Weight',
-                icon: Icons.scale,
-              ),
-            ],
+          // Progress Summary Cards from API
+          progressStatsAsync.when(
+            data: (stats) {
+              return Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: _ProgressMetricCard(
+                          value: '${stats.currentStreak}',
+                          label: 'Day Streak',
+                          icon: Icons.local_fire_department,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _ProgressMetricCard(
+                          value: '${stats.totalWorkoutsCompleted}',
+                          label: 'Completed',
+                          icon: Icons.check_circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _ProgressMetricCard(
+                          value: stats.currentWeightKg != null
+                              ? '${stats.currentWeightKg!.toStringAsFixed(1)}'
+                              : '-',
+                          label: 'Weight (kg)',
+                          icon: Icons.scale,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: _ProgressMetricCard(
+                          value: '${stats.completionRate.toStringAsFixed(0)}%',
+                          label: 'Completion',
+                          icon: Icons.pie_chart,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _ProgressMetricCard(
+                          value: stats.weightChangeKg != null
+                              ? '${stats.weightChangeKg! >= 0 ? '+' : ''}${stats.weightChangeKg!.toStringAsFixed(1)}'
+                              : '-',
+                          label: 'Weight Δ',
+                          icon: Icons.trending_up,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _ProgressMetricCard(
+                          value: '${stats.totalWorkoutsAssigned}',
+                          label: 'Assigned',
+                          icon: Icons.fitness_center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+            loading: () => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: const [
+                Expanded(child: _ProgressMetricCard(value: '-', label: 'Day Streak', icon: Icons.local_fire_department)),
+                SizedBox(width: 8),
+                Expanded(child: _ProgressMetricCard(value: '-', label: 'Completed', icon: Icons.check_circle)),
+                SizedBox(width: 8),
+                Expanded(child: _ProgressMetricCard(value: '-', label: 'Weight (kg)', icon: Icons.scale)),
+              ],
+            ),
+            error: (_, __) => const SizedBox(),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
 
-          // Recent Activity
+          // Log Measurement Button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _showLogMeasurementDialog(context, ref),
+              icon: const Icon(Icons.add),
+              label: const Text('Log Measurement'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.green,
+                side: const BorderSide(color: Colors.green),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Workout Frequency Chart
           Text(
-            'Recent Activity',
+            'Weekly Progress',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 16),
-          ...[
-            ('Chest Day', 'Completed', '2 hours ago', true),
-            ('Leg Day', 'Completed', 'Yesterday', true),
-            ('Back Day', 'Scheduled', 'Tomorrow', false),
-          ]
-              .map((activity) => Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
+          progressStatsAsync.when(
+            data: (stats) {
+              if (stats.weeklyWorkoutData.isEmpty) {
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Center(
+                      child: Text(
+                        'No workout data yet',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.grey[600],
+                            ),
+                      ),
+                    ),
+                  ),
+                );
+              }
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SizedBox(
+                    height: 200,
+                    child: _WorkoutFrequencyChart(data: stats.weeklyWorkoutData),
+                  ),
+                ),
+              );
+            },
+            loading: () => Card(
+              child: SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+            error: (_, __) => const SizedBox(),
+          ),
+          const SizedBox(height: 24),
+
+          // Completion Rate Chart
+          Text(
+            'Completion Rate',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 16),
+          progressStatsAsync.when(
+            data: (stats) => Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  height: 180,
+                  child: _CompletionRateChart(
+                    completed: stats.totalWorkoutsCompleted,
+                    remaining: stats.totalWorkoutsAssigned - stats.totalWorkoutsCompleted,
+                    rate: stats.completionRate,
+                  ),
+                ),
+              ),
+            ),
+            loading: () => Card(
+              child: SizedBox(
+                height: 180,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+            error: (_, __) => const SizedBox(),
+          ),
+          const SizedBox(height: 24),
+
+          // Workout History
+          Text(
+            'Workout History',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 16),
+          completedWorkoutsAsync.when(
+            data: (completed) {
+              if (completed.isEmpty) {
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Center(
+                      child: Column(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: activity.$4 ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              activity.$4 ? Icons.check_circle : Icons.schedule,
-                              color: activity.$4 ? Colors.green : Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  activity.$1,
-                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                ),
-                                Text(
-                                  activity.$3,
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Colors.grey[600],
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          Icon(Icons.history, size: 48, color: Colors.grey[400]),
+                          const SizedBox(height: 16),
                           Text(
-                            activity.$2,
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  color: activity.$4 ? Colors.green : Colors.grey,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            'No completed workouts yet',
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Complete your first workout to see it here!',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
                           ),
                         ],
                       ),
                     ),
-                  ))
-              .toList(),
+                  ),
+                );
+              }
+
+              return Column(
+                children: completed.take(5).map((workout) => Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.check_circle, color: Colors.green),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                workout.workoutName,
+                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+                              ),
+                              if (workout.completedAt != null)
+                                Text(
+                                  _formatTimeAgo(workout.completedAt!),
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          'Completed',
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                color: Colors.green,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )).toList(),
+              );
+            },
+            loading: () => const Center(
+              child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()),
+            ),
+            error: (error, _) => Card(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red[400]),
+                      const SizedBox(height: 8),
+                      Text('Error loading history', style: TextStyle(color: Colors.red[700])),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  void _showLogMeasurementDialog(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => const _LogMeasurementSheet(),
+    );
+  }
+}
+
+/// Workout frequency bar chart widget
+class _WorkoutFrequencyChart extends StatelessWidget {
+  final List<WeeklyWorkoutData> data;
+
+  const _WorkoutFrequencyChart({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: _getMaxY(),
+        barTouchData: BarTouchData(
+          touchTooltipData: BarTouchTooltipData(
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              return BarTooltipItem(
+                '${rod.toY.toInt()} workouts',
+                const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              );
+            },
+          ),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                final index = value.toInt();
+                if (index >= 0 && index < data.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      data[index].weekLabel,
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  );
+                }
+                return const SizedBox();
+              },
+              reservedSize: 30,
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 30,
+              getTitlesWidget: (value, meta) {
+                if (value == value.roundToDouble()) {
+                  return Text(
+                    value.toInt().toString(),
+                    style: const TextStyle(fontSize: 10),
+                  );
+                }
+                return const SizedBox();
+              },
+            ),
+          ),
+          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        ),
+        borderData: FlBorderData(show: false),
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: 1,
+          getDrawingHorizontalLine: (value) => FlLine(
+            color: Colors.grey[300]!,
+            strokeWidth: 1,
+          ),
+        ),
+        barGroups: data.asMap().entries.map((entry) {
+          final index = entry.key;
+          final weekData = entry.value;
+          return BarChartGroupData(
+            x: index,
+            barRods: [
+              BarChartRodData(
+                toY: weekData.workoutsCompleted.toDouble(),
+                color: Colors.green,
+                width: 20,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                backDrawRodData: BackgroundBarChartRodData(
+                  show: true,
+                  toY: weekData.workoutsAssigned.toDouble(),
+                  color: Colors.green.withOpacity(0.2),
+                ),
+              ),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  double _getMaxY() {
+    double max = 1;
+    for (final week in data) {
+      if (week.workoutsAssigned > max) max = week.workoutsAssigned.toDouble();
+      if (week.workoutsCompleted > max) max = week.workoutsCompleted.toDouble();
+    }
+    return max + 1;
+  }
+}
+
+/// Completion rate pie chart widget
+class _CompletionRateChart extends StatelessWidget {
+  final int completed;
+  final int remaining;
+  final double rate;
+
+  const _CompletionRateChart({
+    required this.completed,
+    required this.remaining,
+    required this.rate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: PieChart(
+            PieChartData(
+              sectionsSpace: 2,
+              centerSpaceRadius: 40,
+              sections: [
+                PieChartSectionData(
+                  color: Colors.green,
+                  value: completed.toDouble(),
+                  title: '$completed',
+                  radius: 50,
+                  titleStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                PieChartSectionData(
+                  color: Colors.grey[300],
+                  value: remaining > 0 ? remaining.toDouble() : 0.1,
+                  title: remaining > 0 ? '$remaining' : '',
+                  radius: 50,
+                  titleStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${rate.toStringAsFixed(1)}%',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            Text(
+              'Completion Rate',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Container(width: 12, height: 12, color: Colors.green),
+                const SizedBox(width: 8),
+                Text('Completed ($completed)', style: Theme.of(context).textTheme.bodySmall),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Container(width: 12, height: 12, color: Colors.grey[300]),
+                const SizedBox(width: 8),
+                Text('Remaining ($remaining)', style: Theme.of(context).textTheme.bodySmall),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Bottom sheet for logging measurements
+class _LogMeasurementSheet extends ConsumerStatefulWidget {
+  const _LogMeasurementSheet();
+
+  @override
+  ConsumerState<_LogMeasurementSheet> createState() => _LogMeasurementSheetState();
+}
+
+class _LogMeasurementSheetState extends ConsumerState<_LogMeasurementSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _weightController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _bodyFatController = TextEditingController();
+  final _waistController = TextEditingController();
+  final _chestController = TextEditingController();
+  final _notesController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _weightController.dispose();
+    _heightController.dispose();
+    _bodyFatController.dispose();
+    _waistController.dispose();
+    _chestController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: 20,
+        right: 20,
+        top: 20,
+      ),
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Log Measurement',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _weightController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Weight (kg)',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.scale),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _heightController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Height (cm)',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.height),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _bodyFatController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Body Fat %',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.percent),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _waistController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Waist (cm)',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.straighten),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _chestController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Chest (cm)',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.straighten),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _notesController,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Notes (optional)',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.notes),
+                ),
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: _isLoading ? null : _saveMeasurement,
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Text('Save Measurement'),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveMeasurement() async {
+    if (_weightController.text.isEmpty &&
+        _heightController.text.isEmpty &&
+        _bodyFatController.text.isEmpty &&
+        _waistController.text.isEmpty &&
+        _chestController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter at least one measurement')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await ref.read(logMeasurementNotifierProvider.notifier).logMeasurement(
+        weightKg: _weightController.text.isNotEmpty ? double.tryParse(_weightController.text) : null,
+        heightCm: _heightController.text.isNotEmpty ? double.tryParse(_heightController.text) : null,
+        bodyFatPercentage: _bodyFatController.text.isNotEmpty ? double.tryParse(_bodyFatController.text) : null,
+        waistCm: _waistController.text.isNotEmpty ? double.tryParse(_waistController.text) : null,
+        chestCm: _chestController.text.isNotEmpty ? double.tryParse(_chestController.text) : null,
+        notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+      );
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Measurement saved successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Refresh stats
+        ref.invalidate(clientProgressStatsProvider);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving measurement: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 }
 

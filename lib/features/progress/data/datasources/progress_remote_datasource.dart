@@ -29,6 +29,28 @@ abstract class ProgressRemoteDataSource {
 
   /// Get exercise history
   Future<Map<String, dynamic>> getExerciseHistory(String exerciseId);
+
+  /// Get body measurements
+  Future<List<Map<String, dynamic>>> getMeasurements({int limit = 50});
+
+  /// Log a body measurement
+  Future<Map<String, dynamic>> logMeasurement({
+    double? weightKg,
+    double? heightCm,
+    double? bodyFatPercentage,
+    double? chestCm,
+    double? waistCm,
+    double? hipsCm,
+    double? bicepCm,
+    double? thighCm,
+    String? frontPhotoUrl,
+    String? sidePhotoUrl,
+    String? backPhotoUrl,
+    String? notes,
+  });
+
+  /// Get latest body measurement
+  Future<Map<String, dynamic>?> getLatestMeasurement();
 }
 
 class ProgressRemoteDataSourceImpl implements ProgressRemoteDataSource {
@@ -139,6 +161,75 @@ class ProgressRemoteDataSourceImpl implements ProgressRemoteDataSource {
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
       throw Exception('Failed to get exercise history: ${e.message}');
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMeasurements({int limit = 50}) async {
+    try {
+      final response = await dio.get(
+        '${ApiEndpoints.baseUrl}/api/v1/client/measurements',
+        queryParameters: {'limit': limit},
+      );
+      return (response.data as List<dynamic>)
+          .map((e) => e as Map<String, dynamic>)
+          .toList();
+    } on DioException catch (e) {
+      throw Exception('Failed to get measurements: ${e.message}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> logMeasurement({
+    double? weightKg,
+    double? heightCm,
+    double? bodyFatPercentage,
+    double? chestCm,
+    double? waistCm,
+    double? hipsCm,
+    double? bicepCm,
+    double? thighCm,
+    String? frontPhotoUrl,
+    String? sidePhotoUrl,
+    String? backPhotoUrl,
+    String? notes,
+  }) async {
+    try {
+      final response = await dio.post(
+        '${ApiEndpoints.baseUrl}/api/v1/client/measurements',
+        data: {
+          if (weightKg != null) 'weight_kg': weightKg,
+          if (heightCm != null) 'height_cm': heightCm,
+          if (bodyFatPercentage != null) 'body_fat_percentage': bodyFatPercentage,
+          if (chestCm != null) 'chest_cm': chestCm,
+          if (waistCm != null) 'waist_cm': waistCm,
+          if (hipsCm != null) 'hips_cm': hipsCm,
+          if (bicepCm != null) 'bicep_cm': bicepCm,
+          if (thighCm != null) 'thigh_cm': thighCm,
+          if (frontPhotoUrl != null) 'front_photo_url': frontPhotoUrl,
+          if (sidePhotoUrl != null) 'side_photo_url': sidePhotoUrl,
+          if (backPhotoUrl != null) 'back_photo_url': backPhotoUrl,
+          if (notes != null) 'notes': notes,
+        },
+      );
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw Exception('Failed to log measurement: ${e.message}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getLatestMeasurement() async {
+    try {
+      final response = await dio.get(
+        '${ApiEndpoints.baseUrl}/api/v1/client/measurements/latest',
+      );
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return null;
+      }
+      throw Exception('Failed to get latest measurement: ${e.message}');
     }
   }
 }

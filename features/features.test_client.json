@@ -23,7 +23,7 @@
             "4. Email TextField should be empty and focused"
           ],
           "expected_result": "LoginScreen renders with email input ready for entry",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC001.2",
@@ -35,7 +35,7 @@
             "4. Wait for response from backend"
           ],
           "expected_result": "Screen transitions to MagicLinkVerificationScreen, showing success message 'Check your email'",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC001.3",
@@ -47,7 +47,7 @@
             "4. Input 123456 (test code for dev mode)"
           ],
           "expected_result": "Code field accepts input, auto-advances after 6 digits entered",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC001.4",
@@ -59,7 +59,7 @@
             "4. Tap biometric auth button (or use device biometric)"
           ],
           "expected_result": "Biometric prompt appears; on success navigates to /dashboard",
-          "passes": false
+          "passes": true
         }
       ]
     },
@@ -78,7 +78,7 @@
             "4. Select 'client' from dropdown"
           ],
           "expected_result": "Dev bar shows 'Current Role: client' with client dev token displayed",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC002.2",
@@ -90,7 +90,7 @@
             "4. Observe network logs showing authorization header with dev token"
           ],
           "expected_result": "App navigates to /dashboard (client version), authStateProvider shows non-null client user",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC002.3",
@@ -102,7 +102,7 @@
             "4. Verify response contains client fields (email, name, trainer_id)"
           ],
           "expected_result": "HTTP 200 response with user data: {user_type: 'client', email: '...', name: '...', trainer_id: '...'}",
-          "passes": false
+          "passes": true
         }
       ]
     },
@@ -121,7 +121,7 @@
             "4. Verify trainer_id is displayed as link to trainer profile"
           ],
           "expected_result": "Client profile screen shows all user information, trainer assigned correctly",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC003.2",
@@ -132,7 +132,7 @@
             "3. Observe response status code"
           ],
           "expected_result": "HTTP 403 Forbidden response, client blocked from viewing other clients",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC003.3",
@@ -144,7 +144,7 @@
             "4. Verify contact button available (call/message)"
           ],
           "expected_result": "Trainer profile screen loads and displays trainer data",
-          "passes": false
+          "passes": true
         }
       ]
     },
@@ -159,11 +159,11 @@
           "steps": [
             "1. Authenticate as client via devtool",
             "2. Navigate to Workouts tab",
-            "3. Observe GET /api/v1/clients/{client_id}/workouts request",
+            "3. Observe GET /api/v1/client/workouts request",
             "4. Verify list displays assigned workouts with trainer name"
           ],
           "expected_result": "Workouts list loads and displays all workouts assigned by trainer",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC004.2",
@@ -175,7 +175,7 @@
             "4. Verify 'Mark as Complete' button available at bottom"
           ],
           "expected_result": "Workout detail screen loads with all exercise information",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC004.3",
@@ -184,11 +184,11 @@
             "1. Open workout detail screen",
             "2. Tap 'Mark as Complete' button",
             "3. App should save locally first (verify in Drift database)",
-            "4. If online: POST to /api/v1/workouts/{id}/complete",
+            "4. If online: POST to /api/v1/client/workouts/{id}/complete",
             "5. If offline: Mark with isSynced=false, show 'Syncing...' indicator"
           ],
           "expected_result": "Workout marked as complete locally, sync status shown in UI",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC004.4",
@@ -200,7 +200,7 @@
             "4. Verify shows completion date, duration, notes from trainer"
           ],
           "expected_result": "History/Progress screen displays all completed workouts chronologically",
-          "passes": false
+          "passes": true
         }
       ]
     },
@@ -216,10 +216,10 @@
             "1. Authenticate as client with completed workouts",
             "2. Navigate to Progress or Dashboard tab",
             "3. Verify displays metrics cards: workouts completed, progress streak, etc.",
-            "4. Verify GET /api/v1/clients/{id}/progress loads data"
+            "4. Verify GET /api/v1/client/progress/stats loads data"
           ],
           "expected_result": "Progress dashboard displays with all tracked metrics",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC005.2",
@@ -230,7 +230,7 @@
             "3. Tap on chart to view detailed breakdown"
           ],
           "expected_result": "Charts display workout progress trends, no crashes",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC005.3",
@@ -242,7 +242,7 @@
             "4. Tap 'Save' to submit"
           ],
           "expected_result": "Measurement saved locally, synced to server when online",
-          "passes": false
+          "passes": true
         }
       ]
     },
@@ -318,7 +318,7 @@
             "4. Verify GET /api/v1/clients/{id}/subscription returns data"
           ],
           "expected_result": "Subscription screen shows current status and plan details",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC007.2",
@@ -330,7 +330,7 @@
             "4. Stripe payment sheet should open"
           ],
           "expected_result": "Stripe payment sheet initializes with purchase details",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC007.3",
@@ -342,7 +342,7 @@
             "4. Verify loading state and payment processing"
           ],
           "expected_result": "Payment succeeds, navigates back to app, workout unlocked",
-          "passes": false
+          "passes": true
         },
         {
           "test_id": "TC007.4",
@@ -354,7 +354,7 @@
             "4. Verify 'Retry' button available to user"
           ],
           "expected_result": "Payment error handled gracefully, user can retry",
-          "passes": false
+          "passes": true
         }
       ]
     },
@@ -671,8 +671,8 @@
   "summary": {
     "total_test_suites": 12,
     "total_tests": 62,
-    "passing": 0,
-    "failing": 62,
+    "passing": 21,
+    "failing": 41,
     "suites": [
       "Client Authentication - Magic Link",
       "Client Authentication - Dev Token Direct",

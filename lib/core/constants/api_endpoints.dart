@@ -35,6 +35,12 @@ class ApiEndpoints {
   static const String getSubscriptionInfo = '$apiV1/auth/me/subscription';
   static const String updateSubscriptionPlan = '$apiV1/auth/me/subscription';
 
+  // Client subscription & store endpoints
+  static const String clientSubscription = '$apiV1/client/subscription';
+  static const String workoutStore = '$apiV1/client/store/packs';
+  static const String clientPurchases = '$apiV1/client/purchases';
+  static const String clientPaymentHistory = '$apiV1/client/payments/history';
+
   // Notification endpoints
   static const String registerFcmToken = '$apiV1/notifications/register-token';
 

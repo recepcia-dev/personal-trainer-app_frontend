@@ -8,17 +8,24 @@ import '../../features/auth/data/models/trainer_model.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../dev/dev_config.dart';
 import '../dev/mock_providers.dart';
+import '../../features/auth/presentation/screens/biometric_auth_screen.dart';
 import '../../features/auth/presentation/screens/complete_profile_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/magic_link_verification_screen.dart';
 import '../../features/auth/presentation/screens/role_selection_screen.dart';
+import '../../features/booking/presentation/screens/trainer_public_profile_screen.dart';
 import '../../features/nutrition/domain/entities/meal_plan.dart';
 import '../../features/nutrition/presentation/screens/client_meal_plan_screen.dart';
 import '../../features/nutrition/presentation/screens/meal_plan_builder_screen.dart';
 import '../../features/workouts/presentation/screens/workout_builder_screen.dart';
+import '../../features/workouts/presentation/screens/client_workout_detail_screen.dart';
 import '../../features/payments/presentation/screens/subscription_plans_screen.dart';
 import '../../features/payments/presentation/screens/subscription_management_screen.dart';
 import '../../features/payments/presentation/screens/payment_success_screen.dart';
+import '../../features/payments/presentation/screens/client_subscription_screen.dart';
+import '../../features/payments/presentation/screens/workout_store_screen.dart';
+import '../../features/payments/presentation/screens/workout_pack_detail_screen.dart';
+import '../../features/payments/presentation/screens/client_purchases_screen.dart';
 import 'screens/admin_dashboard_screen.dart';
 import 'screens/client_dashboard_screen.dart';
 import 'screens/trainer_dashboard_screen.dart';
@@ -54,7 +61,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         '/client/meal-plan',
       ];
 
-      final isProtectedRoute = protectedRoutes.contains(location);
+      // Check if it's a protected route or a dynamic client workout route
+      final isProtectedRoute = protectedRoutes.contains(location) ||
+          location.startsWith('/client/workout/');
       final isAuthenticated = user != null;
 
       // If trying to access protected route without auth, go to role selection
@@ -105,6 +114,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           final userType = state.uri.queryParameters['userType'] ?? 'client';
           return CompleteProfileScreen(email: email, userType: userType);
         },
+      ),
+      GoRoute(
+        path: '/biometric',
+        name: 'biometric',
+        builder: (context, state) => const BiometricAuthScreen(),
       ),
 
       // Dashboard routes (protected)
@@ -157,6 +171,24 @@ final routerProvider = Provider<GoRouter>((ref) {
           return ClientMealPlanScreen(mealPlan: mockMealPlan);
         },
       ),
+      GoRoute(
+        path: '/client/workout/:assignmentId',
+        name: 'clientWorkoutDetail',
+        builder: (context, state) {
+          final assignmentId = state.pathParameters['assignmentId'] ?? '';
+          return ClientWorkoutDetailScreen(assignmentId: assignmentId);
+        },
+      ),
+
+      // Trainer profile route (for clients to view their trainer)
+      GoRoute(
+        path: '/trainer-profile/:trainerId',
+        name: 'trainerProfile',
+        builder: (context, state) {
+          final trainerId = state.pathParameters['trainerId'] ?? '';
+          return TrainerPublicProfileScreen(trainerId: trainerId);
+        },
+      ),
 
       // Payment routes
       GoRoute(
@@ -177,6 +209,31 @@ final routerProvider = Provider<GoRouter>((ref) {
           final amount = state.uri.queryParameters['amount'] ?? '19.99';
           return PaymentSuccessScreen(planName: planName, amount: amount);
         },
+      ),
+
+      // Client subscription & store routes
+      GoRoute(
+        path: '/client/subscription',
+        name: 'clientSubscription',
+        builder: (context, state) => const ClientSubscriptionScreen(),
+      ),
+      GoRoute(
+        path: '/client/store',
+        name: 'workoutStore',
+        builder: (context, state) => const WorkoutStoreScreen(),
+      ),
+      GoRoute(
+        path: '/client/store/:packId',
+        name: 'workoutPackDetail',
+        builder: (context, state) {
+          final packId = state.pathParameters['packId'] ?? '';
+          return WorkoutPackDetailScreen(packId: packId);
+        },
+      ),
+      GoRoute(
+        path: '/client/purchases',
+        name: 'clientPurchases',
+        builder: (context, state) => const ClientPurchasesScreen(),
       ),
     ],
   );

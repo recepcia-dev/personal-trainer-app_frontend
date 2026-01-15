@@ -6,7 +6,11 @@ import 'package:local_auth/local_auth.dart';
 import '../../../../core/auth/biometric_auth_service.dart';
 import '../../../../core/constants/design_tokens.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../data/models/admin_model.dart';
+import '../../data/models/client_model.dart';
+import '../../data/models/trainer_model.dart';
 import '../providers/auth_repository_provider.dart';
+import '../providers/auth_state_provider.dart';
 
 /// Device-bound authentication screen using biometric (Face ID, Touch ID, Fingerprint).
 ///
@@ -38,6 +42,20 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
     _checkBiometricAvailability();
   }
 
+  /// Navigate to the correct dashboard based on user type
+  void _navigateToDashboard() {
+    final user = ref.read(authStateProvider);
+    if (user is AdminModel) {
+      context.go('/admin/dashboard');
+    } else if (user is TrainerModel) {
+      context.go('/trainer/dashboard');
+    } else if (user is ClientModel) {
+      context.go('/client/dashboard');
+    } else {
+      context.go('/trainer/dashboard'); // fallback
+    }
+  }
+
   /// Auto-skip biometric for web/development without biometric support
   void _autoSkipIfNoSupportedBiometric() {
     if (!_biometricAvailable && mounted) {
@@ -45,7 +63,7 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
           print('✅ DEBUG: Navigating to dashboard (no biometric needed for web)');
-          context.go('/dashboard');
+          _navigateToDashboard();
         }
       });
     }
@@ -159,7 +177,7 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
                 // Still navigate to dashboard after brief delay
                 Future.delayed(const Duration(seconds: 1), () {
                   if (mounted) {
-                    context.go('/dashboard');
+                    _navigateToDashboard();
                   }
                 });
               },
@@ -168,7 +186,7 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
                 _showSuccessMessage('Device binding successful!');
 
                 if (mounted) {
-                  context.go('/dashboard');
+                  _navigateToDashboard();
                 }
               },
             );
@@ -260,7 +278,7 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
                     width: DesignTokens.avatarXl,
                     height: DesignTokens.avatarXl,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withValues(alpha: 0.15),
+                      color: Theme.of(context).primaryColor.withOpacity(0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -294,7 +312,7 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
                     Container(
                       padding: EdgeInsets.all(DesignTokens.spaceMd),
                       decoration: BoxDecoration(
-                        color: AppTheme.warningColor.withValues(alpha: 0.1),
+                        color: AppTheme.warningColor.withOpacity(0.1),
                         border: Border.all(
                           color: AppTheme.warningColor,
                           width: DesignTokens.borderStandard,
@@ -355,7 +373,7 @@ class _BiometricAuthScreenState extends ConsumerState<BiometricAuthScreen> {
                       Container(
                         padding: EdgeInsets.all(DesignTokens.spaceMd),
                         decoration: BoxDecoration(
-                          color: AppTheme.errorColor.withValues(alpha: 0.1),
+                          color: AppTheme.errorColor.withOpacity(0.1),
                           border: Border.all(
                             color: AppTheme.errorColor,
                             width: DesignTokens.borderStandard,

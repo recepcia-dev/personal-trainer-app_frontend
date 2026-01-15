@@ -14,6 +14,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:go_router/go_router.dart';
 
 import 'core/constants/app_constants.dart';
 import 'core/dev/dev_config.dart';
@@ -257,6 +258,52 @@ class _DevToolbarExpanded extends ConsumerWidget {
 
   const _DevToolbarExpanded({required this.onToggle});
 
+  String _getRoleName(DevRoleEnum role) {
+    switch (role) {
+      case DevRoleEnum.trainer:
+        return 'trainer';
+      case DevRoleEnum.client:
+        return 'client';
+      case DevRoleEnum.admin:
+        return 'admin';
+      case DevRoleEnum.notAuthenticated:
+        return 'not authenticated';
+    }
+  }
+
+  String _getTokenPreview(DevRoleEnum role) {
+    switch (role) {
+      case DevRoleEnum.trainer:
+        final token = DevTokens.trainerAccessToken;
+        return token.length > 20 ? '${token.substring(0, 20)}...' : token;
+      case DevRoleEnum.client:
+        final token = DevTokens.clientAccessToken;
+        return token.length > 20 ? '${token.substring(0, 20)}...' : token;
+      case DevRoleEnum.admin:
+        final token = DevTokens.adminAccessToken;
+        return token.length > 20 ? '${token.substring(0, 20)}...' : token;
+      case DevRoleEnum.notAuthenticated:
+        return 'No token';
+    }
+  }
+
+  void _navigateToDashboard(BuildContext context, DevRoleEnum role) {
+    switch (role) {
+      case DevRoleEnum.trainer:
+        GoRouter.of(context).go('/trainer/dashboard');
+        break;
+      case DevRoleEnum.client:
+        GoRouter.of(context).go('/client/dashboard');
+        break;
+      case DevRoleEnum.admin:
+        GoRouter.of(context).go('/admin/dashboard');
+        break;
+      case DevRoleEnum.notAuthenticated:
+        GoRouter.of(context).go('/role-selection');
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentRole = ref.watch(devRoleProvider);
@@ -272,7 +319,7 @@ class _DevToolbarExpanded extends ConsumerWidget {
             Row(
               children: [
                 const Text(
-                  '🛠️ DEV',
+                  '🛠️ DevDataSeeder',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14,
@@ -290,10 +337,40 @@ class _DevToolbarExpanded extends ConsumerWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 8),
+            // Current role status
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: currentRole != DevRoleEnum.notAuthenticated
+                    ? Colors.green.withOpacity(0.3)
+                    : Colors.red.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'Current Role: ${_getRoleName(currentRole)}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            if (currentRole != DevRoleEnum.notAuthenticated) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Token: ${_getTokenPreview(currentRole)}',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 9,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             // Role section
             const Text(
-              'Auth Role',
+              'Switch Role',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 12,
@@ -303,25 +380,45 @@ class _DevToolbarExpanded extends ConsumerWidget {
             _RoleButton(
               label: '👨‍🏫 Trainer',
               isActive: currentRole == DevRoleEnum.trainer,
-              onPressed: () => ref.read(devRoleProvider.notifier).selectTrainer(),
+              onPressed: () async {
+                await ref.read(devRoleProvider.notifier).selectTrainer();
+                if (context.mounted) {
+                  _navigateToDashboard(context, DevRoleEnum.trainer);
+                }
+              },
             ),
             const SizedBox(height: 6),
             _RoleButton(
               label: '👤 Client',
               isActive: currentRole == DevRoleEnum.client,
-              onPressed: () => ref.read(devRoleProvider.notifier).selectClient(),
+              onPressed: () async {
+                await ref.read(devRoleProvider.notifier).selectClient();
+                if (context.mounted) {
+                  _navigateToDashboard(context, DevRoleEnum.client);
+                }
+              },
             ),
             const SizedBox(height: 6),
             _RoleButton(
               label: '👨‍💼 Admin',
               isActive: currentRole == DevRoleEnum.admin,
-              onPressed: () => ref.read(devRoleProvider.notifier).selectAdmin(),
+              onPressed: () async {
+                await ref.read(devRoleProvider.notifier).selectAdmin();
+                if (context.mounted) {
+                  _navigateToDashboard(context, DevRoleEnum.admin);
+                }
+              },
             ),
             const SizedBox(height: 6),
             _RoleButton(
               label: '🚫 Not Auth',
               isActive: currentRole == DevRoleEnum.notAuthenticated,
-              onPressed: () => ref.read(devRoleProvider.notifier).selectNotAuthenticated(),
+              onPressed: () async {
+                await ref.read(devRoleProvider.notifier).selectNotAuthenticated();
+                if (context.mounted) {
+                  _navigateToDashboard(context, DevRoleEnum.notAuthenticated);
+                }
+              },
             ),
             const SizedBox(height: 12),
             // Actions section

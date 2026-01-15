@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../features/trainer/presentation/providers/trainer_provider.dart';
 import '../../../../features/clients/presentation/providers/client_profile_provider.dart';
 import '../../../../features/clients/presentation/providers/client_stats_provider.dart';
+import '../../../../features/clients/presentation/providers/client_trainer_provider.dart';
 import '../../../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../../../features/auth/data/models/client_model.dart';
 import '../../../../features/auth/data/models/trainer_model.dart';
@@ -233,6 +235,7 @@ class _ClientProfileView extends ConsumerWidget {
     final user = ref.watch(authStateProvider);
     final profileAsync = ref.watch(clientProfileProvider);
     final statsAsync = ref.watch(clientStatsProvider);
+    final trainerAsync = ref.watch(clientTrainerProvider);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -406,6 +409,146 @@ class _ClientProfileView extends ConsumerWidget {
               const SizedBox(height: 24),
             ],
 
+            // My Trainer Section
+            Text(
+              'My Trainer',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            trainerAsync.when(
+              data: (trainer) {
+                if (trainer == null) {
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.person_off,
+                            size: 40,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              'No trainer assigned yet',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return Card(
+                  child: InkWell(
+                    onTap: () {
+                      context.push('/trainer-profile/${trainer.id}');
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 30,
+                            backgroundColor: theme.colorScheme.secondaryContainer,
+                            child: Text(
+                              trainer.fullName.isNotEmpty
+                                  ? trainer.fullName[0].toUpperCase()
+                                  : 'T',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.onSecondaryContainer,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  trainer.fullName,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  trainer.email,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                if (trainer.specialty != null) ...[
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primaryContainer,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      trainer.specialty!,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: theme.colorScheme.onPrimaryContainer,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.chevron_right,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+              loading: () => const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              ),
+              error: (error, stack) => Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: theme.colorScheme.error,
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        'Error loading trainer info',
+                        style: TextStyle(color: theme.colorScheme.error),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
             // Progress Statistics Section
             Text(
               'Progress Statistics',
@@ -526,6 +669,46 @@ class _ClientProfileView extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   child: Text('Error loading goals: $error'),
                 ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Subscription & Billing Section
+            Text(
+              'Subscription & Billing',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.card_membership),
+                    title: const Text('My Subscription'),
+                    subtitle: const Text('View plan status and features'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/client/subscription'),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.store),
+                    title: const Text('Workout Store'),
+                    subtitle: const Text('Browse premium workout packs'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/client/store'),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.receipt_long),
+                    title: const Text('My Purchases'),
+                    subtitle: const Text('View purchased workout packs'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/client/purchases'),
+                  ),
+                ],
               ),
             ),
 

@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../data/models/admin_model.dart';
-import '../../data/models/client_model.dart';
 import '../../data/models/trainer_model.dart';
 import '../providers/auth_state_provider.dart';
 
@@ -15,7 +14,7 @@ import '../providers/auth_state_provider.dart';
 /// Simple flow:
 /// 1. User enters 6-digit code
 /// 2. Code is verified
-/// 3. Navigate directly to appropriate dashboard
+/// 3. Navigate to biometric auth, then to dashboard
 class MagicLinkVerificationScreen extends ConsumerStatefulWidget {
   const MagicLinkVerificationScreen({
     required this.email,
@@ -107,16 +106,8 @@ class _MagicLinkVerificationScreenState
         final userType = user is AdminModel ? 'admin' : user is TrainerModel ? 'trainer' : 'client';
         context.go('/complete-profile?email=${Uri.encodeComponent(widget.email)}&userType=$userType');
       } else {
-        // Profile already complete, go to dashboard
-        if (user is AdminModel) {
-          context.go('/admin/dashboard');
-        } else if (user is TrainerModel) {
-          context.go('/trainer/dashboard');
-        } else if (user is ClientModel) {
-          context.go('/client/dashboard');
-        } else {
-          context.go('/trainer/dashboard'); // fallback
-        }
+        // Profile complete - go to biometric authentication
+        context.go('/biometric');
       }
     } else {
       setState(() => _errorMessage = 'Invalid code. Please try again.');
